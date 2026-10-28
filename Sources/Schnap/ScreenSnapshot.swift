@@ -10,11 +10,17 @@ struct ScreenSnapshot {
     let scaleX: CGFloat
     let scaleY: CGFloat
 
-    func edges(at point: CGPoint, tolerance: Int, bounds: CGRect) -> CGRect? {
-        guard let rect = pixels.edges(at: CGPoint(x: point.x * scaleX, y: point.y * scaleY),
-                                      tolerance: tolerance) else { return nil }
-        return CGRect(x: rect.minX / scaleX, y: rect.minY / scaleY,
-                      width: rect.width / scaleX, height: rect.height / scaleY).intersection(bounds)
+    func dimensions(at point: CGPoint, tolerance: Int) -> Dimensions? {
+        pixels.dimensions(at: CGPoint(x: point.x * scaleX, y: point.y * scaleY), tolerance: tolerance)?
+            .scaled(x: 1 / scaleX, y: 1 / scaleY)
+    }
+
+    func objectBounds(in rect: CGRect, tolerance: Int) -> CGRect? {
+        let pixelsRect = CGRect(x: rect.minX * scaleX, y: rect.minY * scaleY,
+                                width: rect.width * scaleX, height: rect.height * scaleY)
+        guard let result = pixels.objectBounds(in: pixelsRect, tolerance: tolerance) else { return nil }
+        return CGRect(x: result.minX / scaleX, y: result.minY / scaleY,
+                      width: result.width / scaleX, height: result.height / scaleY)
     }
 
     @MainActor
