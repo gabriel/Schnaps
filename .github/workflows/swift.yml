@@ -22,10 +22,20 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
       - name: Test measurement geometry and edge detection
         run: swift test
+      - name: Check release script syntax and website JavaScript
+        run: |
+          swiftc -typecheck Scripts/release.swift
+          node --check website/dist/demo.js
       - name: Build native application
         run: swift Scripts/build-app.swift
       - name: Verify bundle signature
         run: codesign --verify --deep --strict build/Schnaps.app
+      - name: Verify Sparkle embedding and release configuration
+        run: |
+          test -d build/Schnaps.app/Contents/Frameworks/Sparkle.framework
+          test -s build/Schnaps.app/Contents/Resources/Acknowledgements/Sparkle-LICENSE.txt
+          plutil -extract SUFeedURL raw build/Schnaps.app/Contents/Info.plist
+          plutil -extract SUPublicEDKey raw build/Schnaps.app/Contents/Info.plist
       - name: Verify compiled icon assets
         if: matrix.xcode == '26.3'
         run: test -s build/Schnaps.app/Contents/Resources/Assets.car
