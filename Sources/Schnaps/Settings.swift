@@ -12,6 +12,7 @@ enum PreferenceKey {
     static let tolerance = "edgeTolerance"
     static let scrollTolerance = "scrollAdjustsTolerance"
     static let defaultTool = "defaultTool"
+    static let showInDock = "showInDock"
 }
 
 private enum SettingsPane: String, CaseIterable, Identifiable {
@@ -38,6 +39,7 @@ struct SettingsView: View {
     @AppStorage(PreferenceKey.tolerance) private var tolerance = TolerancePreset.medium.rawValue
     @AppStorage(PreferenceKey.scrollTolerance) private var scrollTolerance = true
     @AppStorage(PreferenceKey.defaultTool) private var defaultTool = MeasurementMode.findDimensions.rawValue
+    @AppStorage(PreferenceKey.showInDock) private var showInDock = false
     @State private var granted = CGPreflightScreenCaptureAccess()
 
     var body: some View {
@@ -101,6 +103,7 @@ struct SettingsView: View {
                 Picker("Default tool", selection: $defaultTool) {
                     ForEach(MeasurementMode.allCases, id: \.rawValue) { Text($0.rawValue).tag($0.rawValue) }
                 }
+                Toggle("Show in Dock", isOn: $showInDock)
             }
         }
     }
