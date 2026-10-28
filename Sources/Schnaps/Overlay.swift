@@ -104,6 +104,8 @@ final class OverlayWindow: NSWindow {
         backgroundColor = .clear
         isOpaque = false
         hasShadow = false
+        // Animating a full-display screenshot looks like the desktop itself zooms.
+        animationBehavior = .none
         isReleasedWhenClosed = false
         level = .screenSaver
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
