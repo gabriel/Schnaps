@@ -2,7 +2,7 @@ import AppKit
 import MeasurementCore
 
 @MainActor
-final class OverlayController {
+final class OverlayController: NSObject {
     private var windows: [OverlayWindow] = []
     private var generation = UUID()
     private var preparing = false
@@ -11,6 +11,16 @@ final class OverlayController {
     private var savedDistances: [CGDirectDisplayID: [DimensionSpan]] = [:]
     private var mode: MeasurementMode = .area
     var isActive: Bool { preparing || !windows.isEmpty }
+
+    override init() {
+        super.init()
+        NotificationCenter.default.addObserver(self, selector: #selector(preferencesChanged),
+                                               name: UserDefaults.didChangeNotification, object: nil)
+    }
+
+    @objc private func preferencesChanged() {
+        for window in windows { (window.contentView as? MeasurementView)?.synchronizeTolerance() }
+    }
 
     func toggle(mode: MeasurementMode = .area) {
         if preparing || !windows.isEmpty {
@@ -39,7 +49,6 @@ final class OverlayController {
                                            scale: screen.backingScaleFactor, snapshot: snapshots[id], mode: mode)
                 view.pinned = (saved[id] ?? []).map { $0.intersection(view.bounds) }.filter { !$0.isNull && !$0.isEmpty }
                 view.pinnedDistances = savedDistances[id] ?? []
-                view.captureFailed = captureFailed
                 view.onModeChanged = { [weak self] mode in self?.mode = mode }
                 view.onClose = { [weak self] in self?.stop() }
                 view.onRefresh = { [weak self, weak view] in
@@ -54,7 +63,11 @@ final class OverlayController {
             NSApp.activate(ignoringOtherApps: true)
             let target = windows.first { $0.frame.contains(NSEvent.mouseLocation) } ?? windows.first
             target?.makeKeyAndOrderFront(nil)
-            for window in windows { (window.contentView as? MeasurementView)?.initializePointer() }
+            for window in windows {
+                guard let view = window.contentView as? MeasurementView else { continue }
+                view.initializePointer()
+                if captureFailed && mode == .findDimensions { view.reportCaptureFailure() }
+            }
         }
     }
 
@@ -107,13 +120,14 @@ final class MeasurementView: NSView {
     override var acceptsFirstResponder: Bool { true }
     var pinned: [CGRect] = [] { didSet { needsDisplay = true } }
     var pinnedDistances: [DimensionSpan] = [] { didSet { needsDisplay = true } }
-    var captureFailed = false
     var onClose: (() -> Void)?
     var onRefresh: (() -> Void)?
     var onModeChanged: ((MeasurementMode) -> Void)?
     private let scale: CGFloat
     private let snapshot: ScreenSnapshot?
     private var selection: CGRect?
+    private var detectionRegion: CGRect?
+    private var scrollRemainder: CGFloat = 0
     private var liveDimensions: Dimensions?
     private var heldDimensions: Dimensions?
     private var manualDrag = false
@@ -129,10 +143,6 @@ final class MeasurementView: NSView {
     private var tracking: NSTrackingArea?
     private var message: String?
     private var messageTimer: Timer?
-    private let toolbar = NSVisualEffectView()
-    private var unitButton: NSButton!
-    private var modeControl: NSSegmentedControl!
-    private var toleranceControl: NSSegmentedControl!
     private let accent = NSColor.controlAccentColor
     private var showAlignment = false
     private var guides: [(vertical: Bool, position: CGFloat)] = []
@@ -142,54 +152,15 @@ final class MeasurementView: NSView {
         self.snapshot = snapshot
         self.mode = mode
         self.unit = MeasurementUnit(rawValue: UserDefaults.standard.string(forKey: PreferenceKey.unit) ?? "pt") ?? .points
-        self.tolerance = UserDefaults.standard.integer(forKey: PreferenceKey.tolerance)
+        self.tolerance = TolerancePreset.closest(to: UserDefaults.standard.integer(forKey: PreferenceKey.tolerance)).rawValue
         super.init(frame: frame)
+        setAccessibilityElement(true)
+        setAccessibilityRole(.group)
         setAccessibilityIdentifier("measurement-overlay")
-        setAccessibilityLabel("Measurement canvas. Drag to measure; Enter copies dimensions; Escape exits.")
-        setupToolbar()
+        setAccessibilityLabel("Measurement canvas")
+        setAccessibilityHelp("Drag to measure. S switches tools, U switches units, T changes tolerance, Enter copies, Escape exits.")
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) is unsupported") }
-
-    private func button(_ title: String, _ action: Selector) -> NSButton {
-        let button = NSButton(title: title, target: self, action: action)
-        button.bezelStyle = .rounded
-        button.font = .systemFont(ofSize: 12, weight: .medium)
-        return button
-    }
-
-    private func setupToolbar() {
-        toolbar.material = .popover
-        toolbar.blendingMode = .withinWindow
-        toolbar.state = .active
-        unitButton = button(unit == .points ? "Points" : "Pixels", #selector(toggleUnit))
-        unitButton.toolTip = "Switch between logical screen points and physical display pixels (U)"
-        modeControl = NSSegmentedControl(labels: ["Measure Area", "Find Dimensions"], trackingMode: .selectOne,
-                                          target: self, action: #selector(chooseTool))
-        modeControl.selectedSegment = mode == .area ? 0 : 1
-        modeControl.toolTip = "Choose a measurement tool (S). Find Dimensions requires Screen Recording access."
-        toleranceControl = NSSegmentedControl(labels: ["8", "18", "36"], trackingMode: .selectOne,
-                                               target: self, action: #selector(changeTolerance))
-        toleranceControl.selectedSegment = [8, 18, 36].firstIndex(of: tolerance) ?? 1
-        toleranceControl.toolTip = "Color tolerance: low, medium, high"
-        toleranceControl.isEnabled = snapshot != nil
-        let stack = NSStackView(views: [modeControl, unitButton, toleranceControl,
-                                       button("Pin ␣", #selector(pin)), button("Clear", #selector(clear)),
-                                       button("Refresh", #selector(refresh)), button("Done", #selector(done))])
-        stack.spacing = 10
-        stack.orientation = .horizontal
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        toolbar.addSubview(stack)
-        addSubview(toolbar)
-        toolbar.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            toolbar.centerXAnchor.constraint(equalTo: centerXAnchor),
-            toolbar.topAnchor.constraint(equalTo: topAnchor, constant: 44),
-            stack.leadingAnchor.constraint(equalTo: toolbar.leadingAnchor, constant: 16),
-            stack.trailingAnchor.constraint(equalTo: toolbar.trailingAnchor, constant: -16),
-            stack.topAnchor.constraint(equalTo: toolbar.topAnchor, constant: 10),
-            stack.bottomAnchor.constraint(equalTo: toolbar.bottomAnchor, constant: -10)
-        ])
-    }
 
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
@@ -218,7 +189,7 @@ final class MeasurementView: NSView {
     }
 
     private func updateLiveDimensions() {
-        if !toolbar.frame.contains(cursor), selection == nil, heldDimensions == nil, mode == .findDimensions {
+        if selection == nil, heldDimensions == nil, mode == .findDimensions {
             liveDimensions = snapshot?.dimensions(at: cursor, tolerance: tolerance)
         } else { liveDimensions = nil }
     }
@@ -235,6 +206,7 @@ final class MeasurementView: NSView {
         dragging = false
         manualDrag = event.type == .rightMouseDown
         original = selection
+        detectionRegion = nil
         if let selection {
             let corners = [CGPoint(x: selection.minX, y: selection.minY), CGPoint(x: selection.maxX, y: selection.minY),
                            CGPoint(x: selection.minX, y: selection.maxY), CGPoint(x: selection.maxX, y: selection.maxY)]
@@ -287,6 +259,7 @@ final class MeasurementView: NSView {
                 liveDimensions = nil
             } else if mode == .findDimensions, !manualDrag, event.modifierFlags.intersection([.option, .shift]).isEmpty,
                       let rect = selection, let detected = snapshot?.objectBounds(in: rect, tolerance: tolerance) {
+                detectionRegion = rect
                 selection = detected
             }
         }
@@ -300,6 +273,7 @@ final class MeasurementView: NSView {
         cursor = anchor
         dragging = false
         manualDrag = true
+        detectionRegion = nil
         original = nil
         dragMode = .create
         selection = nil
@@ -324,13 +298,14 @@ final class MeasurementView: NSView {
         case 36, 76: copyDimensions(css: shift)
         case 49: pin()
         case 51, 117:
-            if selection != nil { selection = nil }
+            if selection != nil { selection = nil; detectionRegion = nil }
             else if heldDimensions != nil { heldDimensions = nil }
             else if !pinnedDistances.isEmpty { pinnedDistances.removeLast() }
             else if !pinned.isEmpty { pinned.removeLast() }
             updateLiveDimensions()
         case 123, 124, 125, 126:
             guard let rect = selection else { return }
+            detectionRegion = nil
             let step: CGFloat = (shift ? 10 : 1) / (unit == .pixels ? scale : 1)
             let dx: CGFloat = event.keyCode == 123 ? -step : event.keyCode == 124 ? step : 0
             let dy: CGFloat = event.keyCode == 126 ? -step : event.keyCode == 125 ? step : 0
@@ -344,10 +319,11 @@ final class MeasurementView: NSView {
             case "u": toggleUnit()
             case "s": toggleMode()
             case "r": refresh()
+            case "t": cycleTolerance(backward: shift)
             case "c" where command: copyDimensions(css: shift)
             case "k" where command: clear()
             case "z" where command:
-                if !pinned.isEmpty { selection = pinned.removeLast() }
+                if !pinned.isEmpty { selection = pinned.removeLast(); detectionRegion = nil }
             case "h":
                 if shift { guides.append((false, cursor.y)) }
                 else { pinDistance(horizontal: true) }
@@ -360,35 +336,72 @@ final class MeasurementView: NSView {
         needsDisplay = true
     }
 
-    @objc private func toggleUnit() {
+    private func toggleUnit() {
         unit = unit == .points ? .pixels : .points
-        unitButton.title = unit == .points ? "Points" : "Pixels"
         UserDefaults.standard.set(unit.rawValue, forKey: PreferenceKey.unit)
-        needsDisplay = true
+        flash(unit == .points ? "Screen points" : "Display pixels")
     }
-    @objc private func chooseTool() {
-        mode = modeControl.selectedSegment == 0 ? .area : .findDimensions
+    private func toggleMode() {
+        detectionRegion = nil
+        scrollRemainder = 0
+        mode = mode == .area ? .findDimensions : .area
         onModeChanged?(mode)
         liveDimensions = nil
         heldDimensions = nil
         updateLiveDimensions()
-        window?.makeFirstResponder(self)
-        needsDisplay = true
-        if mode == .findDimensions && snapshot == nil { flash("Find Dimensions needs Screen Recording access. Close the overlay and open Settings.") }
+        if mode == .findDimensions && snapshot == nil { reportCaptureFailure() }
+        else { flash(mode.rawValue) }
     }
-    private func toggleMode() {
-        modeControl.selectedSegment = mode == .area ? 1 : 0
-        chooseTool()
+
+    func reportCaptureFailure() {
+        flash("Capture unavailable. R to retry, S to measure an area.")
     }
-    @objc private func changeTolerance() {
-        tolerance = [8, 18, 36][max(0, toleranceControl.selectedSegment)]
-        UserDefaults.standard.set(tolerance, forKey: PreferenceKey.tolerance)
+
+    private func cycleTolerance(backward: Bool) {
+        let preset = TolerancePreset.closest(to: tolerance).cycled(backward: backward)
+        setTolerance(preset.rawValue)
+        flash("Tolerance: \(preset.title)")
+    }
+
+    private func setTolerance(_ value: Int) {
+        let value = TolerancePreset.closest(to: value).rawValue
+        UserDefaults.standard.set(value, forKey: PreferenceKey.tolerance)
+        synchronizeTolerance()
+    }
+
+    func synchronizeTolerance() {
+        let value = TolerancePreset.closest(to: UserDefaults.standard.integer(forKey: PreferenceKey.tolerance)).rawValue
+        guard value != tolerance else { return }
+        tolerance = value
+        if mode == .findDimensions {
+            if heldDimensions != nil { heldDimensions = snapshot?.dimensions(at: anchor, tolerance: tolerance) }
+            if let detectionRegion { selection = snapshot?.objectBounds(in: detectionRegion, tolerance: tolerance) ?? detectionRegion }
+        }
         updateLiveDimensions()
         needsDisplay = true
     }
-    @objc private func pin() {
+
+    override func scrollWheel(with event: NSEvent) {
+        guard mode == .findDimensions, snapshot != nil, !dragging,
+              UserDefaults.standard.bool(forKey: PreferenceKey.scrollTolerance),
+              event.momentumPhase.isEmpty else { return }
+        let delta = event.scrollingDeltaY
+        guard abs(delta) > abs(event.scrollingDeltaX), delta != 0 else { return }
+        if event.phase == .began { scrollRemainder = 0 }
+        // Trackpads send many tiny events; a mouse wheel advances once per notch.
+        scrollRemainder += event.hasPreciseScrollingDeltas ? delta / 10 : delta
+        let steps = Int(scrollRemainder)
+        guard steps != 0 else { return }
+        scrollRemainder -= CGFloat(steps)
+        let preset = TolerancePreset.closest(to: tolerance).stepped(by: steps)
+        setTolerance(preset.rawValue)
+        flash("Tolerance: \(preset.title)")
+    }
+
+    private func pin() {
         if let rect = selection, rect.width > 0, rect.height > 0 {
             pinned.append(rect)
+            detectionRegion = nil
             selection = nil
         } else if let dimensions = heldDimensions ?? liveDimensions {
             pinnedDistances.append(contentsOf: [dimensions.horizontal, dimensions.vertical])
@@ -402,14 +415,14 @@ final class MeasurementView: NSView {
         pinnedDistances.append(horizontal ? dimensions.horizontal : dimensions.vertical)
         flash(horizontal ? "Horizontal distance pinned" : "Vertical distance pinned")
     }
-    @objc private func clear() {
+    private func clear() {
         pinned.removeAll(); pinnedDistances.removeAll(); guides.removeAll()
+        detectionRegion = nil
         selection = nil; heldDimensions = nil
         updateLiveDimensions()
         flash("Measurements cleared")
     }
-    @objc private func done() { onClose?() }
-    @objc private func refresh() { onRefresh?() }
+    private func refresh() { onRefresh?() }
 
     private func copyDimensions(css: Bool) {
         guard let rect = selection ?? (heldDimensions ?? liveDimensions)?.rect ?? pinned.last else {
@@ -446,8 +459,6 @@ final class MeasurementView: NSView {
             NSImage(cgImage: snapshot.image, size: bounds.size).draw(in: bounds, from: .zero,
                 operation: .sourceOver, fraction: 1, respectFlipped: true, hints: nil)
         }
-        NSColor.black.withAlphaComponent(snapshot == nil ? 0.025 : 0.12).setFill()
-        bounds.fill()
         for guide in guides {
             line(from: guide.vertical ? CGPoint(x: guide.position, y: 0) : CGPoint(x: 0, y: guide.position),
                  to: guide.vertical ? CGPoint(x: guide.position, y: bounds.height) : CGPoint(x: bounds.width, y: guide.position),
@@ -465,12 +476,9 @@ final class MeasurementView: NSView {
             drawDistance(dimensions.horizontal, held: heldDimensions != nil, labels: &labels)
             drawDistance(dimensions.vertical, held: heldDimensions != nil, labels: &labels)
         }
-        let status = message ?? (snapshot == nil
-            ? (captureFailed ? "Capture failed · Manual measurement ready · Enable permission and Refresh to retry" : "Manual mode · Allow Screen Recording in Schnaps to detect edges")
-            : (mode == .findDimensions
-                ? "Find Dimensions · Move to measure gaps · Drag around an object · H / V pin distance · Enter copy · Esc done"
-                : "Measure Area · Drag a rectangle · Space pin · Enter copy · Shift-H / Shift-V guide · Esc done"))
-        _ = pill(status, at: CGPoint(x: bounds.midX, y: bounds.height - 46), centered: true, color: .white)
+        if let message {
+            _ = pill(message, at: CGPoint(x: bounds.midX, y: bounds.height - 46), centered: true, color: .white)
+        }
     }
 
     private func drawMeasurement(_ rect: CGRect, index: Int?, active: Bool, labels: inout [CGRect]) {
@@ -492,12 +500,12 @@ final class MeasurementView: NSView {
         }
         let text = (index.map { "\($0)  ·  " } ?? "") + MeasurementGeometry.label(rect, scale: scale, unit: unit)
         var position = CGPoint(x: rect.midX, y: rect.maxY + 10)
-        if position.y > bounds.height - 85 { position.y = max(100, rect.minY - 34) }
+        if position.y > bounds.height - 40 { position.y = max(8, rect.minY - 34) }
         var label = labelRect(text, at: position, centered: true)
         for _ in 0..<20 {
-            if labels.contains(where: { $0.insetBy(dx: -3, dy: -3).intersects(label) }) || label.intersects(toolbar.frame) {
+            if labels.contains(where: { $0.insetBy(dx: -3, dy: -3).intersects(label) }) {
                 position.y += 30
-                if position.y > bounds.height - 80 { position.y = 100; position.x += 40 }
+                if position.y > bounds.height - 36 { position.y = 8; position.x += 40 }
                 label = labelRect(text, at: position, centered: true)
             } else { break }
         }
@@ -522,7 +530,7 @@ final class MeasurementView: NSView {
             : CGPoint(x: distance.start.x + 44, y: (distance.start.y + distance.end.y) / 2)
         for _ in 0..<12 {
             let rect = labelRect(text, at: position, centered: true)
-            if labels.contains(where: { $0.intersects(rect) }) || rect.intersects(toolbar.frame) { position.y += 30 }
+            if labels.contains(where: { $0.intersects(rect) }) { position.y += 30 }
             else { break }
         }
         labels.append(pill(text, at: position, centered: true, color: color))

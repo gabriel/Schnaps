@@ -102,3 +102,9 @@ The app's implementation is Swift. The later update request explicitly introduce
 > Change the light/dark mode select to an icon. Make the download button a bright color.
 
 **Result:** replaced the dropdown with an accessible sun/moon button and kept locally saved appearance choices. The button follows the system theme before a manual override. The download uses a vivid blue with white text in both themes.
+
+## Minimal measurement UI and named tolerance presets
+
+> Fix tolerance in menubar.. should be Zero, Low, Medium, High choices. Remove the overlay on activation... just have the simplest UI... the user will use shortcuts to change stuff we don't need overlay buttons.
+
+**Result:** native checked tolerance submenus and a matching settings picker replace sliders. Zero/Low/Medium/High map to 0/8/18/36. Scroll steps between these presets, while T / Shift-T cycles them. Saved slider values migrate to the nearest preset. The measurement canvas retains its rulers and selection handles but removes the toolbar, permanent hint banner, and screen tint. Only brief action/error feedback appears, with shortcuts documented in Settings.
