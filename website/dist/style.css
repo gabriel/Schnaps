@@ -54,7 +54,7 @@ h1 { font-size: clamp(40px, 4.5vw, 48px); font-weight: 600; line-height: 1.08; l
 .download:hover { background: #0057da; text-decoration: none; }
 .requirements { grid-column: 2; grid-row: 2; display: block; font-size: 9px; color: var(--secondary); text-align: right; }
 .app-demo { max-width: 360px; margin: 0 auto; }
-.app-demo img { display: block; width: 100%; height: auto; object-fit: contain; background: #202126; border: 1px solid var(--line); border-radius: 12px; }
+.app-demo img { display: block; width: 100%; height: auto; object-fit: contain; }
 figcaption { color: var(--secondary); font-size: 12px; text-align: center; margin-top: 12px; }
 .demo-toggle { display: block; margin: 6px auto 0; padding: 4px 10px; border: 0; border-radius: 5px; color: var(--secondary); background: transparent; font: inherit; cursor: pointer; }
 .demo-toggle[hidden] { display: none; }
@@ -83,7 +83,6 @@ details p { font-size: 13px; color: var(--secondary); margin-bottom: 0; }
   .requirements { font-size: 10px; max-width: 270px; text-align: center; margin: 14px auto 0; }
   .features { grid-template-columns: 1fr; gap: 25px; padding-block: 36px; margin-top: 10px; }
   .features h2 { margin-bottom: 6px; }
-  .app-demo img { border-radius: 8px; }
   .details { padding-bottom: 40px; }
   .footer { flex-direction: column; align-items: flex-start; gap: 12px; }
 }

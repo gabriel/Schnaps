@@ -12,7 +12,7 @@ Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloud
 
 ## Demo and branding
 
-The animated WebP shows the running Schnaps app measuring gaps and pinning a region over the small native macOS Calculator. Its frames are genuine cropped captures; the measurement UI is not redrawn or browser-generated. No video player or animation library is loaded.
+The animated WebP shows the running Schnaps app measuring gaps and pinning a region over the small native macOS Calculator. Its frames are genuine cropped captures with only the plain, edge-connected backdrop removed; the measurement UI is not redrawn or browser-generated. No video player or animation library is loaded.
 
 The demo uses genuine Calculator captures in `media-source/demo-frames/`, with frame timing in `timeline.json`. Run `swift Scripts/export-demo.swift` from the repository root to rebuild the animated WebP and static poster; the WebP command-line tools (`img2webp`) must be installed. The 720 × 912 px captures display at 360 × 456 CSS pixels, with responsive shrinking, a pause control, and a still image for reduced-motion preferences or disabled JavaScript.
 
