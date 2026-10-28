@@ -68,7 +68,7 @@ Open `Package.swift` in Xcode, or use SwiftPM. The app source is Swift using App
 
 `swift Scripts/build-app.swift --universal` builds both architectures. `--debug` selects debug configuration. For local signing, set `SCHNAPS_SIGN_IDENTITY` to an installed Apple Development identity; otherwise the build is ad-hoc signed. Distribution requires a Developer ID Application identity and notarization credentials.
 
-The icon and website logo use the transparent vector artwork in `Assets/Artwork/Schnaps-Blueprint.svg`. Run `swift Scripts/export-icon.swift` to regenerate the PNG previews, favicon, and full-resolution ICNS. The same unboxed ICNS is packaged on every supported macOS version.
+The Dock uses the filled bottle in `Assets/Artwork/Schnaps-Dock.svg`. About and the website use the transparent mark in `Assets/Artwork/Schnaps-Blueprint.svg`. Run `swift Scripts/export-icon.swift` to regenerate both ICNS files, PNG previews, and the favicon.
 
 ## Project guide
 

@@ -1,16 +1,15 @@
 # Schnaps icon and logo
 
-`Artwork/Schnaps-Blueprint.svg` is the canonical vector source: an empty bottle outline with a centerline, construction marks, and horizontal/vertical dimension arrows. It has no fill, backplate, liquid, or lettering. The background is transparent.
+`Artwork/Schnaps-Dock.svg` is the filled blue glass bottle on a light rounded tile, with measurement arrows. It is used for the app icon in the Dock and Finder.
 
-`swift Scripts/export-icon.swift` uses AppKit and iconutil to generate:
+`Artwork/Schnaps-Blueprint.svg` is the transparent outline mark used in About and on the website.
 
-- `Compiled/Schnaps.icns`: transparent 16–1024 px macOS icon representations.
-- `Previews/`: transparent color and monochrome PNG previews.
-- `website/dist/assets/logo.svg`: the vector website logo.
-- `website/dist/assets/icon.png`: the transparent favicon and social image.
+Run `swift Scripts/export-icon.swift` to regenerate:
 
-The app packages the ICNS directly on every supported macOS version. Icon Composer's adaptive rendering adds a system backplate even for a clear document fill, so it is intentionally no longer part of the packaging path. This preserves the requested unboxed bottle silhouette and removes the SDK/host-version icon branches. AppKit and the About panel explicitly load this raw artwork to avoid Icon Services adding a legacy backplate.
+- `Compiled/Schnaps.icns`: filled app icon, 16–1024 px.
+- `Compiled/Schnaps-Mark.icns`: transparent About mark, 16–1024 px.
+- `Previews/Schnaps-Dock.png`: filled app icon preview.
+- Other `Previews/` images: transparent color and monochrome marks.
+- `website/dist/assets/logo.svg` and `icon.png`: transparent website branding.
 
-The new mark is drawn as vector geometry. Design brief:
-
-> Make the icon an empty bottle being measured like a blueprint. Make the logo have a clear background; no rounded rectangle background.
+The Swift packaging script includes both ICNS files on every supported macOS version. AppKit installs the filled icon; About loads the separate transparent mark.

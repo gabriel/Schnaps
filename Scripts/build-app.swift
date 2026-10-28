@@ -1,7 +1,7 @@
 #!/usr/bin/env swift
 import Foundation
 
-// Swift-only app packaging, using the same transparent ICNS on every supported Mac.
+// Swift-only app packaging with separate Dock and transparent branding artwork.
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let configuration = CommandLine.arguments.contains("--debug") ? "debug" : "release"
 let manager = FileManager.default
@@ -30,12 +30,14 @@ let binary = contents.appendingPathComponent("MacOS/Schnaps")
 if manager.fileExists(atPath: binary.path) { try manager.removeItem(at: binary) }
 try manager.copyItem(at: URL(fileURLWithPath: binPath).appendingPathComponent("Schnaps"), to: binary)
 
-// Keep the icon unboxed: adaptive Icon Composer assets add a system backplate.
+// The app icon includes its background; About uses the transparent mark separately.
 let car = resources.appendingPathComponent("Assets.car")
 if manager.fileExists(atPath: car.path) { try manager.removeItem(at: car) }
-let icon = resources.appendingPathComponent("Schnaps.icns")
-if manager.fileExists(atPath: icon.path) { try manager.removeItem(at: icon) }
-try manager.copyItem(at: root.appendingPathComponent("Assets/Compiled/Schnaps.icns"), to: icon)
+for name in ["Schnaps", "Schnaps-Mark"] {
+    let icon = resources.appendingPathComponent("\(name).icns")
+    if manager.fileExists(atPath: icon.path) { try manager.removeItem(at: icon) }
+    try manager.copyItem(at: root.appendingPathComponent("Assets/Compiled/\(name).icns"), to: icon)
+}
 var info: [String: Any] = [
     // Preserve the original identity so settings and capture authorization survive the rename.
     "CFBundleIdentifier": "com.gabrielhandford.Schnap",
@@ -77,4 +79,4 @@ for service in try manager.contentsOfDirectory(at: xpcServices, includingPropert
 try sign(framework)
 try sign(app)
 _ = try run("/usr/bin/codesign", ["--verify", "--deep", "--strict", app.path])
-print("Built \(app.path) (transparent blueprint icon)")
+print("Built \(app.path) (filled Dock icon and transparent brand mark)")

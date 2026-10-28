@@ -2,7 +2,7 @@
 import AppKit
 import Foundation
 
-// Preserve the SVG's alpha and unboxed silhouette at every macOS icon size.
+// Export a filled app icon and a separate transparent brand mark.
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let manager = FileManager.default
 let source = root.appendingPathComponent("Assets/Artwork/Schnaps-Blueprint.svg")
@@ -31,19 +31,26 @@ try render(mono, pixels: 512).write(to: previews.appendingPathComponent("Schnaps
 let website = root.appendingPathComponent("website/dist/assets")
 try Data(svg.utf8).write(to: website.appendingPathComponent("logo.svg"))
 try render(artwork, pixels: 512).write(to: website.appendingPathComponent("icon.png"))
-let iconset = root.appendingPathComponent("build/IconExport/Schnaps.iconset")
-try manager.createDirectory(at: iconset, withIntermediateDirectories: true)
-for size in [16, 32, 128, 256, 512] {
-    for multiplier in [1, 2] {
-        let name = "icon_\(size)x\(size)\(multiplier == 2 ? "@2x" : "").png"
-        try render(artwork, pixels: size * multiplier).write(to: iconset.appendingPathComponent(name))
+func exportIcon(_ artwork: NSImage, name: String) throws {
+    let iconset = root.appendingPathComponent("build/IconExport/\(name).iconset")
+    try manager.createDirectory(at: iconset, withIntermediateDirectories: true)
+    for size in [16, 32, 128, 256, 512] {
+        for multiplier in [1, 2] {
+            let name = "icon_\(size)x\(size)\(multiplier == 2 ? "@2x" : "").png"
+            try render(artwork, pixels: size * multiplier).write(to: iconset.appendingPathComponent(name))
+        }
     }
+    try manager.createDirectory(at: root.appendingPathComponent("Assets/Compiled"), withIntermediateDirectories: true)
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: "/usr/bin/iconutil")
+    process.arguments = ["-c", "icns", iconset.path, "-o", root.appendingPathComponent("Assets/Compiled/\(name).icns").path]
+    try process.run()
+    process.waitUntilExit()
+    precondition(process.terminationStatus == 0, "iconutil failed")
 }
-try manager.createDirectory(at: root.appendingPathComponent("Assets/Compiled"), withIntermediateDirectories: true)
-let process = Process()
-process.executableURL = URL(fileURLWithPath: "/usr/bin/iconutil")
-process.arguments = ["-c", "icns", iconset.path, "-o", root.appendingPathComponent("Assets/Compiled/Schnaps.icns").path]
-try process.run()
-process.waitUntilExit()
-precondition(process.terminationStatus == 0, "iconutil failed")
-print("Exported transparent blueprint SVG, previews, favicon, and 16–1024 px ICNS.")
+try exportIcon(artwork, name: "Schnaps-Mark")
+let dockSVG = try Data(contentsOf: root.appendingPathComponent("Assets/Artwork/Schnaps-Dock.svg"))
+let dock = NSImage(data: dockSVG)!
+try exportIcon(dock, name: "Schnaps")
+try render(dock, pixels: 512).write(to: previews.appendingPathComponent("Schnaps-Dock.png"))
+print("Exported filled Dock icon and transparent brand mark at 16–1024 px.")
