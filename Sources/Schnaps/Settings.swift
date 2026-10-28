@@ -43,6 +43,7 @@ struct SettingsView: View {
     var shortcutWarning: String?
     @ObservedObject var navigation: SettingsNavigation
     @ObservedObject var updates: UpdateSettings
+    @StateObject private var membership = ProMembership()
     @AppStorage(PreferenceKey.unit) private var unit = MeasurementUnit.points.rawValue
     @AppStorage(PreferenceKey.tolerance) private var tolerance = TolerancePreset.medium.rawValue
     @AppStorage(PreferenceKey.scrollTolerance) private var scrollTolerance = true
@@ -216,6 +217,7 @@ struct SettingsView: View {
                     .controlSize(.regular)
                     .font(.body)
             }
+            ProSection(membership: membership)
         }
     }
 

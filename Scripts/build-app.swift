@@ -26,6 +26,9 @@ let contents = app.appendingPathComponent("Contents")
 let resources = contents.appendingPathComponent("Resources")
 try manager.createDirectory(at: contents.appendingPathComponent("MacOS"), withIntermediateDirectories: true)
 try manager.createDirectory(at: resources, withIntermediateDirectories: true)
+let proCatalog = resources.appendingPathComponent("Pro.json")
+if manager.fileExists(atPath: proCatalog.path) { try manager.removeItem(at: proCatalog) }
+try manager.copyItem(at: root.appendingPathComponent("Config/Pro.json"), to: proCatalog)
 let binary = contents.appendingPathComponent("MacOS/Schnaps")
 if manager.fileExists(atPath: binary.path) { try manager.removeItem(at: binary) }
 try manager.copyItem(at: URL(fileURLWithPath: binPath).appendingPathComponent("Schnaps"), to: binary)
