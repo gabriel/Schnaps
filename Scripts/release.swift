@@ -1,6 +1,5 @@
 #!/usr/bin/env swift
 import Foundation
-import FoundationXML
 
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let manager = FileManager.default
