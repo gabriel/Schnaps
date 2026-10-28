@@ -10,7 +10,29 @@ enum MeasurementMode: String, CaseIterable {
 enum PreferenceKey {
     static let unit = "measurementUnit"
     static let tolerance = "edgeTolerance"
+    static let scrollTolerance = "scrollAdjustsTolerance"
     static let defaultTool = "defaultTool"
+}
+
+enum ColorTolerance {
+    static let range = 0...100
+    static func clamped(_ value: Int) -> Int { min(range.upperBound, max(range.lowerBound, value)) }
+}
+
+struct ToleranceSlider: View {
+    @AppStorage(PreferenceKey.tolerance) private var tolerance = 18
+
+    var body: some View {
+        LabeledContent("Color tolerance") {
+            HStack {
+                Slider(value: Binding(get: { Double(tolerance) }, set: { tolerance = Int($0.rounded()) }),
+                       in: Double(ColorTolerance.range.lowerBound)...Double(ColorTolerance.range.upperBound), step: 1)
+                    .accessibilityLabel("Color tolerance")
+                    .frame(width: 130)
+                Text("\(tolerance)").monospacedDigit().frame(width: 28, alignment: .trailing)
+            }
+        }
+    }
 }
 
 private enum SettingsPane: String, CaseIterable, Identifiable {
@@ -34,7 +56,7 @@ struct SettingsView: View {
     var shortcutWarning: String?
     @State private var pane: SettingsPane? = .general
     @AppStorage(PreferenceKey.unit) private var unit = MeasurementUnit.points.rawValue
-    @AppStorage(PreferenceKey.tolerance) private var tolerance = 18
+    @AppStorage(PreferenceKey.scrollTolerance) private var scrollTolerance = true
     @AppStorage(PreferenceKey.defaultTool) private var defaultTool = MeasurementMode.findDimensions.rawValue
     @State private var granted = CGPreflightScreenCaptureAccess()
 
@@ -112,11 +134,8 @@ struct SettingsView: View {
                 }
             }
             Section {
-                Picker("Color tolerance", selection: $tolerance) {
-                    Text("Low (8)").tag(8)
-                    Text("Medium (18)").tag(18)
-                    Text("High (36)").tag(36)
-                }
+                ToleranceSlider()
+                Toggle("Scroll to adjust tolerance", isOn: $scrollTolerance)
             } header: {
                 Text("Find Dimensions")
             } footer: {
@@ -146,6 +165,7 @@ struct SettingsView: View {
                 shortcut("Move selection", "Arrow keys")
                 shortcut("Resize selection", "⌥Arrow keys")
                 shortcut("Move or resize by ten units", "Add Shift")
+                shortcut("Adjust tolerance in Find Dimensions", "Scroll up / down")
                 shortcut("Switch units", "U")
                 shortcut("Switch measurement tool", "S")
                 shortcut("Refresh snapshot", "R")

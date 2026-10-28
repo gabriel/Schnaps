@@ -26,6 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         UserDefaults.standard.register(defaults: [PreferenceKey.unit: "pt", PreferenceKey.tolerance: 18,
+                                                  PreferenceKey.scrollTolerance: true,
                                                   PreferenceKey.defaultTool: MeasurementMode.findDimensions.rawValue])
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.button?.image = NSImage(systemSymbolName: "ruler", accessibilityDescription: "Schnaps measurements")
@@ -34,6 +35,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(.separator())
         menu.addItem(item("Find Dimensions", action: #selector(findDimensions), key: "f"))
         menu.addItem(item("Measure Area", action: #selector(measureArea), key: "m"))
+        menu.addItem(.separator())
+        menu.addItem(toleranceMenuItem())
+        menu.addItem(.separator())
         menu.addItem(item("Settings…", action: #selector(showSettings), key: ","))
         menu.addItem(updateMenuItem())
         menu.addItem(.separator())
@@ -44,6 +48,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appMenu.addItem(item("About Schnaps", action: #selector(about), key: ""))
         appMenu.addItem(.separator())
         appMenu.addItem(item("Settings…", action: #selector(showSettings), key: ","))
+        appMenu.addItem(toleranceMenuItem())
+        appMenu.addItem(.separator())
         appMenu.addItem(updateMenuItem())
         appMenu.addItem(.separator())
         appMenu.addItem(item("Quit Schnaps", action: #selector(quit), key: "q"))
@@ -62,6 +68,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if overlay.isActive { return true }
         showSettings()
         return true
+    }
+
+    private func toleranceMenuItem() -> NSMenuItem {
+        let item = NSMenuItem()
+        let view = NSHostingView(rootView: ToleranceSlider().padding(.horizontal, 14).padding(.vertical, 8))
+        view.frame = NSRect(x: 0, y: 0, width: 320, height: 44)
+        item.view = view
+        return item
     }
 
     private func updateMenuItem() -> NSMenuItem {

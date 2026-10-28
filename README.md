@@ -40,6 +40,8 @@ Drag an exact rectangle. Move it by dragging inside, resize a corner, or use arr
 | Clear measurements | Command-K |
 | Close overlay | Escape |
 
+Adjust color tolerance with the native slider in the menu-bar menu, overlay, or Measurement settings. Scroll up/down during Find Dimensions to adjust it; this is enabled by default and can be disabled in Measurement settings. Live and held readings, including snapped object bounds, update immediately.
+
 Settings save your preferred units, tolerance, and default tool. Each display uses its own scale and measurement canvas. Pinned measurements survive toggling the overlay during the current session; they are not saved to disk.
 
 Detection uses color contrast, so solid UI surfaces work best. Gradients, shadows, text, and photos can yield partial or broad measurements. Manual selection is always available. CSS clipboard output uses logical screen coordinates.

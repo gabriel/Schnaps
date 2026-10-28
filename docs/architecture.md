@@ -21,7 +21,7 @@ Snapshot images are only held in memory. A refreshed capture replaces the prior 
 - `PixelBuffer.objectBounds` samples a loose selection's perimeter, requires a majority background color, then scans the interior for foreground bounds. This includes disconnected text or icon details. If no clear background is available, the app retains the manual selection.
 - `DimensionSpan` and `Dimensions` represent independent rulers and convert them to logical display coordinates.
 
-Detection is contrast-based, not semantic object recognition. Complex imagery and gradients can produce unexpected boundaries. Shadow inclusion depends on tolerance. Use manual selection when exact visual bounds cannot be inferred.
+Detection is contrast-based, not semantic object recognition. Complex imagery and gradients can produce unexpected boundaries. Shadow inclusion depends on tolerance. Native sliders share a persisted 0–100 tolerance across the menu, settings, and all open display overlays. Find Dimensions also accepts vertical scrolling by default, filtering horizontal and momentum events and accumulating precise trackpad deltas. The preference can be disabled in Measurement settings. Tolerance changes recalculate live and held distances and re-detect snapped objects from the original loose selection; manual rectangles and pins retain their geometry. Use manual selection when exact visual bounds cannot be inferred.
 
 ## Validation
 

@@ -72,3 +72,9 @@ Public app, website, and source publication were explicitly selected in the foll
 - Release validation checks universal architectures, nested signatures, Apple notarization/stapling, DMG integrity, and Sparkle signatures.
 
 The app's implementation is Swift. The later update request explicitly introduces Sparkle's third-party framework; its license is bundled with releases. The website uses ordinary HTML, CSS, and JavaScript.
+
+## 8. Quick tolerance adjustment
+
+> Add tolerance slider to menubar for easy access.. also maybe while find dimensions is live.. up/down scroll wheel to change tolerance (enabled by default in setttings)
+
+**Result:** native tolerance sliders in the menu-bar menu, overlay, and Measurement settings, with a shared persisted value. Vertical scrolling adjusts tolerance in Find Dimensions by default; a native settings toggle disables it. Held readings and snapped bounds respond immediately, while pinned and manual measurements stay fixed.
