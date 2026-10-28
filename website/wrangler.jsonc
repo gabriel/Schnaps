@@ -2,5 +2,5 @@
   "name": "getschnaps",
   "compatibility_date": "2026-10-28",
   "assets": { "directory": "dist", "not_found_handling": "404-page" },
-  "routes": [{ "pattern": "getschnaps.com", "custom_domain": true }]
+  "routes": [{ "pattern": "getschnaps.com", "custom_domain": true }],
 }
