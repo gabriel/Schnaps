@@ -40,10 +40,20 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(SettingsPane.allCases, selection: $pane) { pane in
-                Label(pane.rawValue, systemImage: pane.symbol).tag(pane)
+            List(selection: $pane) {
+                ForEach(SettingsPane.allCases) { pane in
+                    Label(pane.rawValue, systemImage: pane.symbol).tag(pane)
+                }
+                Button {
+                    NSApp.orderFrontStandardAboutPanel(nil)
+                } label: {
+                    Label("About Schnaps", systemImage: "info.circle")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(.plain)
             }
             .listStyle(.sidebar)
+            .toolbar(removing: .sidebarToggle)
             .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 230)
         } detail: {
             Form {
@@ -89,9 +99,6 @@ struct SettingsView: View {
                 Picker("Default tool", selection: $defaultTool) {
                     ForEach(MeasurementMode.allCases, id: \.rawValue) { Text($0.rawValue).tag($0.rawValue) }
                 }
-            }
-            Section {
-                Button("About Schnaps") { NSApp.orderFrontStandardAboutPanel(nil) }
             }
         }
     }
@@ -149,14 +156,20 @@ struct SettingsView: View {
     }
 
     private var permissions: some View {
-        Section("Screen Recording") {
+        Section {
             LabeledContent("Access", value: granted ? "Allowed" : "Not allowed")
+        } header: {
+            Text("Screen Recording")
+        } footer: {
             Button(granted ? "Open Screen Recording Settings…" : "Allow Screen Recording…") {
                 if granted || !CGRequestScreenCaptureAccess() {
                     NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
                 }
                 granted = CGPreflightScreenCaptureAccess()
             }
+            .buttonStyle(.bordered)
+            .controlSize(.regular)
+            .font(.body)
         }
     }
 
