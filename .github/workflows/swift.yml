@@ -7,18 +7,29 @@ permissions:
   contents: read
 jobs:
   test:
-    runs-on: macos-15
+    strategy:
+      matrix:
+        include:
+          - xcode: '16.4'
+            runner: macos-15
+          # Icon Composer's asset runtime requires the matching modern OS.
+          - xcode: '26.3'
+            runner: macos-26
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 16.4
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+      - name: Select Xcode ${{ matrix.xcode }}
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
       - name: Test measurement geometry and edge detection
         run: swift test
       - name: Build native application
         run: swift Scripts/build-app.swift
       - name: Verify bundle signature
-        run: codesign --verify --deep --strict build/Schnap.app
+        run: codesign --verify --deep --strict build/Schnaps.app
+      - name: Verify compiled icon assets
+        if: matrix.xcode == '26.3'
+        run: test -s build/Schnaps.app/Contents/Resources/Assets.car
       - uses: actions/upload-artifact@v4
         with:
-          name: Schnap-macOS
-          path: build/Schnap.app
+          name: Schnaps-macOS-Xcode-${{ matrix.xcode }}
+          path: build/Schnaps.app

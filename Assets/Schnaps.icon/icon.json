@@ -1,0 +1,37 @@
+{
+  "fill": {
+    "automatic-gradient": "extended-srgb:0.03529,0.20784,0.27059,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "glass": false,
+          "image-name": "Schnapps-Bottle.png",
+          "name": "Schnapps Bottle",
+          "position": {
+            "scale": 0.76,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "circles": [
+      "watchOS"
+    ],
+    "squares": "shared"
+  }
+}
