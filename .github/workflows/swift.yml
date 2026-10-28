@@ -36,9 +36,10 @@ jobs:
           test -s build/Schnaps.app/Contents/Resources/Acknowledgements/Sparkle-LICENSE.txt
           plutil -extract SUFeedURL raw build/Schnaps.app/Contents/Info.plist
           plutil -extract SUPublicEDKey raw build/Schnaps.app/Contents/Info.plist
-      - name: Verify transparent icon packaging
+      - name: Verify Dock icon and transparent brand mark packaging
         run: |
           test -s build/Schnaps.app/Contents/Resources/Schnaps.icns
+          test -s build/Schnaps.app/Contents/Resources/Schnaps-Mark.icns
           test ! -e build/Schnaps.app/Contents/Resources/Assets.car
       - uses: actions/upload-artifact@v4
         with:
