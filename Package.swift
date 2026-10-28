@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "Schnap",
+    name: "Schnaps",
     platforms: [.macOS(.v14)],
-    products: [.executable(name: "Schnap", targets: ["Schnap"])],
+    products: [.executable(name: "Schnaps", targets: ["Schnaps"])],
     targets: [
         .target(name: "MeasurementCore"),
-        .executableTarget(name: "Schnap", dependencies: ["MeasurementCore"]),
+        .executableTarget(name: "Schnaps", dependencies: ["MeasurementCore"]),
         .testTarget(name: "MeasurementCoreTests", dependencies: ["MeasurementCore"])
     ]
 )

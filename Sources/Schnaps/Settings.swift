@@ -91,7 +91,7 @@ struct SettingsView: View {
                 }
             }
             Section {
-                Button("About Schnap") { NSApp.orderFrontStandardAboutPanel(nil) }
+                Button("About Schnaps") { NSApp.orderFrontStandardAboutPanel(nil) }
             }
         }
     }

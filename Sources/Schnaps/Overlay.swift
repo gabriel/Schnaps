@@ -28,7 +28,7 @@ final class OverlayController {
             var captureFailed = false
             if CGPreflightScreenCaptureAccess() {
                 do { snapshots = try await ScreenSnapshot.capture() }
-                catch { captureFailed = true; NSLog("Schnap capture: %@", error.localizedDescription) }
+                catch { captureFailed = true; NSLog("Schnaps capture: %@", error.localizedDescription) }
             }
             guard generation == token else { return }
             preparing = false
@@ -466,7 +466,7 @@ final class MeasurementView: NSView {
             drawDistance(dimensions.vertical, held: heldDimensions != nil, labels: &labels)
         }
         let status = message ?? (snapshot == nil
-            ? (captureFailed ? "Capture failed · Manual measurement ready · Enable permission and Refresh to retry" : "Manual mode · Allow Screen Recording in Schnap to detect edges")
+            ? (captureFailed ? "Capture failed · Manual measurement ready · Enable permission and Refresh to retry" : "Manual mode · Allow Screen Recording in Schnaps to detect edges")
             : (mode == .findDimensions
                 ? "Find Dimensions · Move to measure gaps · Drag around an object · H / V pin distance · Enter copy · Esc done"
                 : "Measure Area · Drag a rectangle · Space pin · Enter copy · Shift-H / Shift-V guide · Esc done"))

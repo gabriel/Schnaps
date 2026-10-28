@@ -3,7 +3,7 @@ import SwiftUI
 import Carbon
 
 @main
-struct SchnapApp {
+struct SchnapsApp {
     @MainActor static func main() {
         let app = NSApplication.shared
         let delegate = AppDelegate()
@@ -26,7 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         UserDefaults.standard.register(defaults: [PreferenceKey.unit: "pt", PreferenceKey.tolerance: 18,
                                                   PreferenceKey.defaultTool: MeasurementMode.findDimensions.rawValue])
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "ruler", accessibilityDescription: "Schnap measurements")
+        statusItem.button?.image = NSImage(systemSymbolName: "ruler", accessibilityDescription: "Schnaps measurements")
         let menu = NSMenu()
         menu.addItem(item("Start Measuring", action: #selector(startDefaultTool), key: ""))
         menu.addItem(.separator())
@@ -34,15 +34,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(item("Measure Area", action: #selector(measureArea), key: "m"))
         menu.addItem(item("Settings…", action: #selector(showSettings), key: ","))
         menu.addItem(.separator())
-        menu.addItem(item("Quit Schnap", action: #selector(quit), key: "q"))
+        menu.addItem(item("Quit Schnaps", action: #selector(quit), key: "q"))
         statusItem.menu = menu
         let mainMenu = NSMenu()
         let appMenu = NSMenu()
-        appMenu.addItem(item("About Schnap", action: #selector(about), key: ""))
+        appMenu.addItem(item("About Schnaps", action: #selector(about), key: ""))
         appMenu.addItem(.separator())
         appMenu.addItem(item("Settings…", action: #selector(showSettings), key: ","))
         appMenu.addItem(.separator())
-        appMenu.addItem(item("Quit Schnap", action: #selector(quit), key: "q"))
+        appMenu.addItem(item("Quit Schnaps", action: #selector(quit), key: "q"))
         let appItem = NSMenuItem()
         appItem.submenu = appMenu
         mainMenu.addItem(appItem)
@@ -77,7 +77,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             showSettings()
             let alert = NSAlert()
             alert.messageText = "Allow Screen Recording to Find Dimensions"
-            alert.informativeText = "Schnap needs a still image of your screen to find edges. You can allow access in System Settings or measure an area manually."
+            alert.informativeText = "Schnaps needs a still image of your screen to find edges. You can allow access in System Settings or measure an area manually."
             alert.addButton(withTitle: "Open Settings…")
             alert.addButton(withTitle: "Measure Area")
             alert.addButton(withTitle: "Cancel")
@@ -106,7 +106,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if settingsWindow == nil {
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 780, height: 560),
                                   styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
-            window.title = "Schnap Settings"
+            window.title = "Schnaps Settings"
             window.titlebarAppearsTransparent = true
             window.toolbarStyle = .unified
             window.minSize = NSSize(width: 720, height: 500)
@@ -142,7 +142,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                             EventHotKeyID(signature: 0x5343484E, id: id),
                                             GetApplicationEventTarget(), 0, &hotKey)
             if result == noErr, let hotKey { hotKeys.append(hotKey) }
-            else { shortcutWarning = "A global shortcut is in use by another app. Use Schnap’s menu bar to activate the tool." }
+            else { shortcutWarning = "A global shortcut is in use by another app. Use the Schnaps menu bar to activate the tool." }
         }
     }
 
