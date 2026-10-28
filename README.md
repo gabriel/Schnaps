@@ -36,9 +36,15 @@ Drag an exact rectangle. Move it by dragging inside, resize a corner, or use arr
 | Nudge by ten units | Add Shift |
 | Switch points / display pixels | U |
 | Switch tools | S |
+| Change tolerance | T / Shift-T |
+| Adjust tolerance in Find Dimensions | Scroll up / down |
 | Refresh snapshot | R |
 | Clear measurements | Command-K |
 | Close overlay | Escape |
+
+Color tolerance has four presets: Zero, Low, Medium, and High. Choose one in the menu bar or Measurement settings. Scroll during Find Dimensions to move between presets; disable this in Measurement settings if preferred. Measurements respond immediately, while pins and manually drawn rectangles retain their geometry.
+
+Activation shows only the measurement canvas, without a toolbar, permanent hint banner, or screen dimming. Use keyboard shortcuts to change tools, units, tolerance, and other options.
 
 Settings save your preferred units, tolerance, and default tool. Each display uses its own scale and measurement canvas. Pinned measurements survive toggling the overlay during the current session; they are not saved to disk.
 

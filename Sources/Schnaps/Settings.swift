@@ -10,6 +10,7 @@ enum MeasurementMode: String, CaseIterable {
 enum PreferenceKey {
     static let unit = "measurementUnit"
     static let tolerance = "edgeTolerance"
+    static let scrollTolerance = "scrollAdjustsTolerance"
     static let defaultTool = "defaultTool"
 }
 
@@ -34,7 +35,8 @@ struct SettingsView: View {
     var shortcutWarning: String?
     @State private var pane: SettingsPane? = .general
     @AppStorage(PreferenceKey.unit) private var unit = MeasurementUnit.points.rawValue
-    @AppStorage(PreferenceKey.tolerance) private var tolerance = 18
+    @AppStorage(PreferenceKey.tolerance) private var tolerance = TolerancePreset.medium.rawValue
+    @AppStorage(PreferenceKey.scrollTolerance) private var scrollTolerance = true
     @AppStorage(PreferenceKey.defaultTool) private var defaultTool = MeasurementMode.findDimensions.rawValue
     @State private var granted = CGPreflightScreenCaptureAccess()
 
@@ -113,10 +115,11 @@ struct SettingsView: View {
             }
             Section {
                 Picker("Color tolerance", selection: $tolerance) {
-                    Text("Low (8)").tag(8)
-                    Text("Medium (18)").tag(18)
-                    Text("High (36)").tag(36)
+                    ForEach(TolerancePreset.allCases, id: \.rawValue) { preset in
+                        Text(preset.title).tag(preset.rawValue)
+                    }
                 }
+                Toggle("Scroll to adjust tolerance", isOn: $scrollTolerance)
             } header: {
                 Text("Find Dimensions")
             } footer: {
@@ -146,6 +149,8 @@ struct SettingsView: View {
                 shortcut("Move selection", "Arrow keys")
                 shortcut("Resize selection", "⌥Arrow keys")
                 shortcut("Move or resize by ten units", "Add Shift")
+                shortcut("Change tolerance", "T / ⇧T")
+                shortcut("Adjust tolerance in Find Dimensions", "Scroll up / down")
                 shortcut("Switch units", "U")
                 shortcut("Switch measurement tool", "S")
                 shortcut("Refresh snapshot", "R")

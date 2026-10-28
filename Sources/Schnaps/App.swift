@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 import Carbon
 import Sparkle
+import MeasurementCore
 
 @main
 struct SchnapsApp {
@@ -15,7 +16,7 @@ struct SchnapsApp {
 }
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private var settingsWindow: NSWindow?
     private let overlay = OverlayController()
@@ -27,7 +28,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppBranding.installIcon()
         UserDefaults.standard.register(defaults: [PreferenceKey.unit: "pt", PreferenceKey.tolerance: 18,
+                                                  PreferenceKey.scrollTolerance: true,
                                                   PreferenceKey.defaultTool: MeasurementMode.findDimensions.rawValue])
+        let tolerance = TolerancePreset.closest(to: UserDefaults.standard.integer(forKey: PreferenceKey.tolerance))
+        UserDefaults.standard.set(tolerance.rawValue, forKey: PreferenceKey.tolerance)
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.button?.image = NSImage(systemSymbolName: "ruler", accessibilityDescription: "Schnaps measurements")
         let menu = NSMenu()
@@ -35,6 +39,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(.separator())
         menu.addItem(item("Find Dimensions", action: #selector(findDimensions), key: "f"))
         menu.addItem(item("Measure Area", action: #selector(measureArea), key: "m"))
+        menu.addItem(.separator())
+        menu.addItem(toleranceMenuItem())
+        menu.addItem(.separator())
         menu.addItem(item("Settings…", action: #selector(showSettings), key: ","))
         menu.addItem(updateMenuItem())
         menu.addItem(.separator())
@@ -45,6 +52,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appMenu.addItem(item("About Schnaps", action: #selector(about), key: ""))
         appMenu.addItem(.separator())
         appMenu.addItem(item("Settings…", action: #selector(showSettings), key: ","))
+        appMenu.addItem(toleranceMenuItem())
+        appMenu.addItem(.separator())
         appMenu.addItem(updateMenuItem())
         appMenu.addItem(.separator())
         appMenu.addItem(item("Quit Schnaps", action: #selector(quit), key: "q"))
@@ -63,6 +72,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if overlay.isActive { return true }
         showSettings()
         return true
+    }
+
+    private func toleranceMenuItem() -> NSMenuItem {
+        let parent = NSMenuItem(title: "Color tolerance", action: nil, keyEquivalent: "")
+        let menu = NSMenu(title: "Color tolerance")
+        menu.delegate = self
+        for preset in TolerancePreset.allCases {
+            let entry = item(preset.title, action: #selector(selectTolerance(_:)), key: "")
+            entry.tag = preset.rawValue
+            menu.addItem(entry)
+        }
+        menuNeedsUpdate(menu)
+        parent.submenu = menu
+        return parent
+    }
+
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        let value = TolerancePreset.closest(to: UserDefaults.standard.integer(forKey: PreferenceKey.tolerance)).rawValue
+        for entry in menu.items { entry.state = entry.tag == value ? .on : .off }
+    }
+
+    @objc private func selectTolerance(_ sender: NSMenuItem) {
+        UserDefaults.standard.set(sender.tag, forKey: PreferenceKey.tolerance)
     }
 
     private func updateMenuItem() -> NSMenuItem {
