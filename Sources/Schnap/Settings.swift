@@ -65,24 +65,28 @@ struct SettingsView: View {
 
     private var general: some View {
         Group {
-            Section("Tools") {
+            Section {
                 LabeledContent("Find Dimensions") {
                     Button("Find Dimensions", action: { start(.findDimensions) })
                 }
+            } header: {
+                Text("Tools")
+            } footer: {
                 Text("Move the pointer to measure distances between edges. Drag around an object to find its bounds.")
-                    .foregroundStyle(.secondary)
+                    .font(.footnote)
+            }
+            Section {
                 LabeledContent("Measure Area") {
                     Button("Measure Area", action: { start(.area) })
                 }
+            } footer: {
                 Text("Drag an exact rectangle, then move, resize, pin, or copy the measurement.")
-                    .foregroundStyle(.secondary)
+                    .font(.footnote)
             }
             Section("Activation") {
                 Picker("Default tool", selection: $defaultTool) {
                     ForEach(MeasurementMode.allCases, id: \.rawValue) { Text($0.rawValue).tag($0.rawValue) }
                 }
-                Text("Open Schnap from the menu bar. The global shortcuts work in any app.")
-                    .foregroundStyle(.secondary)
             }
             Section {
                 Button("About Schnap") { NSApp.orderFrontStandardAboutPanel(nil) }
@@ -97,32 +101,31 @@ struct SettingsView: View {
                     Text("Screen points (pt)").tag(MeasurementUnit.points.rawValue)
                     Text("Display pixels (px)").tag(MeasurementUnit.pixels.rawValue)
                 }
-                Text("Screen points match macOS layout sizes. Display pixels include the Retina scaling factor. CSS output always uses screen points.")
-                    .foregroundStyle(.secondary)
             }
-            Section("Find Dimensions") {
+            Section {
                 Picker("Color tolerance", selection: $tolerance) {
                     Text("Low (8)").tag(8)
                     Text("Medium (18)").tag(18)
                     Text("High (36)").tag(36)
                 }
-                Text("Higher tolerance ignores small color differences, including subtle shadows. Hold Option or use a right drag to select an area without snapping.")
-                    .foregroundStyle(.secondary)
-            }
-            Section("Measurements") {
-                Text("Click to hold a measurement. Press Space to pin it and continue measuring. Click a pinned rectangle to edit it.")
-                Text("Preferences apply the next time you open a measurement tool.")
-                    .foregroundStyle(.secondary)
+            } header: {
+                Text("Find Dimensions")
+            } footer: {
+                Text("Higher tolerance ignores subtle color differences and shadows.")
+                    .font(.footnote)
             }
         }
     }
 
     private var shortcuts: some View {
         Group {
-            Section("Global") {
+            Section {
                 shortcut("Find Dimensions", "⇧⌘F")
                 shortcut("Measure Area", "⇧⌘M")
-                if let shortcutWarning { Text(shortcutWarning).foregroundStyle(.secondary) }
+            } header: {
+                Text("Global")
+            } footer: {
+                if let shortcutWarning { Text(shortcutWarning).font(.footnote) }
             }
             Section("While Measuring") {
                 shortcut("Copy dimensions", "Return / ⌘C")
@@ -145,15 +148,12 @@ struct SettingsView: View {
     private var permissions: some View {
         Section("Screen Recording") {
             LabeledContent("Access", value: granted ? "Allowed" : "Not allowed")
-            Text("Find Dimensions needs Screen Recording access to inspect a still image of your displays. Images stay in memory on your Mac and are discarded when you close the overlay.")
             Button(granted ? "Open Screen Recording Settings…" : "Allow Screen Recording…") {
                 if granted || !CGRequestScreenCaptureAccess() {
                     NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
                 }
                 granted = CGPreflightScreenCaptureAccess()
             }
-            Text("Measure Area works without this permission. If macOS asks you to quit and reopen Schnap, relaunch it after granting access.")
-                .foregroundStyle(.secondary)
         }
     }
 
