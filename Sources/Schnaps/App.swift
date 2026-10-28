@@ -25,6 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var handler: EventHandlerRef?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppBranding.installIcon()
         UserDefaults.standard.register(defaults: [PreferenceKey.unit: "pt", PreferenceKey.tolerance: 18,
                                                   PreferenceKey.defaultTool: MeasurementMode.findDimensions.rawValue])
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -109,7 +110,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func screensChanged() { overlay.stop() }
-    @objc private func about() { NSApp.orderFrontStandardAboutPanel(nil) }
+    @objc private func about() { AppBranding.showAbout() }
     @objc private func quit() { NSApp.terminate(nil) }
 
     @objc private func showSettings() {

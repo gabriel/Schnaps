@@ -1,9 +1,23 @@
 # Schnaps website
 
-A buildless static website hosted on Cloudflare Workers Static Assets at https://getschnaps.com. The interactive browser demo is illustrative; the macOS app measures real screen content.
+A buildless static site at https://getschnaps.com, hosted on Cloudflare Workers Static Assets.
 
-Preview: `python3 -m http.server 5173 --directory website/dist` from the repository root.
+Preview from the repository root:
 
-Deploy: `npx wrangler deploy` from `website/`, using your authenticated Cloudflare account. `wrangler.jsonc` declares the custom domain and static assets. Domain registration and DNS ownership must already be in the same Cloudflare account. There are no API keys or secrets in the website source.
+```sh
+python3 -m http.server 5173 --directory website/dist
+```
 
-The download buttons point at the stable `Schnaps.dmg` alias on the latest GitHub release. The release script generates this alias alongside the immutable versioned DMG used by Sparkle.
+Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloudflare account. `wrangler.jsonc` retains the existing custom domain. No secrets are stored in the website source. The download points to the stable DMG alias on the latest GitHub release.
+
+## Screenshot and branding
+
+The screenshot is a direct capture of the running Schnaps app measuring and pinning regions over native macOS Calculator. The 1344 × 576 pixel Retina crop displays at a maximum of 672 × 288 CSS pixels, matching its native 2× scale. It has only been cropped; the measurement UI is not redrawn or browser-generated. No video is loaded or published.
+
+The cropped source window capture is `media-source/calculator.jpg`. Rebuild the screenshot with `swift Scripts/export-screenshot.swift`.
+
+The logo is the transparent empty-bottle blueprint in `Assets/Artwork/Schnaps-Blueprint.svg`. `swift Scripts/export-icon.swift` updates the website SVG, transparent favicon, and app icon together.
+
+## Appearance
+
+The site follows the system color scheme by default. The sun/moon icon button switches between light and dark, with an accessible action label and tooltip. Explicit choices persist locally. Before an override is chosen, the icon follows system appearance changes. The page still follows the system theme without JavaScript or local storage.

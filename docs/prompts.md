@@ -72,3 +72,33 @@ Public app, website, and source publication were explicitly selected in the foll
 - Release validation checks universal architectures, nested signatures, Apple notarization/stapling, DMG integrity, and Sparkle signatures.
 
 The app's implementation is Swift. The later update request explicitly introduces Sparkle's third-party framework; its license is bundled with releases. The website uses ordinary HTML, CSS, and JavaScript.
+
+## Website design reference
+
+> Can you make the website more like this design: https://designeer.xyz/finds/agusegui-2106459249773547798
+
+**Result:** a paper-colored measurement canvas with thin blue floating utility windows, a custom outlined S with Bézier handles, monospace labels, and restrained motion. The existing interactive demo, downloads, installation guide, and documentation links remain available. The responsive layout reflows the windows on small screens; reduced-motion preferences disable the decorative animation.
+
+## Simpler website and dark mode
+
+> Simplify the design.. A LOT.. don't show fake UI... show it real in action. Add darkmode.
+
+**Result:** removed the decorative window collage and JavaScript measurement simulation. The page now has a concise introduction, download, direct app captures with native playback controls, three brief feature descriptions, and collapsed practical details. The walkthrough shows the running Schnaps app measuring native Calculator controls, with the capture provenance documented in `website/README.md`. System, Light, and Dark appearances use CSS color schemes with an optional locally saved override.
+
+## Static screenshot and transparent blueprint branding
+
+> Don't do video just do screenshot. Make the icon an empty bottle being measured like a blueprint, with a clear background. Does making it macOS 15+ simplify the code? If so do it.
+
+**Result:** replaced the video with a genuine app screenshot and removed the video export pipeline. Added a transparent vector empty-bottle mark with measurement arrows, shared by the website logo, favicon, and native ICNS. Removed Icon Composer's material backplate and SDK/host-specific packaging branches, and explicitly supplied the transparent artwork to AppKit and About. Retained macOS 14 support: the capture API already requires 14, there are no 14-only fallbacks, and raising the minimum to 15 would not remove compatibility code.
+
+## Screenshot Retina scale
+
+> The image example seems like it's 2x retina blown out.
+
+**Result:** capped the 1344 × 576 pixel screenshot at its native 672 × 288 logical size, centered on desktop and scaling down on smaller screens. The full-resolution image remains intact for Retina sharpness.
+
+## Theme icon and bright download button
+
+> Change the light/dark mode select to an icon. Make the download button a bright color.
+
+**Result:** replaced the dropdown with an accessible sun/moon button and kept locally saved appearance choices. The button follows the system theme before a manual override. The download uses a vivid blue with white text in both themes.

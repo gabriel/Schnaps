@@ -10,7 +10,7 @@ The public Ed25519 key is safe to commit. The private key is stored only in the 
 
 ## Local prerequisites
 
-- macOS 26 / Xcode 26 for adaptive Icon Composer compilation (older hosts use the ICNS fallback).
+- Xcode with Swift 6 support. Icons use the checked-in transparent ICNS on every supported macOS version.
 - SwiftPM dependencies resolved: `swift package resolve`.
 - An installed Developer ID Application certificate with its private key.
 - A valid `notarytool` Keychain credential profile for the certificate's developer team.

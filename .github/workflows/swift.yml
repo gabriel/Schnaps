@@ -12,7 +12,6 @@ jobs:
         include:
           - xcode: '16.4'
             runner: macos-15
-          # Icon Composer's asset runtime requires the matching modern OS.
           - xcode: '26.3'
             runner: macos-26
     runs-on: ${{ matrix.runner }}
@@ -25,7 +24,8 @@ jobs:
       - name: Check release script syntax and website JavaScript
         run: |
           swiftc -typecheck Scripts/release.swift
-          node --check website/dist/demo.js
+          swiftc -swift-version 6 -typecheck Scripts/export-screenshot.swift
+          node --check website/dist/site.js
       - name: Build native application
         run: swift Scripts/build-app.swift
       - name: Verify bundle signature
@@ -36,9 +36,10 @@ jobs:
           test -s build/Schnaps.app/Contents/Resources/Acknowledgements/Sparkle-LICENSE.txt
           plutil -extract SUFeedURL raw build/Schnaps.app/Contents/Info.plist
           plutil -extract SUPublicEDKey raw build/Schnaps.app/Contents/Info.plist
-      - name: Verify compiled icon assets
-        if: matrix.xcode == '26.3'
-        run: test -s build/Schnaps.app/Contents/Resources/Assets.car
+      - name: Verify transparent icon packaging
+        run: |
+          test -s build/Schnaps.app/Contents/Resources/Schnaps.icns
+          test ! -e build/Schnaps.app/Contents/Resources/Assets.car
       - uses: actions/upload-artifact@v4
         with:
           name: Schnaps-macOS-Xcode-${{ matrix.xcode }}

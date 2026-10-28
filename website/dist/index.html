@@ -3,282 +3,53 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Schnaps — Native screen measurement for macOS</title>
-    <meta
-      name="description"
-      content="Find dimensions, measure gaps, and pin precise measurements across your Mac. A native Swift app for macOS 14 and later."
-    />
+    <title>Schnaps — Screen measurement for Mac</title>
+    <meta name="description" content="Find dimensions, measure gaps, and copy precise measurements. A small, native Mac app. Free and open source." />
     <link rel="canonical" href="https://getschnaps.com/" />
     <link rel="icon" href="/assets/icon.png" type="image/png" />
-    <meta property="og:title" content="Schnaps — A little more precise." />
-    <meta
-      property="og:description"
-      content="Native screen measurement for your Mac. Find dimensions. Measure gaps. Keep the details."
-    />
-    <meta
-      property="og:image"
-      content="https://getschnaps.com/assets/icon.png"
-    />
+    <meta property="og:title" content="Schnaps — Screen measurement for Mac" />
+    <meta property="og:description" content="Find dimensions. Measure gaps. Get the details right." />
+    <meta property="og:image" content="https://getschnaps.com/assets/icon.png" />
     <meta property="og:type" content="website" />
+    <script src="/site.js"></script>
     <link rel="stylesheet" href="/style.css" />
-    <script src="/demo.js" defer></script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
-    <header class="nav wrap">
-      <a class="brand" href="/" aria-label="Schnaps home"
-        ><img src="/assets/icon.png" width="38" height="38" alt="" /><span
-          >Schnaps</span
-        ></a
-      >
+    <header class="wrap nav">
+      <a class="brand" href="/" aria-label="Schnaps home"><img src="/assets/logo.svg" width="40" height="40" alt="" />Schnaps</a>
       <nav aria-label="Main navigation">
-        <a href="#how-it-works">How it works</a
-        ><a href="https://github.com/gabriel/Schnaps/tree/main/docs">Docs</a
-        ><a href="https://github.com/gabriel/Schnaps">GitHub ↗</a>
+        <a href="https://github.com/gabriel/Schnaps">GitHub ↗</a>
+        <button class="theme-control" id="theme" type="button" aria-label="Toggle color scheme" hidden>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <g class="sun"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" /></g>
+            <path class="moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+          </svg>
+        </button>
       </nav>
-      <a
-        class="button compact"
-        href="https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg"
-        >Download for Mac <span aria-hidden="true">↓</span></a
-      >
     </header>
-    <main id="main">
-      <section class="hero wrap">
-        <div class="hero-copy">
-          <p class="eyebrow">
-            <span class="dot"></span> NATIVE SCREEN MEASUREMENT FOR MACOS
-          </p>
-          <h1>A little more<br /><em>precise.</em></h1>
-          <p class="intro">
-            Find the dimensions. Measure the gap.<br />Keep the details that
-            make a design work.
-          </p>
-          <div class="hero-actions">
-            <a
-              class="button"
-              href="https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg"
-              ><span>Download Schnaps</span><span aria-hidden="true">↓</span></a
-            ><span class="compatibility"
-              >macOS 14+<br />Apple Silicon & Intel</span
-            >
-          </div>
-          <p class="hero-note">
-            Free download · Written in Swift · Signed & notarized
-          </p>
-        </div>
-        <div class="demo-shell">
-          <div class="demo-title">
-            <div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div>
-            <span>A closer look</span><span class="demo-version">SCHNAPS</span>
-          </div>
-          <div
-            class="demo-toolbar"
-            role="group"
-            aria-label="Demo measurement tools"
-          >
-            <button class="mode active" data-mode="find" aria-pressed="true">
-              Find Dimensions</button
-            ><button class="mode" data-mode="area" aria-pressed="false">
-              Measure Area</button
-            ><button id="pin" title="Pin the current measurement">Pin</button
-            ><button id="clear">Clear</button>
-          </div>
-          <div
-            class="canvas"
-            id="canvas"
-            tabindex="0"
-            aria-label="Interactive measurement demo. Drag a region to measure. Shift-drag for a square."
-          >
-            <div class="sample">
-              <p class="sample-kicker">THE DETAILS MATTER</p>
-              <h2>Room to<br />get it right.</h2>
-              <p class="sample-body">
-                A small space. A balanced layout.<br />A design that feels just
-                right.
-              </p>
-              <div class="sample-button" data-measure>
-                Take a closer look <span>↗</span>
-              </div>
-              <div class="sample-label" data-measure>Made for your Mac</div>
-            </div>
-            <div id="pins" aria-hidden="true"></div>
-            <div id="selection" class="selection" hidden>
-              <span id="dimensions"></span><i></i><i></i><i></i><i></i>
-            </div>
-          </div>
-          <div class="demo-footer">
-            <span id="demo-hint" aria-live="polite"
-              >Move over an element, or drag around it.</span
-            ><span>INTERACTIVE PREVIEW</span>
-          </div>
-          <p class="demo-caption">
-            Try it here. The Mac app measures across your whole desktop.
-          </p>
-        </div>
+    <main id="main" class="wrap">
+      <section class="intro" aria-labelledby="headline">
+        <h1 id="headline">Measure your screen.</h1>
+        <p>Find dimensions. Measure gaps. Get the details right.</p>
+        <a class="download" href="https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg">Download for Mac <span aria-hidden="true">↓</span></a>
+        <span class="requirements">Free & open source · macOS 14+ · Apple Silicon & Intel</span>
       </section>
-      <section class="workflow wrap" id="how-it-works">
-        <div class="section-heading">
-          <p class="eyebrow">FROM GUESSWORK TO DIMENSIONS</p>
-          <h2>Less estimating.<br />More getting it right.</h2>
-        </div>
-        <div class="steps">
-          <article>
-            <span class="step-number">01 / FIND</span>
-            <h3>The space between.</h3>
-            <p>
-              Move your pointer to see horizontal and vertical distances between
-              edges. Drag loosely around an object to snap to its bounds.
-            </p>
-            <kbd>⇧ ⌘ F</kbd>
-          </article>
-          <article>
-            <span class="step-number">02 / MEASURE</span>
-            <h3>Exactly what you select.</h3>
-            <p>
-              Draw an exact rectangle. Move it, resize its corners, or nudge a
-              single pixel with the arrow keys. Switch between screen points and
-              display pixels.
-            </p>
-            <kbd>⇧ ⌘ M</kbd>
-          </article>
-          <article>
-            <span class="step-number">03 / KEEP</span>
-            <h3>Hold onto the details.</h3>
-            <p>
-              Pin a measurement and keep working. Save a horizontal or vertical
-              distance independently. Copy dimensions or CSS straight to your
-              clipboard.
-            </p>
-            <kbd>Space</kbd> <kbd>Return</kbd>
-          </article>
-        </div>
+      <figure class="app-demo">
+        <img src="/assets/schnaps-screenshot.jpg" width="672" height="288" alt="Schnaps measuring Calculator: a 392 × 332 px selection beside a pinned 400 × 332 px area." />
+        <figcaption>Schnaps measuring Calculator on macOS.</figcaption>
+      </figure>
+      <section class="features" aria-label="Measurement tools">
+        <article><h2>Find dimensions <kbd>⇧⌘F</kbd></h2><p>Move over an edge to see the distance. Drag around an object to find its bounds.</p></article>
+        <article><h2>Measure an area <kbd>⇧⌘M</kbd></h2><p>Draw an exact rectangle. Move it, resize it, or nudge it one pixel at a time.</p></article>
+        <article><h2>Keep the details <kbd>Space</kbd></h2><p>Pin measurements while you work. Press Return to copy dimensions, or Shift-Return for CSS.</p></article>
       </section>
-      <section class="native">
-        <div class="wrap native-inner">
-          <div class="native-art">
-            <img
-              src="/assets/icon.png"
-              width="240"
-              height="240"
-              alt="Schnaps app icon: a glass bottle of golden schnapps"
-            />
-          </div>
-          <div>
-            <p class="eyebrow">AT HOME ON YOUR MAC</p>
-            <h2>A proper little<br />Mac app.</h2>
-            <p class="native-copy">
-              A menu-bar utility with native settings, familiar controls, and
-              shortcuts that work in any app. Built with Swift, AppKit, SwiftUI,
-              and ScreenCaptureKit.
-            </p>
-            <div class="native-details">
-              <div>
-                <strong>Local by design</strong>
-                <p>
-                  Screen snapshots stay in memory on your Mac. Screen Recording
-                  access is used to find edges.
-                </p>
-              </div>
-              <div>
-                <strong>Updates built in</strong>
-                <p>
-                  Check for signed updates with Sparkle, right from the menu
-                  bar.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <section class="getting-started wrap">
-        <div>
-          <p class="eyebrow">READY WHEN YOU ARE</p>
-          <h2>Your next measurement<br />is a shortcut away.</h2>
-          <a
-            class="button"
-            href="https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg"
-            >Download for Mac <span aria-hidden="true">↓</span></a
-          >
-        </div>
-        <ol>
-          <li>
-            <span>1</span>
-            <div>
-              <strong>Install Schnaps</strong>
-              <p>Open the DMG and drag Schnaps into Applications.</p>
-            </div>
-          </li>
-          <li>
-            <span>2</span>
-            <div>
-              <strong>Allow Screen Recording</strong>
-              <p>
-                Open Settings → Permissions in Schnaps. Manual measurement also
-                works without this permission.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span>3</span>
-            <div>
-              <strong>Find your dimensions</strong>
-              <p>
-                Press ⇧⌘F, move over an edge, or drag around an object. Press
-                Return to copy.
-              </p>
-            </div>
-          </li>
-        </ol>
-      </section>
-      <section class="faq wrap">
-        <h2>A few details.</h2>
-        <details>
-          <summary>What can Schnaps measure?</summary>
-          <p>
-            Anything visible on your displays. Find Dimensions uses color
-            contrast to detect edges and gaps. For gradients, shadows, or
-            complex images, use exact manual selection.
-          </p>
-        </details>
-        <details>
-          <summary>Does it support Retina and multiple displays?</summary>
-          <p>
-            Yes. Each display has its own measurement canvas and backing scale.
-            Choose screen points for layout sizes or physical pixels for display
-            resolution. A measurement stays within one display.
-          </p>
-        </details>
-        <details>
-          <summary>Are my screen captures uploaded?</summary>
-          <p>
-            No. Screenshots used for edge detection stay in memory and are
-            discarded when the overlay closes. Update checks contact the release
-            server; there are no analytics.
-          </p>
-        </details>
-        <details>
-          <summary>Where can I find the source and build notes?</summary>
-          <p>
-            The Swift source, build instructions, release process, and
-            development prompts are available in the
-            <a href="https://github.com/gabriel/Schnaps">GitHub repository</a>.
-          </p>
-        </details>
+      <section class="details" aria-label="Good to know">
+        <details><summary>Getting started</summary><p>Open the DMG and drag Schnaps into Applications. For Find Dimensions, allow Screen Recording in Schnaps → Settings → Permissions. Then press ⇧⌘F. Manual area measurement works without this permission.</p></details>
+        <details><summary>Privacy and updates</summary><p>Screen snapshots stay in memory on your Mac and are discarded when you close the overlay. There are no analytics or accounts. Signed updates are available through Sparkle in the menu bar.</p></details>
+        <details><summary>Retina and multiple displays</summary><p>Choose screen points or physical display pixels. Each display uses its own scale, and each measurement stays within one display.</p></details>
       </section>
     </main>
-    <footer class="wrap footer">
-      <a class="brand" href="/"
-        ><img src="/assets/icon.png" width="30" height="30" alt="" /><span
-          >Schnaps</span
-        ></a
-      ><span>Made for measuring. Built for Mac.</span>
-      <div>
-        <a href="https://github.com/gabriel/Schnaps/releases">Releases</a
-        ><a href="https://github.com/gabriel/Schnaps/issues">Feedback</a
-        ><a href="https://github.com/gabriel/Schnaps/tree/main/docs/prompts.md"
-          >Build prompts</a
-        >
-      </div>
-    </footer>
+    <footer class="wrap footer"><span>A small utility, written in Swift.</span><div><a href="https://github.com/gabriel/Schnaps/tree/main/docs">Documentation</a><a href="https://github.com/gabriel/Schnaps/releases">Releases</a><a href="https://github.com/gabriel/Schnaps/issues">Feedback</a></div></footer>
   </body>
 </html>
