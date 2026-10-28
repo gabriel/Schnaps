@@ -12,9 +12,4 @@ enum AppBranding {
         if let icon { NSApp.applicationIconImage = icon }
     }
 
-    static func showAbout() {
-        var options: [NSApplication.AboutPanelOptionKey: Any] = [:]
-        if let icon { options[.applicationIcon] = icon }
-        NSApp.orderFrontStandardAboutPanel(options: options)
-    }
 }
