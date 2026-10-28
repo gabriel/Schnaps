@@ -84,3 +84,9 @@ The app's implementation is Swift. The later update request explicitly introduce
 > Simplify the design.. A LOT.. don't show fake UI... show it real in action. Add darkmode.
 
 **Result:** removed the decorative window collage and JavaScript measurement simulation. The page now has a concise introduction, download, direct app captures with native playback controls, three brief feature descriptions, and collapsed practical details. The walkthrough shows the running Schnaps app measuring native Calculator controls, with the capture provenance documented in `website/README.md`. System, Light, and Dark appearances use CSS color schemes with an optional locally saved override.
+
+## Static screenshot and transparent blueprint branding
+
+> Don't do video just do screenshot. Make the icon an empty bottle being measured like a blueprint, with a clear background. Does making it macOS 15+ simplify the code? If so do it.
+
+**Result:** replaced the video with a genuine app screenshot and removed the video export pipeline. Added a transparent vector empty-bottle mark with measurement arrows, shared by the website logo, favicon, and native ICNS. Removed Icon Composer's material backplate and SDK/host-specific packaging branches. Retained macOS 14 support: the capture API already requires 14, there are no 14-only fallbacks, and raising the minimum to 15 would not remove compatibility code.

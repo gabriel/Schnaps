@@ -1,6 +1,6 @@
 # Schnaps
 
-<img src="Assets/Previews/Schnaps.png" width="128" alt="Schnaps bottle icon">
+<img src="Assets/Previews/Schnaps.png" width="128" alt="Empty Schnaps bottle with blueprint measurement arrows">
 
 **A native screen measurement app for macOS.** Find dimensions, measure gaps, and keep the details that make a design work.
 
@@ -62,7 +62,7 @@ Open `Package.swift` in Xcode, or use SwiftPM. The app source is Swift using App
 
 `swift Scripts/build-app.swift --universal` builds both architectures. `--debug` selects debug configuration. For local signing, set `SCHNAPS_SIGN_IDENTITY` to an installed Apple Development identity; otherwise the build is ad-hoc signed. Distribution requires a Developer ID Application identity and notarization credentials.
 
-macOS 26 and Xcode 26 compile the editable Icon Composer document into adaptive icon assets. Older build hosts/toolchains use its checked-in full-resolution ICNS export. To edit the icon, open `Assets/Schnaps.icon`; regenerate previews with `swift Scripts/export-icon.swift`.
+The icon and website logo use the transparent vector artwork in `Assets/Artwork/Schnaps-Blueprint.svg`. Run `swift Scripts/export-icon.swift` to regenerate the PNG previews, favicon, and full-resolution ICNS. The same unboxed ICNS is packaged on every supported macOS version.
 
 ## Project guide
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env swift
 import Foundation
 
-// Swift-only app packaging. macOS 26 + Xcode 26 compile the Icon Composer source;
-// older hosts/toolchains use the checked-in ICNS exported by the same Apple compiler.
+// Swift-only app packaging, using the same transparent ICNS on every supported Mac.
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let configuration = CommandLine.arguments.contains("--debug") ? "debug" : "release"
 let manager = FileManager.default
@@ -31,20 +30,9 @@ let binary = contents.appendingPathComponent("MacOS/Schnaps")
 if manager.fileExists(atPath: binary.path) { try manager.removeItem(at: binary) }
 try manager.copyItem(at: URL(fileURLWithPath: binPath).appendingPathComponent("Schnaps"), to: binary)
 
-let sdk = try run("/usr/bin/xcrun", ["--sdk", "macosx", "--show-sdk-version"], capture: true)
-let sdkMajor = Int(sdk.split(separator: ".").first ?? "0") ?? 0
-let hostMajor = ProcessInfo.processInfo.operatingSystemVersion.majorVersion
-let modernIcon = sdkMajor >= 26 && hostMajor >= 26 && !CommandLine.arguments.contains("--legacy-icon")
-if modernIcon {
-    _ = try run("/usr/bin/xcrun", ["actool", root.appendingPathComponent("Assets/Schnaps.icon").path,
-        "--compile", resources.path, "--platform", "macosx", "--minimum-deployment-target", "14.0",
-        "--app-icon", "Schnaps", "--output-partial-info-plist", root.appendingPathComponent("build/IconInfo.plist").path,
-        "--output-format", "human-readable-text"])
-} else {
-    let car = resources.appendingPathComponent("Assets.car")
-    if manager.fileExists(atPath: car.path) { try manager.removeItem(at: car) }
-}
-// actool emits only a small fallback ICNS. Supply all legacy sizes through 1024px.
+// Keep the icon unboxed: adaptive Icon Composer assets add a system backplate.
+let car = resources.appendingPathComponent("Assets.car")
+if manager.fileExists(atPath: car.path) { try manager.removeItem(at: car) }
 let icon = resources.appendingPathComponent("Schnaps.icns")
 if manager.fileExists(atPath: icon.path) { try manager.removeItem(at: icon) }
 try manager.copyItem(at: root.appendingPathComponent("Assets/Compiled/Schnaps.icns"), to: icon)
@@ -60,7 +48,6 @@ var info: [String: Any] = [
     "LSUIElement": true, "NSHighResolutionCapable": true,
     "NSScreenCaptureUsageDescription": "Schnaps uses a still image of your displays to detect edges and measure screen elements. Images remain in memory on your Mac."
 ]
-if modernIcon { info["CFBundleIconName"] = "Schnaps" }
 try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
     .write(to: contents.appendingPathComponent("Info.plist"))
 let framework = contents.appendingPathComponent("Frameworks/Sparkle.framework")
@@ -90,4 +77,4 @@ for service in try manager.contentsOfDirectory(at: xpcServices, includingPropert
 try sign(framework)
 try sign(app)
 _ = try run("/usr/bin/codesign", ["--verify", "--deep", "--strict", app.path])
-print("Built \(app.path) (\(modernIcon ? "Icon Composer" : "legacy ICNS") icon)")
+print("Built \(app.path) (transparent blueprint icon)")

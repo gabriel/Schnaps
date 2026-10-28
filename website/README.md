@@ -10,17 +10,13 @@ python3 -m http.server 5173 --directory website/dist
 
 Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloudflare account. `wrangler.jsonc` retains the existing custom domain. No secrets are stored in the website source. The download points to the stable DMG alias on the latest GitHub release.
 
-## App walkthrough
+## Screenshot and branding
 
-The poster and 14-second walkthrough use direct screen captures of the running Schnaps app over native macOS Calculator. Find Dimensions detects a 120 × 96 px button; the subsequent captures show pinning, a gap reading, and exact area selections. These are actual measurements and app rendering, rather than drawn or browser-generated overlays. The captures are cropped to Calculator and held for two seconds per step for readability; this is an edited sequence, not a continuous recording. No surrounding desktop or other applications are published.
+The screenshot is a direct capture of the running Schnaps app measuring and pinning regions over native macOS Calculator. It has only been cropped; the measurement UI is not redrawn or browser-generated. No video is loaded or published.
 
-The cropped originals are in `media-source/`. Rebuild the H.264 video and poster using Apple's native frameworks:
+The cropped source window capture is `media-source/calculator.jpg`. Rebuild the screenshot with `swift Scripts/export-screenshot.swift`.
 
-```sh
-swift Scripts/export-demo.swift
-```
-
-Playback starts only when requested, using native video controls. The visual description is available to screen readers.
+The logo is the transparent empty-bottle blueprint in `Assets/Artwork/Schnaps-Blueprint.svg`. `swift Scripts/export-icon.swift` updates the website SVG, transparent favicon, and app icon together.
 
 ## Appearance
 
