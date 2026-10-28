@@ -20,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private var settingsWindow: NSWindow?
     private let settingsNavigation = SettingsNavigation()
+    private let recordingPermission = ScreenRecordingPermission.shared
     private let overlay = OverlayController()
     private let updaterController = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil)
     private var hotKeys: [EventHotKeyRef] = []
@@ -132,18 +133,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func measureArea() { start(mode: .area) }
 
     private func start(mode: MeasurementMode) {
-        if mode == .findDimensions && !CGPreflightScreenCaptureAccess() {
+        guard !recordingPermission.requesting else { return }
+        recordingPermission.refresh()
+        if mode == .findDimensions && !recordingPermission.granted {
             showSettings()
             let alert = NSAlert()
             alert.messageText = "Allow Screen Recording to Find Dimensions"
-            alert.informativeText = "Schnaps needs a still image of your screen to find edges. You can allow access in System Settings or measure an area manually."
-            alert.addButton(withTitle: "Open Settings…")
+            alert.informativeText = "Schnaps uses a still image of your screen to find edges. Allow access, or measure an area manually."
+            alert.addButton(withTitle: recordingPermission.hasRequested ? "Open Settings…" : "Allow Screen Recording…")
             alert.addButton(withTitle: "Measure Area")
             alert.addButton(withTitle: "Cancel")
             let response = alert.runModal()
             if response == .alertFirstButtonReturn {
-                if !CGRequestScreenCaptureAccess() {
-                    NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
+                if recordingPermission.hasRequested {
+                    recordingPermission.openSettings()
+                } else {
+                    Task { [weak self] in
+                        guard let self else { return }
+                        await recordingPermission.request()
+                        if recordingPermission.granted {
+                            settingsWindow?.orderOut(nil)
+                            overlay.toggle(mode: mode)
+                        }
+                    }
                 }
                 return
             }

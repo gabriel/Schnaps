@@ -36,7 +36,7 @@ final class OverlayController: NSObject {
         Task {
             var snapshots: [CGDirectDisplayID: ScreenSnapshot] = [:]
             var captureFailed = false
-            if CGPreflightScreenCaptureAccess() {
+            if ScreenRecordingPermission.shared.granted {
                 do { snapshots = try await ScreenSnapshot.capture() }
                 catch { captureFailed = true; NSLog("Schnaps capture: %@", error.localizedDescription) }
             }

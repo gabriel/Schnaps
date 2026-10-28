@@ -48,7 +48,7 @@ struct SettingsView: View {
     @AppStorage(PreferenceKey.scrollTolerance) private var scrollTolerance = true
     @AppStorage(PreferenceKey.defaultTool) private var defaultTool = MeasurementMode.findDimensions.rawValue
     @AppStorage(PreferenceKey.showInDock) private var showInDock = false
-    @State private var granted = CGPreflightScreenCaptureAccess()
+    @ObservedObject private var recordingPermission = ScreenRecordingPermission.shared
 
     var body: some View {
         NavigationSplitView {
@@ -75,7 +75,7 @@ struct SettingsView: View {
         }
         .frame(minWidth: 720, minHeight: 480)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            granted = CGPreflightScreenCaptureAccess()
+            recordingPermission.refresh()
         }
     }
 
@@ -167,16 +167,18 @@ struct SettingsView: View {
 
     private var permissions: some View {
         Section {
-            LabeledContent("Access", value: granted ? "Allowed" : "Not allowed")
+            LabeledContent("Access", value: recordingPermission.granted ? "Allowed" : "Not allowed")
         } header: {
             Text("Screen Recording")
         } footer: {
-            Button(granted ? "Open Screen Recording Settings…" : "Allow Screen Recording…") {
-                if granted || !CGRequestScreenCaptureAccess() {
-                    NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
+            Button(recordingPermission.buttonTitle) {
+                if recordingPermission.granted || recordingPermission.hasRequested {
+                    recordingPermission.openSettings()
+                } else {
+                    Task { await recordingPermission.request() }
                 }
-                granted = CGPreflightScreenCaptureAccess()
             }
+            .disabled(recordingPermission.requesting)
             .buttonStyle(.bordered)
             .controlSize(.regular)
             .font(.body)
