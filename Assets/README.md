@@ -9,7 +9,7 @@
 - `website/dist/assets/logo.svg`: the vector website logo.
 - `website/dist/assets/icon.png`: the transparent favicon and social image.
 
-The app packages the ICNS directly on every supported macOS version. Icon Composer's adaptive rendering adds a system backplate even for a clear document fill, so it is intentionally no longer part of the packaging path. This preserves the requested unboxed bottle silhouette and removes the SDK/host-version icon branches.
+The app packages the ICNS directly on every supported macOS version. Icon Composer's adaptive rendering adds a system backplate even for a clear document fill, so it is intentionally no longer part of the packaging path. This preserves the requested unboxed bottle silhouette and removes the SDK/host-version icon branches. AppKit and the About panel explicitly load this raw artwork to avoid Icon Services adding a legacy backplate.
 
 The new mark is drawn as vector geometry. Design brief:
 

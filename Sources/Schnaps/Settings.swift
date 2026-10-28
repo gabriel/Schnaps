@@ -45,7 +45,7 @@ struct SettingsView: View {
                     Label(pane.rawValue, systemImage: pane.symbol).tag(pane)
                 }
                 Button {
-                    NSApp.orderFrontStandardAboutPanel(nil)
+                    AppBranding.showAbout()
                 } label: {
                     Label("About Schnaps", systemImage: "info.circle")
                         .frame(maxWidth: .infinity, alignment: .leading)
