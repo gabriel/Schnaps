@@ -24,7 +24,7 @@ jobs:
       - name: Check release script syntax and website JavaScript
         run: |
           swiftc -typecheck Scripts/release.swift
-          swiftc -swift-version 6 -typecheck Scripts/export-screenshot.swift
+          swiftc -swift-version 6 -typecheck Scripts/export-demo.swift
           node --check website/dist/site.js
       - name: Build native application
         run: swift Scripts/build-app.swift
