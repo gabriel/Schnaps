@@ -1,5 +1,7 @@
 import AppKit
-import ScreenCaptureKit
+// Older macOS SDKs do not annotate ScreenCaptureKit's async results as Sendable.
+// Capture objects are consumed only on the main actor after each await.
+@preconcurrency import ScreenCaptureKit
 import MeasurementCore
 
 struct ScreenSnapshot {
