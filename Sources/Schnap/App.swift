@@ -151,4 +151,3 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let handler { RemoveEventHandler(handler) }
     }
 }
-
