@@ -14,6 +14,22 @@
   apply();
 
   document.addEventListener("DOMContentLoaded", () => {
+    const demo = document.querySelector("#demo");
+    const demoToggle = document.querySelector("#demo-toggle");
+    if (demo && demoToggle) {
+      const motion = matchMedia("(prefers-reduced-motion: reduce)");
+      let playing = !motion.matches;
+      function showDemo() {
+        demo.src = playing ? demo.dataset.animation : demo.dataset.poster;
+        demoToggle.textContent = playing ? "Pause" : "Play";
+        demoToggle.setAttribute("aria-label", playing ? "Pause animation" : "Play animation");
+        demoToggle.setAttribute("aria-pressed", String(playing));
+      }
+      demoToggle.hidden = false;
+      demoToggle.addEventListener("click", () => { playing = !playing; showDemo(); });
+      motion.addEventListener("change", () => { playing = !motion.matches; showDemo(); });
+      showDemo();
+    }
     const control = document.querySelector("#theme");
     function updateIcon() {
       control.dataset.dark = String(isDark());

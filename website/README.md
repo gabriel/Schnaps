@@ -10,11 +10,11 @@ python3 -m http.server 5173 --directory website/dist
 
 Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloudflare account. `wrangler.jsonc` retains the existing custom domain. No secrets are stored in the website source. The download points to the stable DMG alias on the latest GitHub release.
 
-## Screenshot and branding
+## Demo and branding
 
-The screenshot is a direct capture of the running Schnaps app measuring and pinning regions over native macOS Calculator. The 1344 × 576 pixel Retina crop displays at a maximum of 672 × 288 CSS pixels, matching its native 2× scale. It has only been cropped; the measurement UI is not redrawn or browser-generated. No video is loaded or published.
+The animated WebP shows the running Schnaps app measuring gaps and pinning a region over the small native macOS Calculator. Its frames are genuine cropped captures; the measurement UI is not redrawn or browser-generated. No video player or animation library is loaded.
 
-The cropped source window capture is `media-source/calculator.jpg`. Rebuild the screenshot with `swift Scripts/export-screenshot.swift`.
+The demo uses genuine Calculator captures in `media-source/demo-frames/`, with frame timing in `timeline.json`. Run `swift Scripts/export-demo.swift` from the repository root to rebuild the animated WebP and static poster; the WebP command-line tools (`img2webp`) must be installed. The 720 × 912 px captures display at 360 × 456 CSS pixels, with responsive shrinking, a pause control, and a still image for reduced-motion preferences or disabled JavaScript.
 
 The logo is the transparent empty-bottle blueprint in `Assets/Artwork/Schnaps-Blueprint.svg`. `swift Scripts/export-icon.swift` updates the website SVG, transparent favicon, and app icon together.
 
