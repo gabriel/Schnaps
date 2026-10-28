@@ -61,8 +61,8 @@ public struct PixelBuffer: Sendable {
         self.init(width: image.width, height: image.height, bytes: data)
     }
 
-    /// Finds the continuous color run through the cursor on both axes.
-    public func edges(at point: CGPoint, tolerance: Int = 18) -> CGRect? {
+    /// Finds independent distances through the pointer. One-pixel runs are valid.
+    public func dimensions(at point: CGPoint, tolerance: Int = 18) -> Dimensions? {
         guard point.x.isFinite, point.y.isFinite, point.x >= 0, point.y >= 0,
               point.x < CGFloat(width), point.y < CGFloat(height) else { return nil }
         let x = Int(point.x), y = Int(point.y)
@@ -70,14 +70,91 @@ public struct PixelBuffer: Sendable {
         let seed = (y * width + x) * 4
         func matches(_ px: Int, _ py: Int) -> Bool {
             let offset = (py * width + px) * 4
-            return (0..<3).allSatisfy { abs(Int(bytes[offset + $0]) - Int(bytes[seed + $0])) <= threshold }
+            return colorDifference(offset, seed) <= threshold
         }
         var left = x, right = x, top = y, bottom = y
         while left > 0 && matches(left - 1, y) { left -= 1 }
         while right + 1 < width && matches(right + 1, y) { right += 1 }
         while top > 0 && matches(x, top - 1) { top -= 1 }
         while bottom + 1 < height && matches(x, bottom + 1) { bottom += 1 }
-        guard right > left, bottom > top else { return nil }
+        return Dimensions(
+            horizontal: DimensionSpan(start: CGPoint(x: CGFloat(left), y: point.y), end: CGPoint(x: CGFloat(right + 1), y: point.y)),
+            vertical: DimensionSpan(start: CGPoint(x: point.x, y: CGFloat(top)), end: CGPoint(x: point.x, y: CGFloat(bottom + 1))))
+    }
+
+    public func edges(at point: CGPoint, tolerance: Int = 18) -> CGRect? {
+        guard let dimensions = dimensions(at: point, tolerance: tolerance),
+              dimensions.horizontal.length > 1, dimensions.vertical.length > 1 else { return nil }
+        return dimensions.rect
+    }
+
+    /// Trims a loose selection to foreground pixels against its dominant perimeter color.
+    /// This measures a whole object (including disconnected text or icon details), rather
+    /// than just the color run beneath the pointer. Uniform selections return nil.
+    public func objectBounds(in region: CGRect, tolerance: Int = 18) -> CGRect? {
+        guard !region.isNull, !region.isInfinite,
+              region.minX.isFinite, region.minY.isFinite, region.maxX.isFinite, region.maxY.isFinite else { return nil }
+        let clipped = region.intersection(CGRect(x: 0, y: 0, width: width, height: height))
+        guard !clipped.isNull, clipped.width >= 2, clipped.height >= 2 else { return nil }
+        let x0 = Int(floor(clipped.minX)), y0 = Int(floor(clipped.minY))
+        let x1 = Int(ceil(clipped.maxX)) - 1, y1 = Int(ceil(clipped.maxY)) - 1
+        var counts: [Int: (count: Int, offset: Int)] = [:]
+        var samples = 0
+        func sample(_ x: Int, _ y: Int) {
+            let offset = (y * width + x) * 4
+            let key = (Int(bytes[offset]) / 8 << 10) | (Int(bytes[offset + 1]) / 8 << 5) | (Int(bytes[offset + 2]) / 8)
+            let existing = counts[key]
+            counts[key] = ((existing?.count ?? 0) + 1, existing?.offset ?? offset)
+            samples += 1
+        }
+        // Bounded perimeter sampling; scan the selected interior at full resolution.
+        let strideX = max(1, (x1 - x0) / 512), strideY = max(1, (y1 - y0) / 512)
+        for x in stride(from: x0, through: x1, by: strideX) { sample(x, y0); sample(x, y1) }
+        if y1 - y0 > 1 {
+            for y in stride(from: y0 + 1, to: y1, by: strideY) { sample(x0, y); sample(x1, y) }
+        }
+        guard let background = counts.values.max(by: { $0.count < $1.count }),
+              background.count * 2 > samples else { return nil }
+        let threshold = max(0, min(255, tolerance))
+        var left = x1 + 1, right = x0 - 1, top = y1 + 1, bottom = y0 - 1
+        for y in y0...y1 {
+            for x in x0...x1 where colorDifference((y * width + x) * 4, background.offset) > threshold {
+                left = min(left, x); right = max(right, x)
+                top = min(top, y); bottom = max(bottom, y)
+            }
+        }
+        guard right >= left, bottom >= top else { return nil }
         return CGRect(x: left, y: top, width: right - left + 1, height: bottom - top + 1)
+    }
+
+    private func colorDifference(_ lhs: Int, _ rhs: Int) -> Int {
+        max(abs(Int(bytes[lhs]) - Int(bytes[rhs])),
+            abs(Int(bytes[lhs + 1]) - Int(bytes[rhs + 1])),
+            abs(Int(bytes[lhs + 2]) - Int(bytes[rhs + 2])))
+    }
+}
+
+public struct DimensionSpan: Equatable, Sendable {
+    public var start: CGPoint
+    public var end: CGPoint
+    public var length: CGFloat { hypot(end.x - start.x, end.y - start.y) }
+    public var isHorizontal: Bool { start.y == end.y }
+    public init(start: CGPoint, end: CGPoint) { self.start = start; self.end = end }
+    public func scaled(x: CGFloat, y: CGFloat) -> Self {
+        Self(start: CGPoint(x: start.x * x, y: start.y * y), end: CGPoint(x: end.x * x, y: end.y * y))
+    }
+}
+
+public struct Dimensions: Equatable, Sendable {
+    public let horizontal: DimensionSpan
+    public let vertical: DimensionSpan
+    public var rect: CGRect {
+        CGRect(x: horizontal.start.x, y: vertical.start.y, width: horizontal.length, height: vertical.length)
+    }
+    public init(horizontal: DimensionSpan, vertical: DimensionSpan) {
+        self.horizontal = horizontal; self.vertical = vertical
+    }
+    public func scaled(x: CGFloat, y: CGFloat) -> Self {
+        Self(horizontal: horizontal.scaled(x: x, y: y), vertical: vertical.scaled(x: x, y: y))
     }
 }
