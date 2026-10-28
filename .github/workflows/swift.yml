@@ -9,8 +9,13 @@ jobs:
   test:
     strategy:
       matrix:
-        xcode: ['16.4', '26.3']
-    runs-on: macos-15
+        include:
+          - xcode: '16.4'
+            runner: macos-15
+          # Icon Composer's asset runtime requires the matching modern OS.
+          - xcode: '26.3'
+            runner: macos-26
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}

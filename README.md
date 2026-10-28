@@ -9,7 +9,7 @@ swift Scripts/build-app.swift
 open build/Schnaps.app
 ```
 
-The package also opens directly in Xcode. The bundled `.app` is recommended for consistent macOS permission handling. To install, copy `build/Schnaps.app` into Applications. For stable local signing across rebuilds, set `SCHNAPS_SIGN_IDENTITY` to an installed Apple Development signing identity before running the build script; otherwise it ad-hoc signs the app. The build and icon export scripts are also Swift. Xcode 26 compiles the layered Icon Composer source; older Xcode versions use its checked-in ICNS export.
+The package also opens directly in Xcode. The bundled `.app` is recommended for consistent macOS permission handling. To install, copy `build/Schnaps.app` into Applications. For stable local signing across rebuilds, set `SCHNAPS_SIGN_IDENTITY` to an installed Apple Development signing identity before running the build script; otherwise it ad-hoc signs the app. The build and icon export scripts are also Swift. macOS 26 with Xcode 26 compiles the layered Icon Composer source; older hosts or Xcode versions use its checked-in ICNS export.
 
 Launch Schnaps to open its native settings window: a standard macOS sidebar with General, Measurement, Shortcuts, and Permissions panes. Units, color tolerance, and the default tool are saved across launches. The window uses system forms, buttons, pickers, typography, and appearance.
 
@@ -67,6 +67,6 @@ swift Scripts/build-app.swift --debug
 
 ## App icon
 
-The bottle-only icon is designed in [Icon Composer](https://developer.apple.com/icon-composer/). Open `Assets/Schnaps.icon` to edit its artwork, scale, background, lighting, and appearances. Run `swift Scripts/export-icon.swift` with Xcode 26 / Icon Composer selected to regenerate the reviewed previews and the full-resolution legacy ICNS. The normal app build compiles adaptive Liquid Glass assets with Xcode 26 and uses the exported ICNS on older toolchains.
+The bottle-only icon is designed in [Icon Composer](https://developer.apple.com/icon-composer/). Open `Assets/Schnaps.icon` to edit its artwork, scale, background, lighting, and appearances. Run `swift Scripts/export-icon.swift` on macOS 26 with Xcode 26 / Icon Composer selected to regenerate the reviewed previews and the full-resolution legacy ICNS. The normal app build compiles adaptive Liquid Glass assets on macOS 26 with Xcode 26 and uses the exported ICNS on older hosts or toolchains.
 
 The app retains its original `com.gabrielhandford.Schnap` bundle identifier and settings domain to preserve preferences and Screen Recording authorization when upgrading to Schnaps.

@@ -1,8 +1,8 @@
 #!/usr/bin/env swift
 import Foundation
 
-// Swift-only app packaging. Xcode 26 compiles the editable Icon Composer source;
-// older toolchains use the checked-in ICNS exported by the same Apple compiler.
+// Swift-only app packaging. macOS 26 + Xcode 26 compile the Icon Composer source;
+// older hosts/toolchains use the checked-in ICNS exported by the same Apple compiler.
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let configuration = CommandLine.arguments.contains("--debug") ? "debug" : "release"
 let manager = FileManager.default
@@ -30,7 +30,8 @@ try manager.copyItem(at: root.appendingPathComponent(".build/\(configuration)/Sc
 
 let sdk = try run("/usr/bin/xcrun", ["--sdk", "macosx", "--show-sdk-version"], capture: true)
 let sdkMajor = Int(sdk.split(separator: ".").first ?? "0") ?? 0
-let modernIcon = sdkMajor >= 26 && !CommandLine.arguments.contains("--legacy-icon")
+let hostMajor = ProcessInfo.processInfo.operatingSystemVersion.majorVersion
+let modernIcon = sdkMajor >= 26 && hostMajor >= 26 && !CommandLine.arguments.contains("--legacy-icon")
 if modernIcon {
     _ = try run("/usr/bin/xcrun", ["actool", root.appendingPathComponent("Assets/Schnaps.icon").path,
         "--compile", resources.path, "--platform", "macosx", "--minimum-deployment-target", "14.0",
