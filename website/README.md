@@ -1,13 +1,27 @@
 # Schnaps website
 
-A buildless static website hosted on Cloudflare Workers Static Assets at https://getschnaps.com. The interactive browser demo is illustrative; the macOS app measures real screen content.
+A buildless static site at https://getschnaps.com, hosted on Cloudflare Workers Static Assets.
 
-Preview: `python3 -m http.server 5173 --directory website/dist` from the repository root.
+Preview from the repository root:
 
-Deploy: `npx wrangler deploy` from `website/`, using your authenticated Cloudflare account. `wrangler.jsonc` declares the custom domain and static assets. Domain registration and DNS ownership must already be in the same Cloudflare account. There are no API keys or secrets in the website source.
+```sh
+python3 -m http.server 5173 --directory website/dist
+```
 
-The download buttons point at the stable `Schnaps.dmg` alias on the latest GitHub release. The release script generates this alias alongside the immutable versioned DMG used by Sparkle.
+Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloudflare account. `wrangler.jsonc` retains the existing custom domain. No secrets are stored in the website source. The download points to the stable DMG alias on the latest GitHub release.
 
-## Visual direction
+## App walkthrough
 
-The landing page takes cues from [Agu Seguí’s typography motion study](https://designeer.xyz/finds/agusegui-2106459249773547798): pale paper, thin blue utility-window outlines, monospace labels, and Bézier construction handles. The Schnaps lettering, SVG artwork, layout, and demo are implemented locally; no reference media is embedded. Animations respect reduced-motion preferences.
+The poster and 14-second walkthrough use direct screen captures of the running Schnaps app over native macOS Calculator. Find Dimensions detects a 120 × 96 px button; the subsequent captures show pinning, a gap reading, and exact area selections. These are actual measurements and app rendering, rather than drawn or browser-generated overlays. The captures are cropped to Calculator and held for two seconds per step for readability; this is an edited sequence, not a continuous recording. No surrounding desktop or other applications are published.
+
+The cropped originals are in `media-source/`. Rebuild the H.264 video and poster using Apple's native frameworks:
+
+```sh
+swift Scripts/export-demo.swift
+```
+
+Playback starts only when requested, using native video controls. The visual description is available to screen readers.
+
+## Appearance
+
+The site follows the system color scheme by default. The Appearance selector offers System, Light, and Dark. Explicit choices persist locally; choosing System removes the override. The page still follows the system theme without JavaScript or local storage.

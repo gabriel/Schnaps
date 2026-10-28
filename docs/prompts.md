@@ -78,3 +78,9 @@ The app's implementation is Swift. The later update request explicitly introduce
 > Can you make the website more like this design: https://designeer.xyz/finds/agusegui-2106459249773547798
 
 **Result:** a paper-colored measurement canvas with thin blue floating utility windows, a custom outlined S with Bézier handles, monospace labels, and restrained motion. The existing interactive demo, downloads, installation guide, and documentation links remain available. The responsive layout reflows the windows on small screens; reduced-motion preferences disable the decorative animation.
+
+## Simpler website and dark mode
+
+> Simplify the design.. A LOT.. don't show fake UI... show it real in action. Add darkmode.
+
+**Result:** removed the decorative window collage and JavaScript measurement simulation. The page now has a concise introduction, download, direct app captures with native playback controls, three brief feature descriptions, and collapsed practical details. The walkthrough shows the running Schnaps app measuring native Calculator controls, with the capture provenance documented in `website/README.md`. System, Light, and Dark appearances use CSS color schemes with an optional locally saved override.
