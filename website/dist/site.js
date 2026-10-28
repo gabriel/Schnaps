@@ -5,22 +5,31 @@
     if (saved === "light" || saved === "dark") preference = saved;
   } catch { /* System appearance still works when storage is unavailable. */ }
 
-  function apply(value) {
-    if (value === "system") document.documentElement.removeAttribute("data-theme");
-    else document.documentElement.dataset.theme = value;
+  const systemAppearance = matchMedia("(prefers-color-scheme: dark)");
+  const isDark = () => preference === "dark" || (preference === "system" && systemAppearance.matches);
+  function apply() {
+    if (preference === "system") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.dataset.theme = preference;
   }
-  apply(preference);
+  apply();
 
   document.addEventListener("DOMContentLoaded", () => {
     const control = document.querySelector("#theme");
-    control.value = preference;
-    control.addEventListener("change", () => {
-      preference = control.value;
-      apply(preference);
-      try {
-        if (preference === "system") localStorage.removeItem("schnaps-appearance");
-        else localStorage.setItem("schnaps-appearance", preference);
-      } catch { /* The current page can still switch appearance. */ }
+    function updateIcon() {
+      control.dataset.dark = String(isDark());
+      const action = isDark() ? "Switch to light mode" : "Switch to dark mode";
+      control.setAttribute("aria-label", action);
+      control.title = action;
+    }
+    updateIcon();
+    control.hidden = false;
+    systemAppearance.addEventListener("change", updateIcon);
+    control.addEventListener("click", () => {
+      preference = isDark() ? "light" : "dark";
+      apply();
+      updateIcon();
+      try { localStorage.setItem("schnaps-appearance", preference); }
+      catch { /* The current page can still switch appearance. */ }
     });
   });
 })();

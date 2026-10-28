@@ -20,4 +20,4 @@ The logo is the transparent empty-bottle blueprint in `Assets/Artwork/Schnaps-Bl
 
 ## Appearance
 
-The site follows the system color scheme by default. The Appearance selector offers System, Light, and Dark. Explicit choices persist locally; choosing System removes the override. The page still follows the system theme without JavaScript or local storage.
+The site follows the system color scheme by default. The sun/moon icon button switches between light and dark, with an accessible action label and tooltip. Explicit choices persist locally. Before an override is chosen, the icon follows system appearance changes. The page still follows the system theme without JavaScript or local storage.

@@ -96,3 +96,9 @@ The app's implementation is Swift. The later update request explicitly introduce
 > The image example seems like it's 2x retina blown out.
 
 **Result:** capped the 1344 × 576 pixel screenshot at its native 672 × 288 logical size, centered on desktop and scaling down on smaller screens. The full-resolution image remains intact for Retina sharpness.
+
+## Theme icon and bright download button
+
+> Change the light/dark mode select to an icon. Make the download button a bright color.
+
+**Result:** replaced the dropdown with an accessible sun/moon button and kept locally saved appearance choices. The button follows the system theme before a manual override. The download uses a vivid blue with white text in both themes.
