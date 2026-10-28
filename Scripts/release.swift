@@ -12,6 +12,9 @@ guard environment["SCHNAPS_SIGN_IDENTITY"]?.hasPrefix("Developer ID Application:
 let profile = environment["SCHNAPS_NOTARY_PROFILE"] ?? "Schnaps"
 let version = config["version"]!, account = config["keychainAccount"]!
 let output = root.appendingPathComponent("build/releases/\(version)")
+guard !manager.fileExists(atPath: output.appendingPathComponent("appcast.xml").path) else {
+    fatalError("This version is already packaged. Publish the existing verified files or increment the version before building again.")
+}
 try manager.createDirectory(at: output, withIntermediateDirectories: true)
 @discardableResult
 func run(_ executable: String, _ arguments: [String], capture: Bool = false, directory: URL? = nil) throws -> String {

@@ -24,7 +24,7 @@ jobs:
         run: swift test
       - name: Check release script syntax and website JavaScript
         run: |
-          swiftc -frontend -parse Scripts/release.swift
+          swiftc -typecheck Scripts/release.swift
           node --check website/dist/demo.js
       - name: Build native application
         run: swift Scripts/build-app.swift
