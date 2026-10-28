@@ -74,6 +74,7 @@ struct SettingsView: View {
             } footer: {
                 Text("Move the pointer to measure distances between edges. Drag around an object to find its bounds.")
                     .font(.footnote)
+                    .padding(.top, -1)
             }
             Section {
                 LabeledContent("Measure Area") {
@@ -82,6 +83,7 @@ struct SettingsView: View {
             } footer: {
                 Text("Drag an exact rectangle, then move, resize, pin, or copy the measurement.")
                     .font(.footnote)
+                    .padding(.top, -1)
             }
             Section("Activation") {
                 Picker("Default tool", selection: $defaultTool) {
@@ -113,6 +115,7 @@ struct SettingsView: View {
             } footer: {
                 Text("Higher tolerance ignores subtle color differences and shadows.")
                     .font(.footnote)
+                    .padding(.top, -1)
             }
         }
     }
@@ -125,7 +128,7 @@ struct SettingsView: View {
             } header: {
                 Text("Global")
             } footer: {
-                if let shortcutWarning { Text(shortcutWarning).font(.footnote) }
+                if let shortcutWarning { Text(shortcutWarning).font(.footnote).padding(.top, -1) }
             }
             Section("While Measuring") {
                 shortcut("Copy dimensions", "Return / ⌘C")
