@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import Carbon
+import Sparkle
 
 @main
 struct SchnapsApp {
@@ -18,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var settingsWindow: NSWindow?
     private let overlay = OverlayController()
+    private let updaterController = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil)
     private var hotKeys: [EventHotKeyRef] = []
     private var shortcutWarning: String?
     private var handler: EventHandlerRef?
@@ -33,6 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(item("Find Dimensions", action: #selector(findDimensions), key: "f"))
         menu.addItem(item("Measure Area", action: #selector(measureArea), key: "m"))
         menu.addItem(item("Settings…", action: #selector(showSettings), key: ","))
+        menu.addItem(updateMenuItem())
         menu.addItem(.separator())
         menu.addItem(item("Quit Schnaps", action: #selector(quit), key: "q"))
         statusItem.menu = menu
@@ -41,12 +44,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appMenu.addItem(item("About Schnaps", action: #selector(about), key: ""))
         appMenu.addItem(.separator())
         appMenu.addItem(item("Settings…", action: #selector(showSettings), key: ","))
+        appMenu.addItem(updateMenuItem())
         appMenu.addItem(.separator())
         appMenu.addItem(item("Quit Schnaps", action: #selector(quit), key: "q"))
         let appItem = NSMenuItem()
         appItem.submenu = appMenu
         mainMenu.addItem(appItem)
         NSApp.mainMenu = mainMenu
+        updaterController.startUpdater()
         installHotKey()
         showSettings()
         NotificationCenter.default.addObserver(self, selector: #selector(screensChanged),
@@ -57,6 +62,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if overlay.isActive { return true }
         showSettings()
         return true
+    }
+
+    private func updateMenuItem() -> NSMenuItem {
+        let item = NSMenuItem(title: "Check for Updates…", action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "")
+        item.target = updaterController
+        return item
     }
 
     private func item(_ title: String, action: Selector, key: String) -> NSMenuItem {

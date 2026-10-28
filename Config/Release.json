@@ -1,0 +1,8 @@
+{
+  "version": "0.3.0",
+  "build": "3",
+  "feedURL": "https://github.com/gabriel/Schnaps/releases/latest/download/appcast.xml",
+  "publicEDKey": "lRwHWwUu4/1Y1in0bdq4HSrZw7eCUQnC6O7NCoraPKQ=",
+  "keychainAccount": "com.gabrielhandford.Schnaps",
+  "repository": "gabriel/Schnaps"
+}

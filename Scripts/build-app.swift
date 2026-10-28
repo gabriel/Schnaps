@@ -18,7 +18,10 @@ func run(_ executable: String, _ arguments: [String], capture: Bool = false) thr
     guard process.terminationStatus == 0 else { throw NSError(domain: executable, code: Int(process.terminationStatus)) }
     return String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
 }
-_ = try run("/usr/bin/xcrun", ["swift", "build", "-c", configuration])
+let architectureFlags = CommandLine.arguments.contains("--universal") ? ["--arch", "arm64", "--arch", "x86_64"] : []
+_ = try run("/usr/bin/xcrun", ["swift", "build", "-c", configuration] + architectureFlags)
+let binPath = try run("/usr/bin/xcrun", ["swift", "build", "-c", configuration] + architectureFlags + ["--show-bin-path"], capture: true)
+let release = try JSONSerialization.jsonObject(with: Data(contentsOf: root.appendingPathComponent("Config/Release.json"))) as! [String: String]
 let app = root.appendingPathComponent("build/Schnaps.app")
 let contents = app.appendingPathComponent("Contents")
 let resources = contents.appendingPathComponent("Resources")
@@ -26,7 +29,7 @@ try manager.createDirectory(at: contents.appendingPathComponent("MacOS"), withIn
 try manager.createDirectory(at: resources, withIntermediateDirectories: true)
 let binary = contents.appendingPathComponent("MacOS/Schnaps")
 if manager.fileExists(atPath: binary.path) { try manager.removeItem(at: binary) }
-try manager.copyItem(at: root.appendingPathComponent(".build/\(configuration)/Schnaps"), to: binary)
+try manager.copyItem(at: URL(fileURLWithPath: binPath).appendingPathComponent("Schnaps"), to: binary)
 
 let sdk = try run("/usr/bin/xcrun", ["--sdk", "macosx", "--show-sdk-version"], capture: true)
 let sdkMajor = Int(sdk.split(separator: ".").first ?? "0") ?? 0
@@ -50,7 +53,9 @@ var info: [String: Any] = [
     "CFBundleIdentifier": "com.gabrielhandford.Schnap",
     "CFBundleName": "Schnaps", "CFBundleDisplayName": "Schnaps",
     "CFBundleExecutable": "Schnaps", "CFBundlePackageType": "APPL",
-    "CFBundleShortVersionString": "0.2.0", "CFBundleVersion": "2",
+    "CFBundleShortVersionString": release["version"]!, "CFBundleVersion": release["build"]!,
+    "SUFeedURL": release["feedURL"]!, "SUPublicEDKey": release["publicEDKey"]!,
+    "SUVerifyUpdateBeforeExtraction": true, "SURequireSignedFeed": true,
     "CFBundleIconFile": "Schnaps", "LSMinimumSystemVersion": "14.0",
     "LSUIElement": true, "NSHighResolutionCapable": true,
     "NSScreenCaptureUsageDescription": "Schnaps uses a still image of your displays to detect edges and measure screen elements. Images remain in memory on your Mac."
@@ -58,7 +63,31 @@ var info: [String: Any] = [
 if modernIcon { info["CFBundleIconName"] = "Schnaps" }
 try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
     .write(to: contents.appendingPathComponent("Info.plist"))
+let framework = contents.appendingPathComponent("Frameworks/Sparkle.framework")
+try manager.createDirectory(at: framework.deletingLastPathComponent(), withIntermediateDirectories: true)
+if manager.fileExists(atPath: framework.path) { try manager.removeItem(at: framework) }
+_ = try run("/usr/bin/ditto", [root.appendingPathComponent(".build/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework").path, framework.path])
+let acknowledgements = resources.appendingPathComponent("Acknowledgements")
+try manager.createDirectory(at: acknowledgements, withIntermediateDirectories: true)
+let sparkleLicense = acknowledgements.appendingPathComponent("Sparkle-LICENSE.txt")
+if manager.fileExists(atPath: sparkleLicense.path) { try manager.removeItem(at: sparkleLicense) }
+try manager.copyItem(at: root.appendingPathComponent(".build/checkouts/Sparkle/LICENSE"), to: sparkleLicense)
 let identity = ProcessInfo.processInfo.environment["SCHNAPS_SIGN_IDENTITY"]
     ?? ProcessInfo.processInfo.environment["SCHNAP_SIGN_IDENTITY"] ?? "-"
-_ = try run("/usr/bin/codesign", ["--force", "--sign", identity, "--timestamp=none", app.path])
+let distribution = identity.hasPrefix("Developer ID Application:")
+let signingOptions = distribution ? ["--timestamp", "--options", "runtime"] : ["--timestamp=none"]
+func sign(_ path: URL) throws {
+    _ = try run("/usr/bin/codesign", ["--force", "--sign", identity] + signingOptions + [path.path])
+}
+// Sign nested code from the inside out; never rely on --deep to produce a release signature.
+let version = framework.appendingPathComponent("Versions/B")
+try sign(version.appendingPathComponent("Autoupdate"))
+try sign(version.appendingPathComponent("Updater.app"))
+let xpcServices = version.appendingPathComponent("XPCServices")
+for service in try manager.contentsOfDirectory(at: xpcServices, includingPropertiesForKeys: nil) where service.pathExtension == "xpc" {
+    try sign(service)
+}
+try sign(framework)
+try sign(app)
+_ = try run("/usr/bin/codesign", ["--verify", "--deep", "--strict", app.path])
 print("Built \(app.path) (\(modernIcon ? "Icon Composer" : "legacy ICNS") icon)")
