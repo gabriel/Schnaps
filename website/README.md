@@ -7,3 +7,7 @@ Preview: `python3 -m http.server 5173 --directory website/dist` from the reposit
 Deploy: `npx wrangler deploy` from `website/`, using your authenticated Cloudflare account. `wrangler.jsonc` declares the custom domain and static assets. Domain registration and DNS ownership must already be in the same Cloudflare account. There are no API keys or secrets in the website source.
 
 The download buttons point at the stable `Schnaps.dmg` alias on the latest GitHub release. The release script generates this alias alongside the immutable versioned DMG used by Sparkle.
+
+## Visual direction
+
+The landing page takes cues from [Agu Seguí’s typography motion study](https://designeer.xyz/finds/agusegui-2106459249773547798): pale paper, thin blue utility-window outlines, monospace labels, and Bézier construction handles. The Schnaps lettering, SVG artwork, layout, and demo are implemented locally; no reference media is embedded. Animations respect reduced-motion preferences.

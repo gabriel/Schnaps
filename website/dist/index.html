@@ -43,33 +43,48 @@
       >
     </header>
     <main id="main">
-      <section class="hero wrap">
-        <div class="hero-copy">
-          <p class="eyebrow">
-            <span class="dot"></span> NATIVE SCREEN MEASUREMENT FOR MACOS
-          </p>
-          <h1>A little more<br /><em>precise.</em></h1>
-          <p class="intro">
-            Find the dimensions. Measure the gap.<br />Keep the details that
-            make a design work.
-          </p>
-          <div class="hero-actions">
-            <a
-              class="button"
-              href="https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg"
-              ><span>Download Schnaps</span><span aria-hidden="true">↓</span></a
-            ><span class="compatibility"
-              >macOS 14+<br />Apple Silicon & Intel</span
-            >
-          </div>
-          <p class="hero-note">
-            Free download · Written in Swift · Signed & notarized
-          </p>
+      <section class="hero wrap" aria-labelledby="hero-title">
+        <div class="build-window utility-window" aria-hidden="true">
+          <div class="window-title"><span>Schnaps.app</span><span>×</span></div>
+          <div class="build-content"><span>Native screen measurement.</span><span>100% Swift</span><div class="build-meter"><i></i></div><span class="ready"><i></i> Ready when you are.</span></div>
         </div>
+        <div class="specimen" aria-hidden="true">
+          <div class="specimen-header">s.glyph <span>01 / SCHNAPS</span></div>
+          <svg viewBox="0 0 400 490" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g class="construction" stroke="currentColor" stroke-width=".7">
+              <path d="M35 65H360M35 420H360M70 40V450M320 40V450" stroke-dasharray="3 5"/>
+              <path d="M320 143V65H240M70 341V420H160M85 197V100M315 289V370M131 253H267"/>
+              <g fill="#f6f7f3"><circle cx="320" cy="65" r="4"/><circle cx="240" cy="65" r="4"/><circle cx="70" cy="420" r="4"/><circle cx="160" cy="420" r="4"/><circle cx="85" cy="100" r="4"/><circle cx="315" cy="370" r="4"/></g>
+            </g>
+            <path class="letter" pathLength="1" d="M320 143C317 87 273 65 202 65C121 65 70 108 70 169C70 223 111 246 192 263C246 274 267 286 267 311C267 341 242 355 201 355C157 355 132 337 130 305H65C67 380 114 420 200 420C285 420 332 377 332 309C332 248 292 222 212 205C158 193 136 184 136 160C136 138 159 126 200 126C237 126 257 139 260 164L320 143Z" stroke="#33392f" stroke-width="1.2"/>
+            <g class="nodes" fill="#83a7df"><path d="M320 138l5 5-5 5-5-5zM197 65l5-5 5 5-5 5zM65 300l5 5-5 5-5-5zM195 420l5-5 5 5-5 5zM262 311l5-5 5 5-5 5zM131 160l5-5 5 5-5 5z"/></g>
+            <g fill="#33392f"><path d="M66 165h8v8h-8zM328 305h8v8h-8zM256 160h8v8h-8zM126 301h8v8h-8z"/></g>
+          </svg>
+          <div class="measure-line"><span>320 px</span></div>
+          <span class="glyph-caption">EVERY PIXEL IN ITS PLACE.</span>
+        </div>
+        <div class="metrics-window utility-window" aria-hidden="true">
+          <div class="window-title"><span>Dimensions</span><span>×</span></div>
+          <dl><dt>Width</dt><dd>320 px</dd><dt>Height</dt><dd>180 px</dd><dt>Scale</dt><dd>2×</dd><dt>Precision</dt><dd>1 px</dd><dt>Feeling</dt><dd>Just right</dd></dl>
+          <span class="metric-status">↳ copied to clipboard</span>
+        </div>
+        <div class="ascii-window utility-window" aria-hidden="true"><div class="window-title"><span>For the details.</span><span>×</span></div><pre>  +  ·  +  ·  +  ·  +
+  ·  +  ·  +  ·  +  ·
+  +  ·  +  ·  +  ·  +
+  ·  +  ·  +  ·  +  ·</pre></div>
+        <div class="hero-copy">
+          <p class="eyebrow">A SMALL UTILITY. A SHARPER EYE.</p>
+          <h1 id="hero-title">A little more<br /><em>precise.</em></h1>
+          <p class="intro">Find dimensions. Measure the space between.<br />A tiny Mac app for the details that matter.</p>
+          <div class="hero-actions"><a class="button" href="https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg">Download for Mac <span aria-hidden="true">↗</span></a></div>
+          <p class="hero-note">Free & open source · macOS 14+<br />Apple Silicon & Intel · Signed & notarized</p>
+        </div>
+        <div class="binary-text" aria-hidden="true">01001101 01000001 01000011<br />++ · · ++ · · ++ · · ++ · ·<br />01010011 01010111 01001001</div>
+        <span class="floating-cursor" aria-hidden="true"><svg width="26" height="34" viewBox="0 0 26 34"><path d="M2 1v27l7-7 5 11 5-2-5-11h10L2 1Z" fill="#282d26" stroke="#f6f7f3" stroke-width="1.5"/></svg></span>
         <div class="demo-shell">
           <div class="demo-title">
             <div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div>
-            <span>A closer look</span><span class="demo-version">SCHNAPS</span>
+            <span>Try Schnaps</span><span class="demo-version">LIVE DEMO</span>
           </div>
           <div
             class="demo-toolbar"
@@ -90,14 +105,13 @@
             aria-label="Interactive measurement demo. Drag a region to measure. Shift-drag for a square."
           >
             <div class="sample">
-              <p class="sample-kicker">THE DETAILS MATTER</p>
-              <h2>Room to<br />get it right.</h2>
+              <p class="sample-kicker">A LITTLE ROOM FOR PRECISION</p>
+              <h2>Make space<br />for the details.</h2>
               <p class="sample-body">
-                A small space. A balanced layout.<br />A design that feels just
-                right.
+                Move over the button, or drag a box.<br />Find the edges. Get the dimensions.
               </p>
               <div class="sample-button" data-measure>
-                Take a closer look <span>↗</span>
+                A perfect little button <span>↗</span>
               </div>
               <div class="sample-label" data-measure>Made for your Mac</div>
             </div>
@@ -112,14 +126,14 @@
             ><span>INTERACTIVE PREVIEW</span>
           </div>
           <p class="demo-caption">
-            Try it here. The Mac app measures across your whole desktop.
+            An illustrative preview. The Mac app measures your whole desktop.
           </p>
         </div>
       </section>
       <section class="workflow wrap" id="how-it-works">
         <div class="section-heading">
-          <p class="eyebrow">FROM GUESSWORK TO DIMENSIONS</p>
-          <h2>Less estimating.<br />More getting it right.</h2>
+          <p class="eyebrow">01 — THE TOOLKIT</p>
+          <h2>Good design is<br />in the details.</h2>
         </div>
         <div class="steps">
           <article>
@@ -164,8 +178,8 @@
             />
           </div>
           <div>
-            <p class="eyebrow">AT HOME ON YOUR MAC</p>
-            <h2>A proper little<br />Mac app.</h2>
+            <p class="eyebrow">02 — NATIVE BY NATURE</p>
+            <h2>Small footprint.<br />Right at home.</h2>
             <p class="native-copy">
               A menu-bar utility with native settings, familiar controls, and
               shortcuts that work in any app. Built with Swift, AppKit, SwiftUI,
@@ -192,8 +206,8 @@
       </section>
       <section class="getting-started wrap">
         <div>
-          <p class="eyebrow">READY WHEN YOU ARE</p>
-          <h2>Your next measurement<br />is a shortcut away.</h2>
+          <p class="eyebrow">03 — GET STARTED</p>
+          <h2>Less guesswork.<br />More good work.</h2>
           <a
             class="button"
             href="https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg"
@@ -231,7 +245,7 @@
         </ol>
       </section>
       <section class="faq wrap">
-        <h2>A few details.</h2>
+        <h2>The finer details.</h2>
         <details>
           <summary>What can Schnaps measure?</summary>
           <p>

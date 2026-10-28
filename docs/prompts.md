@@ -72,3 +72,9 @@ Public app, website, and source publication were explicitly selected in the foll
 - Release validation checks universal architectures, nested signatures, Apple notarization/stapling, DMG integrity, and Sparkle signatures.
 
 The app's implementation is Swift. The later update request explicitly introduces Sparkle's third-party framework; its license is bundled with releases. The website uses ordinary HTML, CSS, and JavaScript.
+
+## Website design reference
+
+> Can you make the website more like this design: https://designeer.xyz/finds/agusegui-2106459249773547798
+
+**Result:** a paper-colored measurement canvas with thin blue floating utility windows, a custom outlined S with Bézier handles, monospace labels, and restrained motion. The existing interactive demo, downloads, installation guide, and documentation links remain available. The responsive layout reflows the windows on small screens; reduced-motion preferences disable the decorative animation.
