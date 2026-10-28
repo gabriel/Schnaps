@@ -1,6 +1,6 @@
 {
-  "version": "0.4.0",
-  "build": "4",
+  "version": "0.5.0",
+  "build": "5",
   "feedURL": "https://github.com/gabriel/Schnaps/releases/latest/download/appcast.xml",
   "publicEDKey": "lRwHWwUu4/1Y1in0bdq4HSrZw7eCUQnC6O7NCoraPKQ=",
   "keychainAccount": "com.gabrielhandford.Schnaps",
