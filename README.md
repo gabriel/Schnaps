@@ -52,7 +52,7 @@ Detection uses color contrast, so solid UI surfaces work best. Gradients, shadow
 
 ## Updates and privacy
 
-**Check for Updates…** is available in the menu-bar menu and app menu. Sparkle manages update checks and its standard permission flow. Updates and the appcast are signed with Ed25519; published app bundles and DMGs are Developer ID signed and notarized.
+**Check for Updates…** is available in **Settings → About Schnaps**, the menu-bar menu, and app menu. About also includes automatic update check and installation preferences. Sparkle manages update checks and its standard permission flow. Updates and the appcast are signed with Ed25519; published app bundles and DMGs are Developer ID signed and notarized.
 
 Screenshots stay in memory on your Mac and are discarded when the overlay closes. There are no analytics or accounts. Update checks contact GitHub; the website is hosted on Cloudflare. See [updates and release process](docs/releases.md).
 

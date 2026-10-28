@@ -2,7 +2,7 @@
 
 ## Native application
 
-`Sources/Schnaps/App.swift` starts AppKit as a menu-bar utility, registers Carbon global hotkeys, and owns native settings and measurement windows. The settings view uses SwiftUI `NavigationSplitView`, a sidebar list, grouped forms, and system controls. About opens Apple's standard About panel. Sparkle's `SPUStandardUpdaterController` owns update checking, UI, and installation.
+`Sources/Schnaps/App.swift` starts AppKit as a menu-bar utility, registers Carbon global hotkeys, and owns native settings and measurement windows. The settings view uses SwiftUI `NavigationSplitView`, a sidebar list, grouped forms, and system controls. About is the final settings pane, with version information and native update controls. Sparkle preferences are observed directly so changes in update dialogs stay in sync. Sparkle's `SPUStandardUpdaterController` owns update checking, UI, and installation.
 
 `OverlayController` captures displays before showing the overlay and creates one borderless window per `NSScreen`. Starting another tool replaces the current one; activating the same tool toggles it off. A generation token prevents canceled async captures from reopening the overlay. Display topology changes close the overlay safely. Pins are held in memory across overlay toggles. The canvas has no toolbar, persistent instructions, or tint. Only measurement marks and brief action/error feedback are drawn; the canvas exposes its description to accessibility.
 

@@ -19,6 +19,7 @@ struct SchnapsApp {
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private var settingsWindow: NSWindow?
+    private let settingsNavigation = SettingsNavigation()
     private let overlay = OverlayController()
     private let updaterController = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil)
     private var hotKeys: [EventHotKeyRef] = []
@@ -156,7 +157,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func screensChanged() { overlay.stop() }
-    @objc private func about() { AppBranding.showAbout() }
+    @objc private func about() {
+        settingsNavigation.pane = .about
+        showSettings()
+    }
     @objc private func quit() { NSApp.terminate(nil) }
 
     @objc private func showSettings() {
@@ -170,7 +174,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             window.minSize = NSSize(width: 720, height: 500)
             window.setFrameAutosaveName("SchnapSettings")
             window.isReleasedWhenClosed = false
-            window.contentViewController = NSHostingController(rootView: SettingsView(start: { [weak self] mode in self?.start(mode: mode) }, shortcutWarning: shortcutWarning))
+            window.contentViewController = NSHostingController(rootView: SettingsView(
+                start: { [weak self] mode in self?.start(mode: mode) }, shortcutWarning: shortcutWarning,
+                navigation: settingsNavigation, updates: UpdateSettings(updater: updaterController.updater)))
             window.center()
             settingsWindow = window
         }
