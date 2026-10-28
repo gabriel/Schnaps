@@ -12,7 +12,7 @@ Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloud
 
 ## Screenshot and branding
 
-The screenshot is a direct capture of the running Schnaps app measuring and pinning regions over native macOS Calculator. It has only been cropped; the measurement UI is not redrawn or browser-generated. No video is loaded or published.
+The screenshot is a direct capture of the running Schnaps app measuring and pinning regions over native macOS Calculator. The 1344 × 576 pixel Retina crop displays at a maximum of 672 × 288 CSS pixels, matching its native 2× scale. It has only been cropped; the measurement UI is not redrawn or browser-generated. No video is loaded or published.
 
 The cropped source window capture is `media-source/calculator.jpg`. Rebuild the screenshot with `swift Scripts/export-screenshot.swift`.
 

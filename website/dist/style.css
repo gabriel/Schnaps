@@ -54,7 +54,7 @@ h1 { font-size: clamp(40px, 4.5vw, 48px); font-weight: 600; line-height: 1.08; l
 .download { display: inline-flex; align-items: center; gap: 22px; padding: 12px 20px; min-height: 46px; border-radius: 8px; background: var(--button); color: var(--button-text); font-size: 14px; font-weight: 500; }
 .download:hover { opacity: .85; text-decoration: none; }
 .requirements { grid-column: 2; grid-row: 2; display: block; font-size: 9px; color: var(--secondary); text-align: right; }
-.app-demo { margin: 0; }
+.app-demo { max-width: 672px; margin: 0 auto; }
 .app-demo img { display: block; width: 100%; height: auto; aspect-ratio: 7 / 3; object-fit: contain; background: #202126; border: 1px solid var(--line); border-radius: 12px; }
 figcaption { color: var(--secondary); font-size: 12px; text-align: center; margin-top: 12px; }
 .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; padding-block: 48px; margin-top: 24px; }
