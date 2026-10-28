@@ -14,7 +14,7 @@ macOS 14 or later. The published release is universal: Apple Silicon and Intel.
 2. Drag **Schnaps** into **Applications**, then launch it.
 3. For edge detection, allow **Screen Recording** in **Schnaps → Settings → Permissions** and enable Schnaps in macOS privacy settings. Relaunch if macOS asks.
 
-Manual area measurement works without Screen Recording permission. The app runs in the menu bar; reopening it shows the native settings window.
+Manual area measurement works without Screen Recording permission. The app runs in the menu bar; reopening it shows the native settings window. Enable **Show in Dock** in General settings to also keep it in the Dock. This is off by default and takes effect immediately.
 
 ## Tools
 

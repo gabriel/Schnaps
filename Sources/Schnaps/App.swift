@@ -29,7 +29,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         AppBranding.installIcon()
         UserDefaults.standard.register(defaults: [PreferenceKey.unit: "pt", PreferenceKey.tolerance: 18,
                                                   PreferenceKey.scrollTolerance: true,
+                                                  PreferenceKey.showInDock: false,
                                                   PreferenceKey.defaultTool: MeasurementMode.findDimensions.rawValue])
+        updateDockVisibility()
+        NotificationCenter.default.addObserver(self, selector: #selector(updateDockVisibility),
+                                               name: UserDefaults.didChangeNotification, object: nil)
         let tolerance = TolerancePreset.closest(to: UserDefaults.standard.integer(forKey: PreferenceKey.tolerance))
         UserDefaults.standard.set(tolerance.rawValue, forKey: PreferenceKey.tolerance)
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -72,6 +76,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if overlay.isActive { return true }
         showSettings()
         return true
+    }
+
+    @objc private func updateDockVisibility() {
+        let policy: NSApplication.ActivationPolicy = UserDefaults.standard.bool(forKey: PreferenceKey.showInDock) ? .regular : .accessory
+        guard NSApp.activationPolicy() != policy else { return }
+        NSApp.setActivationPolicy(policy)
+        if let settingsWindow, settingsWindow.isVisible {
+            NSApp.activate(ignoringOtherApps: true)
+            settingsWindow.makeKeyAndOrderFront(nil)
+        }
     }
 
     private func toleranceMenuItem() -> NSMenuItem {
