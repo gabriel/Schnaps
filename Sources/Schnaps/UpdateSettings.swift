@@ -1,9 +1,18 @@
 import Combine
 import Sparkle
+import MeasurementCore
 
 @MainActor
 final class UpdateSettings: ObservableObject {
     private let updater: SPUUpdater
+    private let channels: UpdateChannelSettings
+    @Published var channel: UpdateChannel {
+        didSet {
+            guard channels.channel != channel else { return }
+            channels.channel = channel
+            updater.resetUpdateCycleAfterShortDelay()
+        }
+    }
     @Published private(set) var canCheckForUpdates = false
     @Published private(set) var allowsAutomaticUpdates = false
     @Published var automaticallyChecksForUpdates: Bool {
@@ -21,8 +30,10 @@ final class UpdateSettings: ObservableObject {
         }
     }
 
-    init(updater: SPUUpdater) {
+    init(updater: SPUUpdater, channels: UpdateChannelSettings) {
         self.updater = updater
+        self.channels = channels
+        channel = channels.channel
         automaticallyChecksForUpdates = updater.automaticallyChecksForUpdates
         automaticallyDownloadsUpdates = updater.automaticallyDownloadsUpdates
         // Observe Sparkle's own preferences, including changes made in its update dialogs.

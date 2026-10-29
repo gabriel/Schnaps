@@ -4,7 +4,7 @@
 
 `Config/Release.json` is the version/build and update configuration. Increase both `version` and the monotonically increasing `build` before a release. The first public release is 0.3.0 (3).
 
-The appcast URL is `https://github.com/gabriel/Schnaps/releases/latest/download/appcast.xml`. Each latest release must include a complete current signed feed and the stable `Schnaps.dmg` download alias. Enclosures use immutable versioned GitHub release asset URLs.
+Legacy clients use `https://github.com/gabriel/Schnaps/releases/latest/download/appcast.xml`. New builds use the combined Stable/Beta feed described below. Each latest stable release must include its signed feed and the stable `Schnaps.dmg` download alias. Enclosures use immutable versioned GitHub release asset URLs.
 
 The public Ed25519 key is safe to commit. The private key is stored only in the macOS login Keychain under account `com.gabrielhandford.Schnaps`. Never export it into this repository. Preserve it for future releases; Sparkle key rotation requires following Sparkle's signed-update migration procedure.
 
@@ -54,3 +54,33 @@ gh release create v0.3.0 \
 Verify the public feed and download URLs and test **Check for Updates…** in the installed app. First release validation can verify the current-version response; a full upgrade installation requires a second real version. Never modify a signed feed or release notes without regenerating its signature. Never replace the bytes of an archive that an existing signed feed references.
 
 The website is deployed with Wrangler from `website/`. Cloudflare provisions HTTPS for the custom domain; registrar ownership must be configured first. Keep GitHub source publishing, DMG release publishing, and website deployment as distinct verifiable steps.
+
+## Stable and Beta channels
+
+About Schnaps → Updates → Channel offers Stable and Beta. Stable is the default for normal builds; a fresh beta install defaults to Beta. An explicit choice persists across builds. Beta permits Sparkle's `beta` channel plus normal stable updates; Stable permits only normal releases. Switching to Stable does not downgrade an already installed beta: it receives the next stable build with a higher build number.
+
+New builds use the signed combined feed at `https://github.com/gabriel/Schnaps/releases/download/updates/appcast.xml`. The `updates` prerelease is only a feed host. Existing clients keep using the stable latest-release feed; stable releases still publish `appcast.xml` and `Schnaps.dmg` at the legacy latest-release URLs. Beta releases are GitHub prereleases and never become Latest or replace the stable website download.
+
+### One-command beta publication
+
+```sh
+make plan-beta                 # Read-only plan; no release is published
+make beta                      # Build, sign, notarize, and publish the next beta
+make beta ARGS='--version 0.7.0' # Start a new beta series explicitly
+```
+
+The publisher uses the Keychain notary profile `Schnaps` by default and automatically selects a Developer ID Application identity only when exactly one is installed. Override `SCHNAPS_SIGN_IDENTITY` and `SCHNAPS_NOTARY_PROFILE` when needed. macOS may request access to signing keys; approve those prompts in macOS. Private keys never leave Keychain.
+
+Publish from a clean, committed, pushed branch. Betas may come from feature branches. Version planning considers existing release tags, signed feeds, and reserved draft builds. It increments the beta suffix and chooses a globally increasing internal build number. The checked-in stable version/build is not changed. A generated `Release.json` supplies overrides to both the app builder and packager; beta bundles contain `SchnapsUpdateChannel=beta` and beta appcast items contain `sparkle:channel=beta`.
+
+The publisher stages a draft with immutable versioned archives, publishes it as a prerelease, then merges, signs, verifies, and uploads the combined channel feed. Only the combined feed is overwritten. Versioned public archives are never replaced. Both individual release feeds and the combined feed participate in build allocation, including after a failed feed upload. A local lock prevents overlapping publishers on one Mac, and a final feed refresh detects build numbers claimed by another publisher.
+
+If publication fails after packaging, keep `build/releases/<version>/` and resume from the original commit:
+
+```sh
+make beta ARGS='--resume 0.6.3-beta.1'
+```
+
+Resume validates the manifest, checksums, stapling, code signature, appcast signature, and archive signature before publishing. It can finish a draft or repair a missing combined-feed upload without changing public archive bytes. If packaging failed before uploading anything, a fresh invocation can rebuild the unpublished local output. Remove `build/Publish.lock` manually only after verifying a crashed publisher is no longer running.
+
+For stable releases, update `Config/Release.json` to the intended stable version and publish from merged `main` with `make release`. The same publisher updates both the legacy stable assets and combined channel feed. The allocated build number is always higher than all known stable/beta builds, even when the checked-in build was lower. Authored notes in `releases/<version>.md` are embedded; otherwise a concise commit-based note is generated.

@@ -22,7 +22,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let settingsNavigation = SettingsNavigation()
     private let recordingPermission = ScreenRecordingPermission.shared
     private let overlay = OverlayController()
-    private let updaterController = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil)
+    private let updateChannels = UpdateChannelSettings()
+    private lazy var updaterController = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: updateChannels, userDriverDelegate: nil)
     private var hotKeys: [EventHotKeyRef] = []
     private var shortcutWarning: String?
     private var handler: EventHandlerRef?
@@ -188,7 +189,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             window.isReleasedWhenClosed = false
             window.contentViewController = NSHostingController(rootView: SettingsView(
                 start: { [weak self] mode in self?.start(mode: mode) }, shortcutWarning: shortcutWarning,
-                navigation: settingsNavigation, updates: UpdateSettings(updater: updaterController.updater)))
+                navigation: settingsNavigation, updates: UpdateSettings(updater: updaterController.updater, channels: updateChannels)))
             window.center()
             settingsWindow = window
         }
