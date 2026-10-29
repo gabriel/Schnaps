@@ -1,0 +1,38 @@
+[
+  {
+    "file": "00-base.png",
+    "duration": 700
+  },
+  {
+    "file": "01-hover.png",
+    "duration": 2400
+  },
+  {
+    "file": "02-hover.png",
+    "duration": 1700
+  },
+  {
+    "file": "00-base.png",
+    "duration": 300
+  },
+  {
+    "file": "03-small.png",
+    "duration": 180
+  },
+  {
+    "file": "03-medium.png",
+    "duration": 180
+  },
+  {
+    "file": "04-area.png",
+    "duration": 1600
+  },
+  {
+    "file": "05-pinned.png",
+    "duration": 2200
+  },
+  {
+    "file": "00-base.png",
+    "duration": 500
+  }
+]
