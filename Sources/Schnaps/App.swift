@@ -30,17 +30,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppBranding.installIcon()
-        UserDefaults.standard.register(defaults: [PreferenceKey.unit: "pt", PreferenceKey.tolerance: 18,
-                                                  PreferenceKey.scrollTolerance: true,
-                                                  PreferenceKey.showInDock: false,
-                                                  PreferenceKey.defaultTool: MeasurementMode.findDimensions.rawValue])
+        UserDefaults.standard.register(defaults: MeasurementPreferences.defaults)
+        MeasurementPreferences.selectTolerance(MeasurementPreferences.selectedTolerance)
         updateDockVisibility()
-        NotificationCenter.default.addObserver(self, selector: #selector(updateDockVisibility),
+        NotificationCenter.default.addObserver(self, selector: #selector(preferencesChanged),
                                                name: UserDefaults.didChangeNotification, object: nil)
-        let tolerance = TolerancePreset.closest(to: UserDefaults.standard.integer(forKey: PreferenceKey.tolerance))
-        UserDefaults.standard.set(tolerance.rawValue, forKey: PreferenceKey.tolerance)
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.button?.image = NSImage(systemSymbolName: "ruler", accessibilityDescription: "Schnaps measurements")
+        buildMenus()
+        preferencesChanged()
+        updaterController.startUpdater()
+        installHotKey()
+        let launchEvent = NSAppleEventManager.shared().currentAppleEvent
+        let launchedAtLogin = launchEvent?.eventID == kAEOpenApplication
+            && launchEvent?.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
+        if !launchedAtLogin { showSettings() }
+        NotificationCenter.default.addObserver(self, selector: #selector(screensChanged),
+                                               name: NSApplication.didChangeScreenParametersNotification, object: nil)
+    }
+
+    private var menuLanguage: String?
+
+    private func buildMenus() {
         let menu = NSMenu()
         menu.addItem(item("Start Measuring", action: #selector(startDefaultTool), key: ""))
         menu.addItem(.separator())
@@ -68,11 +79,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         appItem.submenu = appMenu
         mainMenu.addItem(appItem)
         NSApp.mainMenu = mainMenu
-        updaterController.startUpdater()
-        installHotKey()
-        showSettings()
-        NotificationCenter.default.addObserver(self, selector: #selector(screensChanged),
-                                               name: NSApplication.didChangeScreenParametersNotification, object: nil)
+    }
+
+    @objc private func preferencesChanged() {
+        updateDockVisibility()
+        statusItem?.isVisible = UserDefaults.standard.bool(forKey: PreferenceKey.showMenuBar)
+        NSApp.appearance = MeasurementPreferences.appearance
+        let language = UserDefaults.standard.string(forKey: PreferenceKey.language) ?? "system"
+        if language != menuLanguage {
+            menuLanguage = language
+            buildMenus()
+            settingsWindow?.title = L("Schnaps Settings")
+        }
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -92,8 +110,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func toleranceMenuItem() -> NSMenuItem {
-        let parent = NSMenuItem(title: "Color tolerance", action: nil, keyEquivalent: "")
-        let menu = NSMenu(title: "Color tolerance")
+        let parent = NSMenuItem(title: L("Color tolerance"), action: nil, keyEquivalent: "")
+        let menu = NSMenu(title: L("Color tolerance"))
         menu.delegate = self
         for preset in TolerancePreset.allCases {
             let entry = item(preset.title, action: #selector(selectTolerance(_:)), key: "")
@@ -106,22 +124,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
-        let value = TolerancePreset.closest(to: UserDefaults.standard.integer(forKey: PreferenceKey.tolerance)).rawValue
+        let value = MeasurementPreferences.selectedTolerance.rawValue
         for entry in menu.items { entry.state = entry.tag == value ? .on : .off }
     }
 
     @objc private func selectTolerance(_ sender: NSMenuItem) {
-        UserDefaults.standard.set(sender.tag, forKey: PreferenceKey.tolerance)
+        if let preset = TolerancePreset(rawValue: sender.tag) { MeasurementPreferences.selectTolerance(preset) }
     }
 
     private func updateMenuItem() -> NSMenuItem {
-        let item = NSMenuItem(title: "Check for Updates…", action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "")
+        let item = NSMenuItem(title: L("Check for Updates…"), action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "")
         item.target = updaterController
         return item
     }
 
     private func item(_ title: String, action: Selector, key: String) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: action, keyEquivalent: key)
+        let item = NSMenuItem(title: L(title), action: action, keyEquivalent: key)
         item.target = self
         return item
     }
@@ -139,11 +157,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if mode == .findDimensions && !recordingPermission.granted {
             showSettings()
             let alert = NSAlert()
-            alert.messageText = "Allow Screen Recording to Find Dimensions"
-            alert.informativeText = "Schnaps uses a still image of your screen to find edges. Allow access, or measure an area manually."
-            alert.addButton(withTitle: recordingPermission.hasRequested ? "Open Settings…" : "Allow Screen Recording…")
-            alert.addButton(withTitle: "Measure Area")
-            alert.addButton(withTitle: "Cancel")
+            alert.messageText = L("Allow Screen Recording to Find Dimensions")
+            alert.informativeText = L("Schnaps uses a still image of your screen to find edges. Allow access, or measure an area manually.")
+            alert.addButton(withTitle: L(recordingPermission.hasRequested ? "Open Settings…" : "Allow Screen Recording…"))
+            alert.addButton(withTitle: L("Measure Area"))
+            alert.addButton(withTitle: L("Cancel"))
             let response = alert.runModal()
             if response == .alertFirstButtonReturn {
                 if recordingPermission.hasRequested {
@@ -181,7 +199,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if settingsWindow == nil {
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 780, height: 560),
                                   styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
-            window.title = "Schnaps Settings"
+            window.title = L("Schnaps Settings")
             window.titlebarAppearsTransparent = true
             window.toolbarStyle = .unified
             window.minSize = NSSize(width: 720, height: 500)

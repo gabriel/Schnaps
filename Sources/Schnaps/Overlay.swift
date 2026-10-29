@@ -7,6 +7,7 @@ final class OverlayController: NSObject {
     private var generation = UUID()
     private var preparing = false
     private var previousApp: NSRunningApplication?
+    private var liveTask: Task<Void, Never>?
     private var saved: [CGDirectDisplayID: [CGRect]] = [:]
     private var savedDistances: [CGDirectDisplayID: [DimensionSpan]] = [:]
     private var mode: MeasurementMode = .area
@@ -19,7 +20,7 @@ final class OverlayController: NSObject {
     }
 
     @objc private func preferencesChanged() {
-        for window in windows { (window.contentView as? MeasurementView)?.synchronizeTolerance() }
+        for window in windows { (window.contentView as? MeasurementView)?.synchronizePreferences() }
     }
 
     func toggle(mode: MeasurementMode = .area) {
@@ -44,7 +45,7 @@ final class OverlayController: NSObject {
             preparing = false
             for screen in NSScreen.screens {
                 let id = (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
-                let window = OverlayWindow(screen: screen)
+                let window = OverlayWindow(screen: screen, freeze: UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen))
                 let view = MeasurementView(frame: CGRect(origin: .zero, size: screen.frame.size),
                                            scale: screen.backingScaleFactor, snapshot: snapshots[id], mode: mode)
                 view.pinned = (saved[id] ?? []).map { $0.intersection(view.bounds) }.filter { !$0.isNull && !$0.isEmpty }
@@ -55,12 +56,16 @@ final class OverlayController: NSObject {
                     guard let view else { return }
                     self?.refresh(mode: view.mode)
                 }
+                view.onCapture = { [weak self, weak view] region, copy, togglePadding in
+                    guard let self, let view else { return }
+                    self.capture(view: view, displayID: id, region: region, copy: copy, togglePadding: togglePadding)
+                }
                 window.contentView = view
                 window.makeFirstResponder(view)
                 window.orderFrontRegardless()
                 windows.append(window)
             }
-            NSApp.activate(ignoringOtherApps: true)
+            if UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) { NSApp.activate(ignoringOtherApps: true) }
             let target = windows.first { $0.frame.contains(NSEvent.mouseLocation) } ?? windows.first
             target?.makeKeyAndOrderFront(nil)
             for window in windows {
@@ -68,10 +73,12 @@ final class OverlayController: NSObject {
                 view.initializePointer()
                 if captureFailed && mode == .findDimensions { view.reportCaptureFailure() }
             }
+            startLiveCapture(token: token)
         }
     }
 
     func stop() {
+        liveTask?.cancel(); liveTask=nil
         generation = UUID()
         preparing = false
         for window in windows {
@@ -90,6 +97,53 @@ final class OverlayController: NSObject {
         previousApp = nil
     }
 
+    private func startLiveCapture(token: UUID) {
+        guard !UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen), ScreenRecordingPermission.shared.granted else { return }
+        liveTask = Task { [weak self] in
+            while !Task.isCancelled {
+                do { try await Task.sleep(nanoseconds: 250_000_000) } catch { return }
+                guard let self, self.generation == token else { return }
+                guard !UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) else { continue }
+                guard self.mode == .findDimensions else { continue }
+                do {
+                    let frames = try await ScreenSnapshot.capture()
+                    guard self.generation == token else { return }
+                    for window in self.windows {
+                        let id=(window.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
+                        (window.contentView as? MeasurementView)?.updateSnapshot(frames[id])
+                    }
+                } catch { /* Keep the last valid frame during a transient capture failure. */ }
+            }
+        }
+    }
+
+    private func capture(view: MeasurementView, displayID: CGDirectDisplayID, region: CGRect, copy: Bool, togglePadding: Bool) {
+        let frozen = UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) ? view.captureSnapshot : nil
+        ScreenRecordingPermission.shared.refresh()
+        guard frozen != nil || ScreenRecordingPermission.shared.granted else {
+            view.reportScreenshotError(ScreenshotExport.ExportError.noCapture.localizedDescription)
+            return
+        }
+        let token = generation
+        Task { [weak self, weak view] in
+            guard let self else { return }
+            do {
+                let image: ScreenSnapshot
+                if let frozen { image=frozen }
+                else {
+                    let frames=try await ScreenSnapshot.capture()
+                    guard let frame=frames[displayID] else { throw ScreenshotExport.ExportError.noCapture }; image=frame
+                }
+                guard self.generation == token else { return }
+                self.stop()
+                _ = try ScreenshotExport.export(snapshot:image,region:region,copy:copy,togglePadding:togglePadding)
+            } catch {
+                if let view, self.isActive { view.reportScreenshotError(error.localizedDescription) }
+                else { let alert=NSAlert(); alert.messageText=L("Screenshot failed"); alert.informativeText=error.localizedDescription; alert.runModal() }
+            }
+        }
+    }
+
     private func refresh(mode: MeasurementMode) {
         let activeMode = mode
         stop()
@@ -97,9 +151,9 @@ final class OverlayController: NSObject {
     }
 }
 
-final class OverlayWindow: NSWindow {
-    init(screen: NSScreen) {
-        super.init(contentRect: screen.frame, styleMask: [.borderless], backing: .buffered, defer: false)
+final class OverlayWindow: NSPanel {
+    init(screen: NSScreen, freeze: Bool) {
+        super.init(contentRect: screen.frame, styleMask: freeze ? [.borderless] : [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         setFrame(screen.frame, display: true)
         backgroundColor = .clear
         isOpaque = false
@@ -111,6 +165,7 @@ final class OverlayWindow: NSWindow {
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         acceptsMouseMovedEvents = true
         isRestorable = false
+        hidesOnDeactivate = false
     }
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
@@ -125,8 +180,10 @@ final class MeasurementView: NSView {
     var onClose: (() -> Void)?
     var onRefresh: (() -> Void)?
     var onModeChanged: ((MeasurementMode) -> Void)?
+    var onCapture: ((CGRect, Bool, Bool) -> Void)?
     private let scale: CGFloat
-    private let snapshot: ScreenSnapshot?
+    private var snapshot: ScreenSnapshot?
+    var captureSnapshot: ScreenSnapshot? { snapshot }
     private var selection: CGRect?
     private var detectionRegion: CGRect?
     private var scrollRemainder: CGFloat = 0
@@ -145,7 +202,9 @@ final class MeasurementView: NSView {
     private var tracking: NSTrackingArea?
     private var message: String?
     private var messageTimer: Timer?
-    private let accent = NSColor.controlAccentColor
+    private var colorOverride: Bool?
+    private var messageAlpha: CGFloat = 1
+    private var presentation: MeasurementPresentation { var value=MeasurementPreferences.presentation; value.unit=unit; return value }
     private var showAlignment = false
     private var guides: [(vertical: Bool, position: CGFloat)] = []
 
@@ -154,13 +213,14 @@ final class MeasurementView: NSView {
         self.snapshot = snapshot
         self.mode = mode
         self.unit = MeasurementUnit(rawValue: UserDefaults.standard.string(forKey: PreferenceKey.unit) ?? "pt") ?? .points
-        self.tolerance = TolerancePreset.closest(to: UserDefaults.standard.integer(forKey: PreferenceKey.tolerance)).rawValue
+        self.tolerance = MeasurementPreferences.tolerance
         super.init(frame: frame)
         setAccessibilityElement(true)
         setAccessibilityRole(.group)
         setAccessibilityIdentifier("measurement-overlay")
         setAccessibilityLabel("Measurement canvas")
-        setAccessibilityHelp("Drag to measure. S switches tools, U switches units, T changes tolerance, Enter copies, Escape exits.")
+        setAccessibilityHelp("Drag to measure. S switches tools, U switches units, T changes tolerance, C copies a screenshot, P saves, Enter copies dimensions, Escape exits.")
+        appearance = MeasurementPreferences.appearance
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) is unsupported") }
 
@@ -170,7 +230,23 @@ final class MeasurementView: NSView {
         tracking = NSTrackingArea(rect: bounds, options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited, .inVisibleRect], owner: self)
         addTrackingArea(tracking!)
     }
-    override func resetCursorRects() { addCursorRect(bounds, cursor: .crosshair) }
+    override func resetCursorRects() {
+        let hidden=NSCursor(image:NSImage(size:NSSize(width:16,height:16),flipped:false) { _ in true },hotSpot:.zero)
+        addCursorRect(bounds,cursor:UserDefaults.standard.bool(forKey:PreferenceKey.showCursor) ? .crosshair : hidden)
+    }
+    func updateSnapshot(_ value: ScreenSnapshot?) {
+        guard !dragging, heldDimensions == nil, selection == nil else { return }
+        snapshot=value; updateLiveDimensions(); needsDisplay=true
+    }
+    func reportScreenshotError(_ text: String) { flash(text) }
+    private func dimensions(at point: CGPoint) -> Dimensions? {
+        guard let found=snapshot?.dimensions(at:point,tolerance:tolerance) else { return nil }
+        let d=UserDefaults.standard
+        return MeasurementSnapping.apply(found,at:point,
+            verticalGuides:d.bool(forKey:PreferenceKey.snapGuides) ? guides.filter(\.vertical).map(\.position) : [],
+            horizontalGuides:d.bool(forKey:PreferenceKey.snapGuides) ? guides.filter { !$0.vertical }.map(\.position) : [],
+            rectangles:d.bool(forKey:PreferenceKey.snapObjects) ? pinned : [])
+    }
     override func mouseEntered(with event: NSEvent) {
         window?.makeKey()
         window?.makeFirstResponder(self)
@@ -192,7 +268,7 @@ final class MeasurementView: NSView {
 
     private func updateLiveDimensions() {
         if selection == nil, heldDimensions == nil, mode == .findDimensions {
-            liveDimensions = snapshot?.dimensions(at: cursor, tolerance: tolerance)
+            liveDimensions = dimensions(at: cursor)
         } else { liveDimensions = nil }
     }
 
@@ -257,7 +333,7 @@ final class MeasurementView: NSView {
     override func mouseUp(with event: NSEvent) {
         if case .create = dragMode {
             if !dragging {
-                heldDimensions = mode == .findDimensions ? snapshot?.dimensions(at: anchor, tolerance: tolerance) : nil
+                heldDimensions = mode == .findDimensions ? dimensions(at: anchor) : nil
                 liveDimensions = nil
             } else if mode == .findDimensions, !manualDrag, event.modifierFlags.intersection([.option, .shift]).isEmpty,
                       let rect = selection, let detected = snapshot?.objectBounds(in: rect, tolerance: tolerance) {
@@ -323,6 +399,9 @@ final class MeasurementView: NSView {
             case "r": refresh()
             case "t": cycleTolerance(backward: shift)
             case "c" where command: copyDimensions(css: shift)
+            case "c": captureScreenshot(copy: true, togglePadding: event.modifierFlags.contains(.option))
+            case "p": captureScreenshot(copy: false, togglePadding: event.modifierFlags.contains(.option))
+            case "x": colorOverride = !(colorOverride ?? false)
             case "k" where command: clear()
             case "z" where command:
                 if !pinned.isEmpty { selection = pinned.removeLast(); detectionRegion = nil }
@@ -335,6 +414,7 @@ final class MeasurementView: NSView {
             default: break
             }
         }
+        updateLiveDimensions()
         needsDisplay = true
     }
 
@@ -360,27 +440,23 @@ final class MeasurementView: NSView {
     }
 
     private func cycleTolerance(backward: Bool) {
-        let preset = TolerancePreset.closest(to: tolerance).cycled(backward: backward)
-        setTolerance(preset.rawValue)
-        flash("Tolerance: \(preset.title)")
+        let preset=MeasurementPreferences.selectedTolerance.cycled(backward:backward)
+        MeasurementPreferences.selectTolerance(preset)
+        synchronizePreferences()
+        flash(L("Tolerance") + ": " + L(preset.title))
     }
 
-    private func setTolerance(_ value: Int) {
-        let value = TolerancePreset.closest(to: value).rawValue
-        UserDefaults.standard.set(value, forKey: PreferenceKey.tolerance)
-        synchronizeTolerance()
-    }
-
-    func synchronizeTolerance() {
-        let value = TolerancePreset.closest(to: UserDefaults.standard.integer(forKey: PreferenceKey.tolerance)).rawValue
-        guard value != tolerance else { return }
-        tolerance = value
+    func synchronizeTolerance() { synchronizePreferences() }
+    func synchronizePreferences() {
+        tolerance=MeasurementPreferences.tolerance
+        unit=MeasurementPreferences.presentation.unit
+        appearance=MeasurementPreferences.appearance
+        window?.invalidateCursorRects(for:self)
         if mode == .findDimensions {
-            if heldDimensions != nil { heldDimensions = snapshot?.dimensions(at: anchor, tolerance: tolerance) }
-            if let detectionRegion { selection = snapshot?.objectBounds(in: detectionRegion, tolerance: tolerance) ?? detectionRegion }
+            if heldDimensions != nil { heldDimensions=dimensions(at:anchor) }
+            if let detectionRegion { selection=snapshot?.objectBounds(in:detectionRegion,tolerance:tolerance) ?? detectionRegion }
         }
-        updateLiveDimensions()
-        needsDisplay = true
+        updateLiveDimensions(); needsDisplay=true
     }
 
     override func scrollWheel(with event: NSEvent) {
@@ -395,9 +471,10 @@ final class MeasurementView: NSView {
         let steps = Int(scrollRemainder)
         guard steps != 0 else { return }
         scrollRemainder -= CGFloat(steps)
-        let preset = TolerancePreset.closest(to: tolerance).stepped(by: steps)
-        setTolerance(preset.rawValue)
-        flash("Tolerance: \(preset.title)")
+        let preset = MeasurementPreferences.selectedTolerance.stepped(by: steps)
+        MeasurementPreferences.selectTolerance(preset)
+        synchronizePreferences()
+        flash(L("Tolerance") + ": " + L(preset.title))
     }
 
     private func pin() {
@@ -429,35 +506,62 @@ final class MeasurementView: NSView {
     private func copyDimensions(css: Bool) {
         guard let rect = selection ?? (heldDimensions ?? liveDimensions)?.rect ?? pinned.last else {
             if let distance = pinnedDistances.last {
-                let factor = unit == .pixels ? scale : 1
                 NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString("\(Int((distance.length * factor).rounded())) \(unit.rawValue)", forType: .string)
+                NSPasteboard.general.setString(presentation.distance(distance.length,scale:scale), forType: .string)
                 flash("Distance copied")
             } else { flash("Move the pointer or drag a region first") }
             return
         }
-        let factor = unit == .pixels ? scale : 1
-        let width = Int((rect.width * factor).rounded()), height = Int((rect.height * factor).rounded())
-        // CSS uses logical pixels, corresponding to macOS screen points, regardless of display scale.
-        let value = css ? "width: \(Int(rect.width.rounded()))px; height: \(Int(rect.height.rounded()))px;" : "\(width) × \(height) \(unit.rawValue)"
+        let value = presentation.clipboard(rect, scale: scale, forceCSS: css)
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(value, forType: .string)
         flash("Copied  \(value)")
     }
-    private func flash(_ text: String) {
-        messageTimer?.invalidate()
-        message = text
-        needsDisplay = true
-        messageTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { [weak self] _ in
-            MainActor.assumeIsolated { self?.message = nil; self?.needsDisplay = true }
+    private func captureScreenshot(copy: Bool, togglePadding: Bool) {
+        guard let region=selection ?? (heldDimensions ?? liveDimensions)?.rect ?? pinned.last,
+              region.width > 0, region.height > 0 else {
+            flash(L("Select an area or point between edges first.")); return
         }
+        onCapture?(region,copy,togglePadding)
+    }
+    private func flash(_ text: String) {
+        messageTimer?.invalidate(); message=L(text); messageAlpha=1; needsDisplay=true
+        let animated=UserDefaults.standard.bool(forKey:PreferenceKey.animations) && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        let start=Date()
+        messageTimer=Timer.scheduledTimer(withTimeInterval:animated ? 0.05 : 2,repeats:animated) { [weak self] timer in
+            guard let self else { timer.invalidate(); return }
+            let elapsed=Date().timeIntervalSince(start)
+            if elapsed >= 2 || !animated { timer.invalidate() }
+            MainActor.assumeIsolated {
+                if elapsed >= 2 || !animated { self.message=nil }
+                else { self.messageAlpha=CGFloat(min(1,elapsed/0.12)*min(1,max(0,(2-elapsed)/0.3))) }
+                self.needsDisplay=true
+            }
+        }
+    }
+    private func measurementColor(at point: CGPoint) -> NSColor {
+        let primary=MeasurementPreferences.color(PreferenceKey.overlayColor)
+        let alternative=MeasurementPreferences.color(PreferenceKey.alternativeColor)
+        if let colorOverride { return colorOverride ? alternative : primary }
+        guard UserDefaults.standard.bool(forKey:PreferenceKey.autoContrast), let snapshot else { return primary }
+        let x=min(snapshot.pixels.width-1,max(0,Int(point.x*snapshot.scaleX)))
+        let y=min(snapshot.pixels.height-1,max(0,Int(point.y*snapshot.scaleY)))
+        let offset=(y*snapshot.pixels.width+x)*4, bytes=snapshot.pixels.bytes
+        let background=NSColor(srgbRed:CGFloat(bytes[offset])/255,green:CGFloat(bytes[offset+1])/255,blue:CGFloat(bytes[offset+2])/255,alpha:1).relativeLuminance
+        func contrast(_ color: NSColor) -> CGFloat { let l=color.relativeLuminance; return (max(l,background)+0.05)/(min(l,background)+0.05) }
+        return contrast(primary) >= 3 || contrast(primary) >= contrast(alternative) ? primary : alternative
+    }
+    private func aspectRatio(_ rect: CGRect, distance: Bool) -> String? {
+        let d=UserDefaults.standard
+        guard d.bool(forKey:distance ? PreferenceKey.aspectDistance : PreferenceKey.aspectArea) else { return nil }
+        return (AspectRatioStyle(rawValue:d.string(forKey:PreferenceKey.aspectStyle) ?? "") ?? .commonOnly).label(width:rect.width,height:rect.height)
     }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        let description = (selection ?? (heldDimensions ?? liveDimensions)?.rect).map { MeasurementGeometry.label($0, scale: scale, unit: unit) }
+        let description = (selection ?? (heldDimensions ?? liveDimensions)?.rect).map { presentation.label($0, scale: scale) }
         setAccessibilityValue(description ?? "No active measurement")
-        if let snapshot {
+        if let snapshot, UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) {
             NSImage(cgImage: snapshot.image, size: bounds.size).draw(in: bounds, from: .zero,
                 operation: .sourceOver, fraction: 1, respectFlipped: true, hints: nil)
         } else {
@@ -469,11 +573,11 @@ final class MeasurementView: NSView {
         for guide in guides {
             line(from: guide.vertical ? CGPoint(x: guide.position, y: 0) : CGPoint(x: 0, y: guide.position),
                  to: guide.vertical ? CGPoint(x: guide.position, y: bounds.height) : CGPoint(x: bounds.width, y: guide.position),
-                 color: .systemOrange, dashed: true)
+                 color: MeasurementPreferences.color(PreferenceKey.guideColor), dashed: true)
         }
         if showAlignment {
-            line(from: CGPoint(x: cursor.x, y: 0), to: CGPoint(x: cursor.x, y: bounds.height), color: accent.withAlphaComponent(0.6), dashed: true)
-            line(from: CGPoint(x: 0, y: cursor.y), to: CGPoint(x: bounds.width, y: cursor.y), color: accent.withAlphaComponent(0.6), dashed: true)
+            line(from: CGPoint(x: cursor.x, y: 0), to: CGPoint(x: cursor.x, y: bounds.height), color: measurementColor(at: cursor).withAlphaComponent(0.6), dashed: true)
+            line(from: CGPoint(x: 0, y: cursor.y), to: CGPoint(x: bounds.width, y: cursor.y), color: measurementColor(at: cursor).withAlphaComponent(0.6), dashed: true)
         }
         var labels: [CGRect] = []
         for (index, rect) in pinned.enumerated() { drawMeasurement(rect, index: index + 1, active: false, labels: &labels) }
@@ -484,12 +588,15 @@ final class MeasurementView: NSView {
             drawDistance(dimensions.vertical, held: heldDimensions != nil, labels: &labels)
         }
         if let message {
+            NSGraphicsContext.saveGraphicsState()
+            if let context=NSGraphicsContext.current?.cgContext { context.setAlpha(messageAlpha) }
             _ = pill(message, at: CGPoint(x: bounds.midX, y: bounds.height - 46), centered: true, color: .white)
+            NSGraphicsContext.restoreGraphicsState()
         }
     }
 
     private func drawMeasurement(_ rect: CGRect, index: Int?, active: Bool, labels: inout [CGRect]) {
-        let color = index == nil ? accent : NSColor.systemOrange
+        let color = index == nil ? measurementColor(at: CGPoint(x:rect.midX,y:rect.midY)) : MeasurementPreferences.color(PreferenceKey.guideColor)
         color.withAlphaComponent(active ? 0.09 : 0.045).setFill()
         rect.fill()
         let path = NSBezierPath(rect: rect)
@@ -505,7 +612,7 @@ final class MeasurementView: NSView {
                 handle.fill(); color.setStroke(); handle.stroke()
             }
         }
-        let text = (index.map { "\($0)  ·  " } ?? "") + MeasurementGeometry.label(rect, scale: scale, unit: unit)
+        let text = (index.map { "\($0)  ·  " } ?? "") + presentation.label(rect, scale: scale) + (aspectRatio(rect,distance:mode == .findDimensions).map { " · " + $0 } ?? "")
         var position = CGPoint(x: rect.midX, y: rect.maxY + 10)
         if position.y > bounds.height - 40 { position.y = max(8, rect.minY - 34) }
         var label = labelRect(text, at: position, centered: true)
@@ -521,7 +628,7 @@ final class MeasurementView: NSView {
         labels.append(pill(text, at: position, centered: true, color: color))
     }
     private func drawDistance(_ distance: DimensionSpan, held: Bool, labels: inout [CGRect]) {
-        let color = held ? NSColor.secondaryLabelColor : accent
+        let color = measurementColor(at: CGPoint(x:(distance.start.x+distance.end.x)/2,y:(distance.start.y+distance.end.y)/2))
         line(from: distance.start, to: distance.end, color: color, dashed: held)
         let horizontal = distance.isHorizontal
         for point in [distance.start, distance.end] {
@@ -530,8 +637,8 @@ final class MeasurementView: NSView {
             line(from: CGPoint(x: point.x - dx, y: point.y - dy),
                  to: CGPoint(x: point.x + dx, y: point.y + dy), color: color, dashed: false)
         }
-        let factor = unit == .pixels ? scale : 1
-        let text = "\(Int((distance.length * factor).rounded())) \(unit.rawValue)"
+        let text = presentation.distance(distance.length,scale:scale,horizontal:horizontal)
+            + (horizontal ? (heldDimensions ?? liveDimensions).flatMap { aspectRatio($0.rect,distance:true) }.map { " · " + $0 } ?? "" : "")
         var position = horizontal
             ? CGPoint(x: (distance.start.x + distance.end.x) / 2, y: distance.start.y + 10)
             : CGPoint(x: distance.start.x + 44, y: (distance.start.y + distance.end.y) / 2)
@@ -548,6 +655,10 @@ final class MeasurementView: NSView {
         path.move(to: start); path.line(to: end)
         path.lineWidth = 1 / scale
         if dashed { path.setLineDash([3, 3], count: 2, phase: 0) }
+        if UserDefaults.standard.bool(forKey:PreferenceKey.autoContrast) {
+            let halo=color.relativeLuminance > 0.45 ? NSColor.black : NSColor.white
+            halo.withAlphaComponent(0.65).setStroke(); path.lineWidth=3/scale; path.stroke(); path.lineWidth=1/scale
+        }
         color.setStroke(); path.stroke()
     }
     private var textAttributes: [NSAttributedString.Key: Any] {

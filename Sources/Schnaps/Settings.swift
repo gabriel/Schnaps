@@ -13,11 +13,44 @@ enum PreferenceKey {
     static let scrollTolerance = "scrollAdjustsTolerance"
     static let defaultTool = "defaultTool"
     static let showInDock = "showInDock"
+    static let language = "appLanguage"
+    static let roundPoints = "roundPoints"
+    static let showMenuBar = "showMenuBar"
+    static let clipboardFormat = "clipboardFormat"
+    static let showUnits = "showMeasurementUnits"
+    static let showIndicators = "showDimensionIndicators"
+    static let showCursor = "showMeasurementCursor"
+    static let aspectStyle = "aspectRatioStyle"
+    static let aspectDistance = "aspectInDistanceTool"
+    static let aspectArea = "aspectInAreaTool"
+    static let snapGuides = "snapToGuides"
+    static let snapObjects = "snapToSelectedObjects"
+    static let freezeScreen = "freezeScreen"
+    static let screenshotFormat = "screenshotFormat"
+    static let screenshotScale = "screenshotScaleTo1x"
+    static let screenshotSound = "screenshotSound"
+    static let screenshotPadding = "screenshotPadding"
+    static let screenshotFolder = "screenshotFolder"
+    static let cleanShot = "cleanShotIntegration"
+    static let appearance = "appAppearance"
+    static let animations = "interfaceAnimations"
+    static let overlayColor = "overlayColor"
+    static let alternativeColor = "alternativeColor"
+    static let guideColor = "guideColor"
+    static let autoContrast = "automaticContrast"
+    static let selectedTolerance = "selectedTolerancePreset"
+    static let toleranceZero = "toleranceZero"
+    static let toleranceLow = "toleranceLow"
+    static let toleranceMedium = "toleranceMedium"
+    static let toleranceHigh = "toleranceHigh"
+
 }
 
 enum SettingsPane: String, CaseIterable, Identifiable {
     case general = "General"
-    case measurement = "Measurement"
+    case screenshots = "Screenshots"
+    case tolerance = "Tolerance"
+    case appearance = "Appearance"
     case shortcuts = "Shortcuts"
     case permissions = "Permissions"
     case about = "About Schnaps"
@@ -25,7 +58,9 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .general: "gearshape"
-        case .measurement: "ruler"
+        case .screenshots: "camera"
+        case .tolerance: "dial.low"
+        case .appearance: "paintpalette"
         case .shortcuts: "keyboard"
         case .permissions: "hand.raised"
         case .about: "info.circle"
@@ -44,18 +79,51 @@ struct SettingsView: View {
     @ObservedObject var navigation: SettingsNavigation
     @ObservedObject var updates: UpdateSettings
     @StateObject private var membership = ProMembership()
+    @StateObject private var loginItem = LoginItem()
+    @State private var showTutorial = false
+    @State private var settingsError: String?
     @AppStorage(PreferenceKey.unit) private var unit = MeasurementUnit.points.rawValue
     @AppStorage(PreferenceKey.tolerance) private var tolerance = TolerancePreset.medium.rawValue
     @AppStorage(PreferenceKey.scrollTolerance) private var scrollTolerance = true
     @AppStorage(PreferenceKey.defaultTool) private var defaultTool = MeasurementMode.findDimensions.rawValue
     @AppStorage(PreferenceKey.showInDock) private var showInDock = false
+    @AppStorage(PreferenceKey.language) private var language: String = "system"
+    @AppStorage(PreferenceKey.roundPoints) private var roundedPoints: Bool = true
+    @AppStorage(PreferenceKey.showMenuBar) private var showMenuBar: Bool = true
+    @AppStorage(PreferenceKey.clipboardFormat) private var clipboardFormat: String = ClipboardFormat.widthHeight.rawValue
+    @AppStorage(PreferenceKey.showUnits) private var showUnits: Bool = true
+    @AppStorage(PreferenceKey.showIndicators) private var showIndicators: Bool = false
+    @AppStorage(PreferenceKey.showCursor) private var showCursor: Bool = true
+    @AppStorage(PreferenceKey.aspectStyle) private var aspectStyle: String = AspectRatioStyle.commonOnly.rawValue
+    @AppStorage(PreferenceKey.aspectDistance) private var aspectDistance: Bool = false
+    @AppStorage(PreferenceKey.aspectArea) private var aspectArea: Bool = true
+    @AppStorage(PreferenceKey.snapGuides) private var snapGuides: Bool = true
+    @AppStorage(PreferenceKey.snapObjects) private var snapObjects: Bool = true
+    @AppStorage(PreferenceKey.freezeScreen) private var freezeScreen: Bool = true
+    @AppStorage(PreferenceKey.screenshotFormat) private var screenshotFormat: String = "png"
+    @AppStorage(PreferenceKey.screenshotScale) private var screenshotScale: Bool = false
+    @AppStorage(PreferenceKey.screenshotSound) private var screenshotSound: Bool = true
+    @AppStorage(PreferenceKey.screenshotPadding) private var screenshotPadding: Int = 0
+    @AppStorage(PreferenceKey.screenshotFolder) private var screenshotFolder: String = NSHomeDirectory()+"/Desktop"
+    @AppStorage(PreferenceKey.cleanShot) private var cleanShot: Bool = false
+    @AppStorage(PreferenceKey.appearance) private var appearance: String = "system"
+    @AppStorage(PreferenceKey.animations) private var animations: Bool = true
+    @AppStorage(PreferenceKey.overlayColor) private var overlayColor: String = "FF375FFF"
+    @AppStorage(PreferenceKey.alternativeColor) private var alternativeColor: String = "252525FF"
+    @AppStorage(PreferenceKey.guideColor) private var guideColor: String = "0A84FFFF"
+    @AppStorage(PreferenceKey.autoContrast) private var autoContrast: Bool = true
+    @AppStorage(PreferenceKey.selectedTolerance) private var selectedTolerance: Int = TolerancePreset.medium.rawValue
+    @AppStorage(PreferenceKey.toleranceZero) private var zero: Int = 0
+    @AppStorage(PreferenceKey.toleranceLow) private var low: Int = 8
+    @AppStorage(PreferenceKey.toleranceMedium) private var medium: Int = 18
+    @AppStorage(PreferenceKey.toleranceHigh) private var high: Int = 36
     @ObservedObject private var recordingPermission = ScreenRecordingPermission.shared
 
     var body: some View {
         NavigationSplitView {
             List(selection: $navigation.pane) {
                 ForEach(SettingsPane.allCases) { pane in
-                    Label(pane.rawValue, systemImage: pane.symbol).tag(pane)
+                    Label(L(pane.rawValue), systemImage: pane.symbol).tag(pane)
                 }
             }
             .listStyle(.sidebar)
@@ -65,17 +133,31 @@ struct SettingsView: View {
             Form {
                 switch navigation.pane ?? .general {
                 case .general: general
-                case .measurement: measurement
+                case .screenshots: screenshots
+                case .tolerance: toleranceSettings
+                case .appearance: appearanceSettings
                 case .shortcuts: shortcuts
                 case .permissions: permissions
                 case .about: about
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle((navigation.pane ?? .general).rawValue)
+            .navigationTitle(L((navigation.pane ?? .general).rawValue))
         }
+        .id(language)
         .frame(minWidth: 720, minHeight: 480)
+        .environment(\.locale, Locale(identifier: language == "system" ? Locale.current.identifier : language))
+        .sheet(isPresented: $showTutorial) { tutorial }
+        .alert(L("Settings"), isPresented: Binding(get: { settingsError != nil || loginItem.error != nil }, set: { if !$0 { settingsError=nil; loginItem.error=nil } })) {
+            Button(L("Done"), role: .cancel) { settingsError=nil; loginItem.error=nil }
+        } message: { Text(settingsError ?? loginItem.error ?? "") }
+        .onChange(of: selectedTolerance) { _, _ in syncTolerance() }
+        .onChange(of: zero) { _, _ in syncTolerance() }
+        .onChange(of: low) { _, _ in syncTolerance() }
+        .onChange(of: medium) { _, _ in syncTolerance() }
+        .onChange(of: high) { _, _ in syncTolerance() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            loginItem.refresh()
             recordingPermission.refresh()
         }
     }
@@ -83,57 +165,207 @@ struct SettingsView: View {
     private var general: some View {
         Group {
             Section {
-                LabeledContent("Find Dimensions") {
-                    Button("Find Dimensions", action: { start(.findDimensions) })
+                LabeledContent(L("Find Dimensions")) {
+                    Button(L("Find Dimensions"), action: { start(.findDimensions) })
                 }
             } header: {
-                Text("Tools")
+                Text(L("Tools"))
             } footer: {
-                Text("Move the pointer to measure distances between edges. Drag around an object to find its bounds.")
+                Text(L("Move the pointer to measure distances between edges. Drag around an object to find its bounds."))
                     .font(.footnote)
                     .padding(.top, -7)
             }
             Section {
-                LabeledContent("Measure Area") {
-                    Button("Measure Area", action: { start(.area) })
+                LabeledContent(L("Measure Area")) {
+                    Button(L("Measure Area"), action: { start(.area) })
                 }
             } footer: {
-                Text("Drag an exact rectangle, then move, resize, pin, or copy the measurement.")
+                Text(L("Drag an exact rectangle, then move, resize, pin, or copy the measurement."))
                     .font(.footnote)
                     .padding(.top, -7)
             }
-            Section("Activation") {
-                Picker("Default tool", selection: $defaultTool) {
-                    ForEach(MeasurementMode.allCases, id: \.rawValue) { Text($0.rawValue).tag($0.rawValue) }
+            Section(L("Language")) {
+                Picker(L("Language"), selection: $language) {
+                    Text(L("System Default")).tag("system")
+                    Text(L("English")).tag("en"); Text(L("简体中文")).tag("zh-Hans")
+                    Text(L("Español")).tag("es"); Text(L("Français")).tag("fr")
+                    Text(L("Italiano")).tag("it"); Text(L("日本語")).tag("ja"); Text(L("Русский")).tag("ru")
                 }
-                Toggle("Show in Dock", isOn: $showInDock)
+            }
+            Section {
+                Picker(L("Default tool"), selection: $defaultTool) {
+                    ForEach(MeasurementMode.allCases, id: \.rawValue) { Text(L($0.rawValue)).tag($0.rawValue) }
+                }
+                Toggle(L("Start at login"), isOn: Binding(get: { loginItem.enabled || loginItem.needsApproval }, set: { loginItem.setEnabled($0) }))
+                Toggle(L("Show in menu bar"), isOn: $showMenuBar)
+                Toggle(L("Show in Dock"), isOn: $showInDock)
+            } header: { Text(L("Activation")) } footer: {
+                VStack(alignment: .leading, spacing: 4) {
+                    if loginItem.needsApproval { Text(L("Approve Schnaps in System Settings → Login Items.")) }
+                    Button(L("Show Tutorial")) { showTutorial=true }.buttonStyle(.bordered).controlSize(.regular).font(.body)
+                }.font(.footnote).padding(.top, -7)
+            }
+            Section(L("Measurement")) {
+                Picker(L("Retina measurements"), selection: retinaBinding) {
+                    Text(L("Points")).tag("pt")
+                    Text(L("Points (rounded)")).tag("rounded")
+                    Text(L("Display pixels")).tag("px")
+                }
+                Picker(L("Clipboard format"), selection: $clipboardFormat) {
+                    ForEach(ClipboardFormat.allCases, id: \.rawValue) { Text(L($0.title)).tag($0.rawValue) }
+                }
+                Toggle(L("Display units"), isOn: $showUnits)
+                Toggle(L("Display width/height indicators"), isOn: $showIndicators)
+                Toggle(L("Show cursor"), isOn: $showCursor)
+            }
+            Section(L("Aspect ratio")) {
+                Picker(L("Aspect ratio"), selection: $aspectStyle) {
+                    ForEach(AspectRatioStyle.allCases, id: \.rawValue) { Text(L($0.title)).tag($0.rawValue) }
+                }
+                Toggle(L("Show in Find Dimensions"), isOn: $aspectDistance)
+                Toggle(L("Show in Measure Area"), isOn: $aspectArea)
+            }
+            Section(L("Distance tool")) {
+                Toggle(L("Snap to guides"), isOn: $snapGuides)
+                Toggle(L("Snap to selected objects"), isOn: $snapObjects)
+            }
+            Section { Toggle(L("Freeze screen"), isOn: $freezeScreen) } footer: {
+                Text(L("Keep a still screen while measuring.")).font(.footnote).padding(.top, -7)
             }
         }
     }
 
-    private var measurement: some View {
+    private var screenshots: some View {
         Group {
-            Section("Dimensions") {
-                Picker("Units", selection: $unit) {
-                    Text("Screen points (pt)").tag(MeasurementUnit.points.rawValue)
-                    Text("Display pixels (px)").tag(MeasurementUnit.pixels.rawValue)
+            Section(L("Export")) {
+                LabeledContent(L("Export folder")) {
+                    Button { chooseScreenshotFolder() } label: {
+                        Label(URL(fileURLWithPath: screenshotFolder).lastPathComponent, systemImage: "folder")
+                    }.help(screenshotFolder)
                 }
+                Picker(L("File format"), selection: $screenshotFormat) {
+                    Text(L("PNG")).tag("png"); Text(L("JPEG")).tag("jpg")
+                }
+                Toggle(L("Scale Retina screenshots to 1x"), isOn: $screenshotScale)
+                Toggle(L("Play sounds"), isOn: $screenshotSound)
             }
             Section {
-                Picker("Color tolerance", selection: $tolerance) {
-                    ForEach(TolerancePreset.allCases, id: \.rawValue) { preset in
-                        Text(preset.title).tag(preset.rawValue)
-                    }
+                LabeledContent(L("Padding")) {
+                    HStack {
+                        Slider(value: Binding(get: { Double(screenshotPadding) }, set: { screenshotPadding=Int($0) }), in: 0...101, step: 1)
+                            .accessibilityLabel(L("Padding"))
+                        Text(screenshotPadding > 100 ? L("Auto") : "\(screenshotPadding) pt").monospacedDigit().frame(minWidth: 46, alignment: .trailing)
+                    }.frame(maxWidth: 250)
                 }
-                Toggle("Scroll to adjust tolerance", isOn: $scrollTolerance)
-            } header: {
-                Text("Find Dimensions")
             } footer: {
-                Text("Higher tolerance ignores subtle color differences and shadows.")
-                    .font(.footnote)
-                    .padding(.top, -7)
+                Text(L("Hold Option to toggle padding when capturing.")).font(.footnote).padding(.top,-7)
+            }
+            Section {
+                Toggle(L("Send captures to CleanShot"), isOn: $cleanShot).disabled(!ScreenshotExport.cleanShotAvailable)
+            } header: { Text(L("CleanShot integration")) } footer: {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L("Open captures in CleanShot’s Quick Access Overlay."))
+                    if !ScreenshotExport.cleanShotAvailable {
+                        Link(L("Get CleanShot X"), destination: URL(string: "https://cleanshot.com")!)
+                    }
+                }.font(.footnote).padding(.top,-7)
             }
         }
+    }
+
+    private var toleranceSettings: some View {
+        Group {
+            Section {
+                toleranceRow("Zero", value: $zero)
+                toleranceRow("Low", value: $low)
+                toleranceRow("Medium", value: $medium)
+                toleranceRow("High", value: $high)
+            } footer: {
+                Text(L("Higher tolerance ignores subtle color differences and shadows.")).font(.footnote).padding(.top,-7)
+            }
+            Section {
+                Picker(L("Default tolerance"), selection: $selectedTolerance) {
+                    ForEach(TolerancePreset.allCases, id: \.rawValue) { Text(L($0.title)).tag($0.rawValue) }
+                }
+                Toggle(L("Scroll to adjust tolerance"), isOn: $scrollTolerance)
+            } footer: {
+                Button(L("Restore Defaults")) { MeasurementPreferences.resetTolerance() }
+                    .buttonStyle(.bordered).controlSize(.regular).font(.body)
+            }
+        }
+    }
+
+    private var appearanceSettings: some View {
+        Group {
+            Section(L("Interface")) {
+                Picker(L("Appearance"), selection: $appearance) {
+                    Text(L("System Appearance")).tag("system")
+                    Text(L("Light")).tag("light"); Text(L("Dark")).tag("dark")
+                }
+                Toggle(L("Animations"), isOn: $animations)
+            }
+            Section {
+                ColorPicker(L("Overlay color"), selection: colorBinding($overlayColor), supportsOpacity: false)
+                ColorPicker(L("Alternative color"), selection: colorBinding($alternativeColor), supportsOpacity: false)
+                Toggle(L("Auto contrast"), isOn: $autoContrast)
+                ColorPicker(L("Guides color"), selection: colorBinding($guideColor), supportsOpacity: false)
+            } header: { Text(L("Measurement colors")) } footer: {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L("Press X while measuring to switch colors."))
+                    Button(L("Restore Defaults")) { MeasurementPreferences.resetAppearance() }
+                        .buttonStyle(.bordered).controlSize(.regular).font(.body)
+                }.font(.footnote).padding(.top,-7)
+            }
+        }
+    }
+
+    private var retinaBinding: Binding<String> {
+        Binding(get: { unit == "px" ? "px" : roundedPoints ? "rounded" : "pt" }, set: {
+            unit = $0 == "px" ? "px" : "pt"; if $0 != "px" { roundedPoints = $0 == "rounded" }
+        })
+    }
+    private func colorBinding(_ value: Binding<String>) -> Binding<Color> {
+        Binding(get: { Color(nsColor: NSColor(schnapsHex: value.wrappedValue) ?? .controlAccentColor) },
+                set: { value.wrappedValue=NSColor($0).schnapsHex })
+    }
+    private func toleranceRow(_ title: String, value: Binding<Int>) -> some View {
+        LabeledContent(L(title)) {
+            HStack {
+                Slider(value: Binding(get: { Double(value.wrappedValue) }, set: { value.wrappedValue=Int($0) }), in: 0...100, step: 1)
+                    .accessibilityLabel(L(title))
+                Text("\(value.wrappedValue)").monospacedDigit().frame(width: 30, alignment: .trailing)
+            }.frame(maxWidth: 260)
+        }
+        .accessibilityElement(children: .contain)
+    }
+    private func syncTolerance() {
+        MeasurementPreferences.selectTolerance(TolerancePreset(rawValue: selectedTolerance) ?? .medium)
+    }
+    private func chooseScreenshotFolder() {
+        let panel=NSOpenPanel(); panel.canChooseDirectories=true; panel.canChooseFiles=false
+        panel.canCreateDirectories=true; panel.allowsMultipleSelection=false
+        panel.directoryURL=URL(fileURLWithPath:screenshotFolder)
+        if panel.runModal() == .OK, let url=panel.url { screenshotFolder=url.path }
+    }
+    private var tutorial: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Text(L("Schnaps Tutorial")).font(.title2)
+            Text(L("Hover to find distances. Drag to measure an area."))
+            Text(L("Press Space to pin. Return copies dimensions."))
+            Text(L("C copies a screenshot. P saves it. Hold Option to toggle padding."))
+            HStack {
+                Button(L("Find Dimensions")) { startTutorialTool(.findDimensions) }
+                Button(L("Measure Area")) { startTutorialTool(.area) }
+                Spacer()
+                Button(L("Done")) { showTutorial=false }.keyboardShortcut(.defaultAction)
+            }
+        }.padding(24).frame(width: 520)
+    }
+
+    private func startTutorialTool(_ mode: MeasurementMode) {
+        showTutorial=false
+        // Allow the sheet to resign first responder before opening the canvas.
+        DispatchQueue.main.asyncAfter(deadline: .now()+0.25) { start(mode) }
     }
 
     private var shortcuts: some View {
@@ -142,11 +374,17 @@ struct SettingsView: View {
                 shortcut("Find Dimensions", "⇧⌘F")
                 shortcut("Measure Area", "⇧⌘M")
             } header: {
-                Text("Global")
+                Text(L("Global"))
             } footer: {
                 if let shortcutWarning { Text(shortcutWarning).font(.footnote).padding(.top, -7) }
             }
-            Section("While Measuring") {
+            Section(L("Screenshots")) {
+                shortcut("Copy screenshot", "C")
+                shortcut("Save screenshot", "P")
+                shortcut("Toggle screenshot padding", "⌥C / ⌥P")
+            }
+            Section(L("While Measuring")) {
+                shortcut("Switch colors", "X")
                 shortcut("Copy dimensions", "Return / ⌘C")
                 shortcut("Copy CSS", "⇧Return / ⇧⌘C")
                 shortcut("Pin measurement", "Space")
@@ -168,11 +406,11 @@ struct SettingsView: View {
 
     private var permissions: some View {
         Section {
-            LabeledContent("Access", value: recordingPermission.granted ? "Allowed" : "Not allowed")
+            LabeledContent(L("Access"), value: L(recordingPermission.granted ? "Allowed" : "Not allowed"))
         } header: {
-            Text("Screen Recording")
+            Text(L("Screen Recording"))
         } footer: {
-            Button(recordingPermission.buttonTitle) {
+            Button(L(recordingPermission.buttonTitle)) {
                 if recordingPermission.granted || recordingPermission.hasRequested {
                     recordingPermission.openSettings()
                 } else {
@@ -189,8 +427,8 @@ struct SettingsView: View {
     private var about: some View {
         Group {
             Section {
-                LabeledContent("Version", value: appVersion)
-                LabeledContent("Created by") {
+                LabeledContent(L("Version"), value: appVersion)
+                LabeledContent(L("Created by")) {
                     Link("Gabriel Handford", destination: URL(string: "https://github.com/gabriel")!)
                 }
             } header: {
@@ -199,7 +437,7 @@ struct SettingsView: View {
                         Image(nsImage: icon).resizable().scaledToFit().frame(width: 48, height: 48)
                             .accessibilityHidden(true)
                     }
-                    Text("Schnaps").font(.title2).foregroundStyle(.primary)
+                    Text(L("Schnaps")).font(.title2).foregroundStyle(.primary)
                 }
             } footer: {
                 HStack(spacing: 16) {
@@ -218,7 +456,7 @@ struct SettingsView: View {
                 Toggle("Automatically download and install updates", isOn: $updates.automaticallyDownloadsUpdates)
                     .disabled(!updates.allowsAutomaticUpdates)
             } header: {
-                Text("Updates")
+                Text(L("Updates"))
             } footer: {
                 VStack(alignment: .leading, spacing: 8) {
                     if updates.channel == .beta {
@@ -243,6 +481,6 @@ struct SettingsView: View {
     }
 
     private func shortcut(_ title: String, _ keys: String) -> some View {
-        LabeledContent(title) { Text(keys).foregroundStyle(.secondary) }
+        LabeledContent(L(title)) { Text(keys).foregroundStyle(.secondary) }
     }
 }
