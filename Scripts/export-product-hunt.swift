@@ -12,8 +12,6 @@ let selection = NSImage(contentsOf: output.appendingPathComponent("Source/pin.pn
 let icon = NSImage(contentsOf: root.appendingPathComponent("Assets/Artwork/Schnaps-Dock.svg"))!
 
 struct HuntCard: View {
-    let title: String
-    let subtitle: String
     let screenshot: NSImage
     let number: String
     var body: some View {
@@ -27,20 +25,10 @@ struct HuntCard: View {
             }.foregroundStyle(.white).offset(x: 60, y: 48)
             Text(number).font(.system(size: 15, design: .monospaced))
                 .foregroundStyle(.white.opacity(0.35)).offset(x: 1150, y: 62)
-            VStack(alignment: .leading, spacing: 24) {
-                Text(title).font(.system(size: 70, weight: .semibold)).tracking(-3)
-                    .foregroundStyle(.white).fixedSize(horizontal: false, vertical: true)
-                Text(subtitle).font(.system(size: 24)).lineSpacing(7)
-                    .foregroundStyle(Color(red: 0.65, green: 0.73, blue: 0.85))
-            }.frame(width: 620, alignment: .leading).offset(x: 60, y: 235)
             Image(nsImage: screenshot).resizable().interpolation(.high).scaledToFit()
-                .frame(width: 470, height: 595).offset(x: 740, y: 108)
-            HStack {
-                Text("Free & open source · macOS 14+")
-                Spacer()
-                Text("getschnaps.com")
-            }.font(.system(size: 17)).foregroundStyle(.white.opacity(0.55))
-                .frame(width: 1150).offset(x: 60, y: 706)
+                .frame(width: 650, height: 690).offset(x: 310, y: 42)
+            Text("getschnaps.com").font(.system(size: 15)).foregroundStyle(.white.opacity(0.45))
+                .offset(x: 60, y: 710)
         }.frame(width: 1270, height: 760).clipped()
     }
 }
@@ -57,12 +45,12 @@ try MainActor.assumeIsolated {
         print("\(name): \(image.width) × \(image.height), \(png.count) bytes")
     }
     let cards = [
-        ("01-overview", "Measure your\nscreen.", "A little native Mac app.\nFree, precise, open source.", overview),
-        ("02-find-dimensions", "Hover.\nSee the gap.", "See horizontal and vertical\ndistances between elements.", hover),
-        ("03-pin-and-copy", "Measure.\nPin. Copy.", "Keep measurements on screen.\nCopy pixels, points, or CSS.", selection)
+        ("01-overview", overview),
+        ("02-find-dimensions", hover),
+        ("03-pin-and-copy", selection)
     ]
     for (index, card) in cards.enumerated() {
-        try save(HuntCard(title: card.1, subtitle: card.2, screenshot: card.3, number: "0\(index + 1) / 03"), name: card.0, size: CGSize(width: 1270, height: 760))
+        try save(HuntCard(screenshot: card.1, number: "0\(index + 1) / 03"), name: card.0, size: CGSize(width: 1270, height: 760))
     }
     try save(Image(nsImage: icon).resizable().scaledToFit(), name: "thumbnail", size: CGSize(width: 240, height: 240))
 }
