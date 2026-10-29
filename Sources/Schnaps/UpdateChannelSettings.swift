@@ -10,12 +10,17 @@ final class UpdateChannelSettings: NSObject, ObservableObject, SPUUpdaterDelegat
     @Published var channel: UpdateChannel {
         didSet { defaults.set(channel.rawValue, forKey: Self.preferenceKey) }
     }
-    init(defaults: UserDefaults = .standard, bundle: Bundle = .main) {
+    init(
+        defaults: UserDefaults = .standard,
+        bundledChannel: String? = Bundle.main.object(forInfoDictionaryKey: "SchnapsUpdateChannel") as? String
+    ) {
         self.defaults = defaults
         channel = UpdateChannel.selected(
             saved: defaults.string(forKey: Self.preferenceKey),
-            bundled: bundle.object(forInfoDictionaryKey: "SchnapsUpdateChannel") as? String)
+            bundled: bundledChannel)
         super.init()
+        // A beta's default opt-in must survive its next stable-channel update.
+        defaults.set(channel.rawValue, forKey: Self.preferenceKey)
     }
     func allowedChannels(for updater: SPUUpdater) -> Set<String> { channel.allowedSparkleChannels }
 }

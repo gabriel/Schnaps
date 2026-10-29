@@ -222,7 +222,19 @@ struct Manifest: Codable {
             }
             runner.environment["SCHNAPS_SIGN_IDENTITY"] = identities[0]
         }
-        if !manager.fileExists(atPath: ready.path) { try runner.run(["swift", "Scripts/release.swift"]) }
+        if !manager.fileExists(atPath: ready.path) {
+            let profile = runner.environment["SCHNAPS_NOTARY_PROFILE"] ?? "Schnaps"
+            do {
+                _ = try runner.run(
+                    ["xcrun", "notarytool", "history", "--keychain-profile", profile, "--output-format", "json"],
+                    capture: true)
+            } catch {
+                throw PublishError(
+                    "Notarization profile '\(profile)' is unavailable. Set SCHNAPS_NOTARY_PROFILE to an existing notarytool Keychain profile before publishing."
+                )
+            }
+            try runner.run(["swift", "Scripts/release.swift"])
+        }
         let dmg = output.appendingPathComponent("Schnaps-\(manifest.version).dmg")
         let appcast = output.appendingPathComponent("appcast.xml")
         try Runner(root: output, environment: runner.environment).run(["shasum", "-a", "256", "--check", "SHA256SUMS"])
