@@ -10,7 +10,7 @@
 
 `ScreenSnapshot` uses `SCShareableContent` and `SCScreenshotManager`, excluding Schnaps's own windows. Captured CGImages are converted into tightly packed top-left-origin RGBA buffers. AppKit global coordinates are converted into local flipped canvas coordinates; each display's captured width/height ratios convert between logical points and physical pixels. The two axes are scaled independently.
 
-Snapshot images are only held in memory. A refreshed capture replaces the prior scene. The overlay does not capture its own measurement marks and does not run a recording stream. Without capture permission or after a capture error, manual selection remains usable.
+Snapshot images are held in memory unless the user explicitly exports a selection. Screenshot export crops the original image without measurement marks, adds bounded logical-point padding, optionally resamples Retina images to 1x, and encodes PNG or JPEG. CleanShot handoff uses a local file URL through its documented URL scheme. Freeze screen can be disabled to use a nonactivating panel over the live desktop with periodic fresh edge-detection snapshots. A refreshed capture replaces the prior scene. The overlay does not capture its own measurement marks and does not run a recording stream. Without capture permission or after a capture error, manual selection remains usable.
 
 ## Measurement core
 
@@ -19,7 +19,8 @@ Snapshot images are only held in memory. A refreshed capture replaces the prior 
 - `MeasurementGeometry` normalizes reverse drags, constrains selections, keeps squares inside bounds, translates rectangles, and formats units.
 - `PixelBuffer.dimensions` scans horizontal and vertical continuous color runs through the pointer. RGB differences are bounded by a configurable tolerance, including one-pixel runs.
 - `PixelBuffer.objectBounds` samples a loose selection's perimeter, requires a majority background color, then scans the interior for foreground bounds. This includes disconnected text or icon details. If no clear background is available, the app retains the manual selection.
-- `TolerancePreset` defines Zero (0), Low (8), Medium (18), and High (36), including migration from saved slider values, bounded scroll steps, and wrapping keyboard cycles. Native menu checkmarks refresh when their submenu opens. Settings and every active display share the persisted value; held readings and snapped bounds recalculate on changes.
+- `TolerancePreset` defines stable identities for Zero, Low, Medium, and High (default thresholds 0, 8, 18, 36). User-configurable thresholds are resolved separately by `MeasurementPreferences`, including migration from saved slider values, bounded scroll steps, and wrapping keyboard cycles. Native menu checkmarks refresh when their submenu opens. Settings and every active display share the persisted value; held readings and snapped bounds recalculate on changes.
+- `MeasurementPresentation` formats fractional/rounded points, Retina pixels, ordered clipboard formats, and aspect ratios. `MeasurementSnapping` constrains color-run rulers to guides and intersecting pinned objects. `ScreenshotGeometry` handles bounded padding and crop coordinates.
 - `DimensionSpan` and `Dimensions` represent independent rulers and convert them to logical display coordinates.
 
 Detection is contrast-based, not semantic object recognition. Complex imagery and gradients can produce unexpected boundaries. Shadow inclusion depends on tolerance. Use manual selection when exact visual bounds cannot be inferred.

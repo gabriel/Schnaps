@@ -51,7 +51,7 @@ var info: [String: Any] = [
     "SUVerifyUpdateBeforeExtraction": true, "SURequireSignedFeed": true,
     "CFBundleIconFile": "Schnaps", "LSMinimumSystemVersion": "14.0",
     "LSUIElement": true, "NSHighResolutionCapable": true,
-    "NSScreenCaptureUsageDescription": "Schnaps uses a still image of your displays to detect edges and measure screen elements. Images remain in memory on your Mac."
+    "NSScreenCaptureUsageDescription": "Schnaps captures your displays to detect edges and measure screen elements. Images stay on your Mac unless you explicitly export or share them."
 ]
 try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
     .write(to: contents.appendingPathComponent("Info.plist"))

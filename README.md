@@ -29,6 +29,9 @@ Drag an exact rectangle. Move it by dragging inside, resize a corner, or use arr
 | Action | Shortcut |
 | --- | --- |
 | Copy dimensions / CSS | Return / Shift-Return |
+| Copy / save screenshot | C / P |
+| Toggle screenshot padding | Hold Option with C / P |
+| Switch overlay colors | X |
 | Pin measurement | Space |
 | Pin horizontal / vertical distance | H / V |
 | Add horizontal / vertical guide | Shift-H / Shift-V |
@@ -42,11 +45,11 @@ Drag an exact rectangle. Move it by dragging inside, resize a corner, or use arr
 | Clear measurements | Command-K |
 | Close overlay | Escape |
 
-Color tolerance has four presets: Zero, Low, Medium, and High. Choose one in the menu bar or Measurement settings. Scroll during Find Dimensions to move between presets; disable this in Measurement settings if preferred. Measurements respond immediately, while pins and manually drawn rectangles retain their geometry.
+Color tolerance has four presets: Zero, Low, Medium, and High. Choose one in the menu bar or Tolerance settings. Scroll during Find Dimensions to move between presets; disable this in Tolerance settings if preferred. Measurements respond immediately, while pins and manually drawn rectangles retain their geometry.
 
 Activation shows only the measurement canvas, without a toolbar, permanent hint banner, or screen dimming. Use keyboard shortcuts to change tools, units, tolerance, and other options.
 
-Settings save your preferred units, tolerance, and default tool. Each display uses its own scale and measurement canvas. Pinned measurements survive toggling the overlay during the current session; they are not saved to disk.
+Settings include customizable tolerance presets, clipboard formats, Retina scaling, aspect ratios, snapping, live/frozen capture, screenshot export, login items, and appearance. See [measurement preferences](docs/preferences.md) for details. Each display uses its own scale and measurement canvas. Pinned measurements survive toggling the overlay during the current session; they are not saved to disk.
 
 Detection uses color contrast, so solid UI surfaces work best. Gradients, shadows, text, and photos can yield partial or broad measurements. Manual selection is always available. CSS clipboard output uses logical screen coordinates.
 
@@ -54,7 +57,7 @@ Detection uses color contrast, so solid UI surfaces work best. Gradients, shadow
 
 **Check for Updates…** is available in **Settings → About Schnaps**, the menu-bar menu, and app menu. About also includes automatic update check and installation preferences. Sparkle manages update checks and its standard permission flow. Updates and the appcast are signed with Ed25519; published app bundles and DMGs are Developer ID signed and notarized.
 
-Screenshots stay in memory on your Mac and are discarded when the overlay closes. There are no analytics or accounts. Update checks contact GitHub; the website is hosted on Cloudflare. See [updates and release process](docs/releases.md).
+Screen images stay in memory on your Mac unless you explicitly copy or save a screenshot. Optional CleanShot integration hands the local file to CleanShot; Schnaps does not upload it. There are no analytics or accounts. Update checks contact GitHub; the website is hosted on Cloudflare. See [updates and release process](docs/releases.md).
 
 ## Build from source
 
@@ -72,6 +75,7 @@ The Dock uses the filled bottle in `Assets/Artwork/Schnaps-Dock.svg`. About and 
 
 ## Project guide
 
+- [Measurement and screenshot preferences](docs/preferences.md)
 - [Architecture and measurement behavior](docs/architecture.md)
 - [Signed releases, notarization, and Sparkle](docs/releases.md)
 - [Build prompts and design iterations](docs/prompts.md)
