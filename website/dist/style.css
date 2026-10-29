@@ -46,13 +46,13 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 .theme-control[hidden] { display: none; }
 .theme-control:hover { color: var(--text); background: var(--surface); }
 .theme-control[data-dark="true"] .moon, .theme-control:not([data-dark="true"]) .sun { display: none; }
-.intro { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 35px; padding: 35px 0 34px; }
+.intro { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 12px 35px; padding: 35px 0 34px; }
 h1 { font-size: clamp(40px, 4.5vw, 48px); font-weight: 600; line-height: 1.08; letter-spacing: -2px; margin: 0; }
 .intro > p { grid-column: 1; grid-row: 2; font-size: 16px; color: var(--secondary); margin: 0; }
-.intro .download { grid-column: 2; grid-row: 1; justify-self: end; }
+.intro .download { grid-column: 2; grid-row: 1; justify-self: center; }
 .download { display: inline-flex; align-items: center; gap: 22px; padding: 12px 20px; min-height: 46px; border-radius: 8px; background: var(--button); color: var(--button-text); font-size: 14px; font-weight: 500; }
 .download:hover { background: #0057da; text-decoration: none; }
-.requirements { grid-column: 2; grid-row: 2; display: block; font-size: 9px; color: var(--secondary); text-align: right; }
+.requirements { grid-column: 2; grid-row: 2; display: block; font-size: 9px; color: var(--secondary); text-align: center; }
 .showcase { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); align-items: center; gap: clamp(32px, 6vw, 80px); max-width: 860px; margin-inline: auto; padding-block: 24px 60px; }
 .app-demo { width: 100%; max-width: 360px; margin: 0 auto; }
 .app-demo img { display: block; width: 100%; height: auto; object-fit: contain; }
