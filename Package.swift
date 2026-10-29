@@ -10,6 +10,7 @@ let package = Package(
         .target(name: "MeasurementCore"),
         .executableTarget(name: "Schnaps", dependencies: ["MeasurementCore", .product(name: "Sparkle", package: "Sparkle")],
                           linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]),
-        .testTarget(name: "MeasurementCoreTests", dependencies: ["MeasurementCore"])
+        .testTarget(name: "MeasurementCoreTests", dependencies: ["MeasurementCore"]),
+        .testTarget(name: "SchnapsTests", dependencies: ["Schnaps"])
     ]
 )

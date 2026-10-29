@@ -17,12 +17,15 @@ let declarations = String(settings[settings.range(of: "enum MeasurementMode")!.l
 let snapshot = try read("Sources/Schnaps/ScreenSnapshot.swift")
 let snapshotData = String(snapshot[snapshot.range(of: "struct ScreenSnapshot")!.lowerBound..<snapshot.range(of: "    @MainActor\n    static func capture")!.lowerBound]) + "}\n"
 try ("import AppKit\nimport MeasurementCore\n" + declarations + snapshotData + view).write(to: build.appendingPathComponent("AppMeasurementView.swift"), atomically: true, encoding: .utf8)
+let verifyOnly = CommandLine.arguments.contains("--verify-only")
 let fixture = #"""
 import AppKit
 import MeasurementCore
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+let verifyOnly = CommandLine.arguments.contains("--verify-only")
 try MainActor.assumeIsolated {
     // Registered defaults belong only to this fixture process; the installed app's preferences are untouched.
+    UserDefaults.standard.register(defaults: MeasurementPreferences.defaults)
     UserDefaults.standard.register(defaults: [PreferenceKey.unit: "px", PreferenceKey.tolerance: 36])
     let data = try Data(contentsOf: root.appendingPathComponent("Assets/Previews/Schnaps-Drawing-Subject.png"))
     let image = NSBitmapImageRep(data: data)!.cgImage!
@@ -42,14 +45,25 @@ try MainActor.assumeIsolated {
             cursor.image.draw(at: CGPoint(x: point.x - cursor.hotSpot.x, y: point.y - cursor.hotSpot.y), from: .zero, operation: .sourceOver, fraction: 1)
             NSGraphicsContext.restoreGraphicsState()
         }
-        let output = root.appendingPathComponent("website/media-source/drawing-frames/\(name).png")
+        let output = root.appendingPathComponent(verifyOnly ? "build/NativeHover/\(name).png" : "website/media-source/drawing-frames/\(name).png")
         try bitmap.representation(using: .png, properties: [:])!.write(to: output)
         print("\(name): \(view.accessibilityValue() ?? "")")
     }
+    // Unit-test the actual canvas key handler without sending input to any application.
+    var captures: [(CGRect,Bool,Bool)] = []
+    view.onCapture = { captures.append(($0,$1,$2)) }
+    for (key,code,flags) in [("c",UInt16(8),NSEvent.ModifierFlags()),("p",UInt16(35),NSEvent.ModifierFlags.option)] {
+        let event=NSEvent.keyEvent(with:.keyDown,location:.zero,modifierFlags:flags,timestamp:0,windowNumber:0,
+                                  context:nil,characters:key,charactersIgnoringModifiers:key,isARepeat:false,keyCode:code)!
+        view.keyDown(with:event)
+    }
+    precondition(captures.count == 2 && captures[0].1 && !captures[0].2 && !captures[1].1 && captures[1].2)
+    precondition(captures.allSatisfy { $0.0.width > 0 && $0.0.height > 0 })
+    print("Native screenshot shortcuts: C copies; Option-P saves with toggled padding")
 }
 """#
 try fixture.write(to: build.appendingPathComponent("main.swift"), atomically: true, encoding: .utf8)
 let core = try FileManager.default.contentsOfDirectory(at: root.appendingPathComponent("Sources/MeasurementCore"), includingPropertiesForKeys: nil).filter { $0.pathExtension == "swift" }.map(\.path)
 try run(["swiftc", "-emit-library", "-emit-module", "-module-name", "MeasurementCore"] + core + ["-o", build.appendingPathComponent("libMeasurementCore.dylib").path, "-emit-module-path", build.appendingPathComponent("MeasurementCore.swiftmodule").path])
-try run(["swiftc", "-I", build.path, "-L", build.path, "-lMeasurementCore", "-Xlinker", "-rpath", "-Xlinker", build.path, build.appendingPathComponent("AppMeasurementView.swift").path, build.appendingPathComponent("main.swift").path, "-o", build.appendingPathComponent("render").path])
-try run([build.appendingPathComponent("render").path])
+try run(["swiftc", "-I", build.path, "-L", build.path, "-lMeasurementCore", "-Xlinker", "-rpath", "-Xlinker", build.path, root.appendingPathComponent("Sources/Schnaps/MeasurementPreferences.swift").path, root.appendingPathComponent("Sources/Schnaps/Localization.swift").path, build.appendingPathComponent("AppMeasurementView.swift").path, build.appendingPathComponent("main.swift").path, "-o", build.appendingPathComponent("render").path])
+try run([build.appendingPathComponent("render").path] + (verifyOnly ? ["--verify-only"] : []))
