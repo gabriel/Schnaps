@@ -460,6 +460,11 @@ final class MeasurementView: NSView {
         if let snapshot {
             NSImage(cgImage: snapshot.image, size: bounds.size).draw(in: bounds, from: .zero,
                 operation: .sourceOver, fraction: 1, respectFlipped: true, hints: nil)
+        } else {
+            // AppKit can pass mouse events through fully transparent window pixels.
+            // Keep the capture-free canvas hit-testable, including before the first drag.
+            NSColor.black.withAlphaComponent(0.01).setFill()
+            bounds.fill()
         }
         for guide in guides {
             line(from: guide.vertical ? CGPoint(x: guide.position, y: 0) : CGPoint(x: 0, y: guide.position),
