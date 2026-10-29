@@ -13,3 +13,7 @@ Run `swift Scripts/export-icon.swift` to regenerate:
 - `website/dist/assets/logo.svg` and `icon.png`: transparent website branding.
 
 The Swift packaging script includes both ICNS files on every supported macOS version. AppKit installs the filled icon; About loads the separate transparent mark.
+
+## Liquid glass and blueprint design
+
+[Transparent PNG](Artwork/Schnaps-Liquid-Glass.png) combines an empty optical-glass bottle with blueprint dimension rails. It is a separate design asset, generated with the built-in image tool; [the full prompt](Artwork/Schnaps-Liquid-Glass.prompt.md) is included. The original alpha channel is preserved. Existing app and website icon exports remain unchanged.
