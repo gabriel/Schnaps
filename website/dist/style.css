@@ -51,7 +51,7 @@
   --blueprint: rgb(143 180 227 / 10%);
 }
 * { box-sizing: border-box; }
-body { isolation: isolate; margin: 0; padding-bottom: 60px; background-color: var(--background); background-image: radial-gradient(ellipse at 20% 35%, var(--glow-blue), transparent 58%), radial-gradient(ellipse at 86% 12%, var(--glow-violet), transparent 52%), radial-gradient(ellipse at 74% 92%, var(--glow-teal), transparent 55%); background-attachment: fixed; color: var(--text); font: 15px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+body { isolation: isolate; margin: 0; padding-bottom: 76px; background-color: var(--background); background-image: radial-gradient(ellipse at 20% 35%, var(--glow-blue), transparent 58%), radial-gradient(ellipse at 86% 12%, var(--glow-violet), transparent 52%), radial-gradient(ellipse at 74% 92%, var(--glow-teal), transparent 55%); background-attachment: fixed; color: var(--text); font: 15px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
 body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: var(--blueprint); mask: url("/assets/blueprint-lines.svg") center / 100% 100% no-repeat; }
 a { color: inherit; text-decoration: none; }
 a:hover { text-decoration: underline; text-underline-offset: 4px; }
@@ -105,8 +105,18 @@ details { border-top: 1px solid var(--line); padding-block: 16px; }
 details:last-child { border-bottom: 1px solid var(--line); }
 summary { font-size: 13px; font-weight: 500; cursor: pointer; }
 details p { font-size: 13px; color: var(--secondary); margin-bottom: 0; }
-.footer { position: fixed; inset: auto 0 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 22px; border-top: 1px solid var(--line); padding-block: 6px 12px; background: var(--background); color: var(--secondary); font-size: 11px; }
-.footer > div { display: flex; gap: 20px; }
+.footer { margin-top: 24px; color: var(--secondary); font-size: 13px; }
+.footer-main { display: grid; grid-template-columns: 1fr 2fr; gap: 48px; border-top: 1px solid var(--line); padding-block: 28px 24px; }
+.footer-intro .brand { color: var(--text); }
+.footer-intro p { max-width: 280px; margin: 12px 0 0; }
+.footer-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding-top: 10px; }
+.footer-group h2 { margin: 0 0 12px; color: var(--text); font-size: 13px; font-weight: 600; }
+.footer-group ul { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+.footer-group a { display: inline-block; padding-block: 2px; }
+.footer-bottom { position: fixed; inset: auto 0 0; z-index: 5; border-top: 1px solid var(--line); background: var(--background); font-size: 12px; }
+.footer-bottom .wrap { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 24px; padding-block: 12px; }
+.footer-bottom p { margin: 0; }
+.footer-bottom a { margin-left: 10px; color: var(--text); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .skip { position: absolute; top: -80px; left: 12px; background: var(--background); padding: 10px; z-index: 10; }
 .skip:focus { top: 8px; }
@@ -115,7 +125,7 @@ details p { font-size: 13px; color: var(--secondary); margin-bottom: 0; }
   .features { width: 100%; max-width: 360px; margin-inline: auto; gap: 25px; }
 }
 @media (max-width: 640px) {
-  body { padding-bottom: 90px; }
+  body { padding-bottom: 88px; }
   .wrap { width: calc(100% - 36px); }
   .nav { padding-block: 18px; }
   .nav nav { gap: 16px; font-size: 12px; }
@@ -126,5 +136,11 @@ details p { font-size: 13px; color: var(--secondary); margin-bottom: 0; }
   .requirements { font-size: 10px; max-width: 270px; text-align: center; margin: 0; }
   .features h2 { margin-bottom: 6px; }
   .details { padding-bottom: 20px; }
-  .footer { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .footer-main { grid-template-columns: 1fr; gap: 24px; }
+  .footer-intro p { max-width: 360px; }
+  .footer-links { padding-top: 0; }
+  .footer-bottom .wrap { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 480px) {
+  .footer-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 20px; }
 }
