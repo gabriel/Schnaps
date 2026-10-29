@@ -20,8 +20,12 @@ The drawing source is `Assets/Previews/Schnaps-Drawing-Subject.png`, generated w
 
 The earlier genuine Calculator captures remain in `media-source/demo-frames/` with `Scripts/export-demo.swift`. Their original WebP assets are retained as inputs for existing product media exports.
 
-The logo is the transparent empty-bottle blueprint in `Assets/Artwork/Schnaps-Blueprint.svg`. `swift Scripts/export-icon.swift` updates the website SVG, transparent favicon, and app icon together.
+The logo is the approved transparent liquid-glass bottle in `Assets/Artwork/Schnaps-Liquid-Glass.png`. `swift Scripts/export-icon.swift` updates the website PNG, transparent favicon, and app icon together.
 
 ## Appearance
 
 The site follows the system color scheme by default. The sun/moon icon button switches between light and dark, with an accessible action label and tooltip. Explicit choices persist locally. Before an override is chosen, the icon follows system appearance changes. The page still follows the system theme without JavaScript or local storage.
+
+## Footer
+
+The footer groups download, project, feedback, and rel.me links beneath a short app description. A fixed bottom credit bar names Gabriel Handford and links to his GitHub profile. The expanded navigation stays in normal page flow; reserved bottom space keeps the fixed credit bar clear of the final links. Columns collapse on smaller screens and share the site's light/dark colors.

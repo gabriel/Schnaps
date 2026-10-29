@@ -6,18 +6,18 @@
     <title>Schnaps — Screen measurement for Mac</title>
     <meta name="description" content="Find dimensions, measure gaps, and copy precise measurements. A small, native Mac app. Free and open source." />
     <link rel="canonical" href="https://getschnaps.com/" />
-    <link rel="icon" href="/assets/icon.png" type="image/png" />
+    <link rel="icon" href="/assets/icon.png?v=glass" type="image/png" />
     <meta property="og:title" content="Schnaps — Screen measurement for Mac" />
     <meta property="og:description" content="Find dimensions. Measure gaps. Get the details right." />
-    <meta property="og:image" content="https://getschnaps.com/assets/icon.png" />
+    <meta property="og:image" content="https://getschnaps.com/assets/icon.png?v=glass" />
     <meta property="og:type" content="website" />
     <script src="/site.js"></script>
-    <link rel="stylesheet" href="/style.css?v=layout-demo-1" />
+    <link rel="stylesheet" href="/style.css?v=expanded-footer-1" />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
     <header class="wrap nav">
-      <a class="brand" href="/" aria-label="Schnaps home"><img src="/assets/logo.svg" width="40" height="40" alt="" />Schnaps</a>
+      <a class="brand" href="/" aria-label="Schnaps home"><img src="/assets/logo.png" width="40" height="40" alt="" />Schnaps</a>
       <nav aria-label="Main navigation">
         <a href="https://github.com/gabriel/Schnaps">GitHub ↗</a>
         <button class="theme-control" id="theme" type="button" aria-label="Toggle color scheme" hidden>
@@ -58,6 +58,45 @@
         <details><summary>Retina and multiple displays</summary><p>Choose screen points or physical display pixels. Each display uses its own scale, and each measurement stays within one display.</p></details>
       </section>
     </main>
-    <footer class="wrap footer"><span>A small utility, written in Swift.</span><div><a href="https://github.com/gabriel/Schnaps/tree/main/docs">Documentation</a><a href="https://github.com/gabriel/Schnaps/releases">Releases</a><a href="https://github.com/gabriel/Schnaps/issues">Feedback</a></div></footer>
+    <footer class="footer">
+      <div class="wrap footer-main">
+        <div class="footer-intro">
+          <a class="brand" href="/" aria-label="Schnaps home"><img src="/assets/logo.png" width="40" height="40" alt="" />Schnaps</a>
+          <p>A small, native Mac app for the details. Find dimensions, measure gaps, and copy precise measurements.</p>
+          <p>Written in Swift. Free and open source.</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer navigation">
+          <section class="footer-group" aria-labelledby="footer-app">
+            <h2 id="footer-app">Get Schnaps</h2>
+            <ul>
+              <li><a href="https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg">Download for Mac</a></li>
+              <li><a href="https://github.com/gabriel/Schnaps/releases">Release notes</a></li>
+              <li><a href="https://www.producthunt.com/products/schnaps?launch=schnaps">Product Hunt ↗</a></li>
+            </ul>
+          </section>
+          <section class="footer-group" aria-labelledby="footer-project">
+            <h2 id="footer-project">The project</h2>
+            <ul>
+              <li><a href="https://github.com/gabriel/Schnaps/tree/main/docs">Documentation</a></li>
+              <li><a href="https://github.com/gabriel/Schnaps/blob/main/docs/prompts.md">How it was built</a></li>
+              <li><a href="https://github.com/gabriel/Schnaps">Source code ↗</a></li>
+            </ul>
+          </section>
+          <section class="footer-group" aria-labelledby="footer-elsewhere">
+            <h2 id="footer-elsewhere">Keep in touch</h2>
+            <ul>
+              <li><a href="https://github.com/gabriel/Schnaps/issues">Feedback &amp; ideas</a></li>
+              <li><a href="https://rel.me/">rel.me ↗</a></li>
+            </ul>
+          </section>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <div class="wrap">
+          <p>Made by Gabriel Handford <a href="https://github.com/gabriel">GitHub ↗</a></p>
+          <p>A little precision for your Mac.</p>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>

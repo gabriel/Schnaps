@@ -1,6 +1,6 @@
 # Schnaps
 
-<img src="Assets/Previews/Schnaps.png" width="128" alt="Empty Schnaps bottle with blueprint measurement arrows">
+<img src="Assets/Previews/Schnaps.png" width="128" alt="Liquid-glass Schnaps bottle with blueprint measurement lines">
 
 **A native screen measurement app for macOS.** Find dimensions, measure gaps, and keep the details that make a design work.
 
@@ -55,7 +55,7 @@ Detection uses color contrast, so solid UI surfaces work best. Gradients, shadow
 
 ## Updates and privacy
 
-**Check for Updates…** is available in **Settings → About Schnaps**, the menu-bar menu, and app menu. About also includes automatic update check and installation preferences. Sparkle manages update checks and its standard permission flow. Updates and the appcast are signed with Ed25519; published app bundles and DMGs are Developer ID signed and notarized.
+**Check for Updates…** is available in **Settings → About Schnaps**, the menu-bar menu, and app menu. About also includes the Stable/Beta channel selector and automatic update check and installation preferences. Sparkle manages update checks and its standard permission flow. Updates and the appcast are signed with Ed25519; published app bundles and DMGs are Developer ID signed and notarized.
 
 Screen images stay in memory on your Mac unless you explicitly copy or save a screenshot. Optional CleanShot integration hands the local file to CleanShot; Schnaps does not upload it. There are no analytics or accounts. Update checks contact GitHub; the website is hosted on Cloudflare. See [updates and release process](docs/releases.md).
 
@@ -69,9 +69,11 @@ open build/Schnaps.app
 
 Open `Package.swift` in Xcode, or use SwiftPM. The app source is Swift using AppKit, SwiftUI, and ScreenCaptureKit. Sparkle 2 is the update framework; its binary package version and checksum are pinned in `Package.resolved`.
 
+`make beta` builds, signs, notarizes, and publishes the next GitHub prerelease and signed Beta feed; `make plan-beta` previews the version. See [release documentation](docs/releases.md) for signing setup and recovery.
+
 `swift Scripts/build-app.swift --universal` builds both architectures. `--debug` selects debug configuration. For local signing, set `SCHNAPS_SIGN_IDENTITY` to an installed Apple Development identity; otherwise the build is ad-hoc signed. Distribution requires a Developer ID Application identity and notarization credentials.
 
-The Dock uses the filled bottle in `Assets/Artwork/Schnaps-Dock.svg`. About and the website use the transparent mark in `Assets/Artwork/Schnaps-Blueprint.svg`. Run `swift Scripts/export-icon.swift` to regenerate both ICNS files, PNG previews, and the favicon.
+The app, About, and website use the transparent liquid-glass bottle with external blueprint measurement lines in `Assets/Artwork/Schnaps-Liquid-Glass.png`. Run `swift Scripts/export-icon.swift` to regenerate both ICNS files, PNG previews, and the favicon.
 
 ## Project guide
 

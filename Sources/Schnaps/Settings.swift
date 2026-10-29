@@ -448,17 +448,27 @@ struct SettingsView: View {
                 .padding(.top, -7)
             }
             Section {
+                Picker("Channel", selection: $updates.channel) {
+                    ForEach(UpdateChannel.allCases, id: \.rawValue) { Text($0.title).tag($0) }
+                }
+                .disabled(!updates.canCheckForUpdates)
                 Toggle("Automatically check for updates", isOn: $updates.automaticallyChecksForUpdates)
                 Toggle("Automatically download and install updates", isOn: $updates.automaticallyDownloadsUpdates)
                     .disabled(!updates.allowsAutomaticUpdates)
             } header: {
                 Text(L("Updates"))
             } footer: {
-                Button("Check for Updates…", action: updates.checkForUpdates)
-                    .disabled(!updates.canCheckForUpdates)
-                    .buttonStyle(.bordered)
-                    .controlSize(.regular)
-                    .font(.body)
+                VStack(alignment: .leading, spacing: 8) {
+                    if updates.channel == .beta {
+                        Text("Early builds. Stable resumes with the next newer stable release.")
+                            .font(.footnote).padding(.top, -7)
+                    }
+                    Button("Check for Updates…", action: updates.checkForUpdates)
+                        .disabled(!updates.canCheckForUpdates)
+                        .buttonStyle(.bordered)
+                        .controlSize(.regular)
+                        .font(.body)
+                }
             }
             ProSection(membership: membership)
         }

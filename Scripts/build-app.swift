@@ -1,7 +1,7 @@
 #!/usr/bin/env swift
 import Foundation
 
-// Swift-only app packaging with separate Dock and transparent branding artwork.
+// Swift-only app packaging with transparent liquid-glass branding.
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let configuration = CommandLine.arguments.contains("--debug") ? "debug" : "release"
 let manager = FileManager.default
@@ -20,7 +20,7 @@ func run(_ executable: String, _ arguments: [String], capture: Bool = false) thr
 let architectureFlags = CommandLine.arguments.contains("--universal") ? ["--arch", "arm64", "--arch", "x86_64"] : []
 _ = try run("/usr/bin/xcrun", ["swift", "build", "-c", configuration] + architectureFlags)
 let binPath = try run("/usr/bin/xcrun", ["swift", "build", "-c", configuration] + architectureFlags + ["--show-bin-path"], capture: true)
-let release = try JSONSerialization.jsonObject(with: Data(contentsOf: root.appendingPathComponent("Config/Release.json"))) as! [String: String]
+let release = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: ProcessInfo.processInfo.environment["SCHNAPS_RELEASE_CONFIG"] ?? root.appendingPathComponent("Config/Release.json").path))) as! [String: String]
 let app = root.appendingPathComponent("build/Schnaps.app")
 let contents = app.appendingPathComponent("Contents")
 let resources = contents.appendingPathComponent("Resources")
@@ -33,7 +33,7 @@ let binary = contents.appendingPathComponent("MacOS/Schnaps")
 if manager.fileExists(atPath: binary.path) { try manager.removeItem(at: binary) }
 try manager.copyItem(at: URL(fileURLWithPath: binPath).appendingPathComponent("Schnaps"), to: binary)
 
-// The app icon includes its background; About uses the transparent mark separately.
+// Dock and About use the same approved transparent artwork.
 let car = resources.appendingPathComponent("Assets.car")
 if manager.fileExists(atPath: car.path) { try manager.removeItem(at: car) }
 for name in ["Schnaps", "Schnaps-Mark"] {
@@ -47,6 +47,7 @@ var info: [String: Any] = [
     "CFBundleName": "Schnaps", "CFBundleDisplayName": "Schnaps",
     "CFBundleExecutable": "Schnaps", "CFBundlePackageType": "APPL",
     "CFBundleShortVersionString": release["version"]!, "CFBundleVersion": release["build"]!,
+    "SchnapsUpdateChannel": release["defaultChannel"] ?? "stable",
     "SUFeedURL": release["feedURL"]!, "SUPublicEDKey": release["publicEDKey"]!,
     "SUVerifyUpdateBeforeExtraction": true, "SURequireSignedFeed": true,
     "CFBundleIconFile": "Schnaps", "LSMinimumSystemVersion": "14.0",
@@ -82,4 +83,4 @@ for service in try manager.contentsOfDirectory(at: xpcServices, includingPropert
 try sign(framework)
 try sign(app)
 _ = try run("/usr/bin/codesign", ["--verify", "--deep", "--strict", app.path])
-print("Built \(app.path) (filled Dock icon and transparent brand mark)")
+print("Built \(app.path) (transparent liquid-glass icon and brand mark)")
