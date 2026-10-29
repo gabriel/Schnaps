@@ -1,6 +1,6 @@
 # Liquid glass and blueprint icon
 
-Generated with the built-in image generation tool. The PNG preserves the original transparent alpha. This is a separate design asset; the packaged app icon is unchanged.
+Generated with the built-in image generation tool. The PNG preserves the original transparent alpha. This approved design supplies the packaged app icon and website branding.
 
 ## Final prompt
 

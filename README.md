@@ -1,6 +1,6 @@
 # Schnaps
 
-<img src="Assets/Previews/Schnaps.png" width="128" alt="Empty Schnaps bottle with blueprint measurement arrows">
+<img src="Assets/Previews/Schnaps.png" width="128" alt="Liquid-glass Schnaps bottle with blueprint measurement lines">
 
 **A native screen measurement app for macOS.** Find dimensions, measure gaps, and keep the details that make a design work.
 
@@ -68,7 +68,7 @@ Open `Package.swift` in Xcode, or use SwiftPM. The app source is Swift using App
 
 `swift Scripts/build-app.swift --universal` builds both architectures. `--debug` selects debug configuration. For local signing, set `SCHNAPS_SIGN_IDENTITY` to an installed Apple Development identity; otherwise the build is ad-hoc signed. Distribution requires a Developer ID Application identity and notarization credentials.
 
-The Dock uses the filled bottle in `Assets/Artwork/Schnaps-Dock.svg`. About and the website use the transparent mark in `Assets/Artwork/Schnaps-Blueprint.svg`. Run `swift Scripts/export-icon.swift` to regenerate both ICNS files, PNG previews, and the favicon.
+The app, About, and website use the transparent liquid-glass bottle with external blueprint measurement lines in `Assets/Artwork/Schnaps-Liquid-Glass.png`. Run `swift Scripts/export-icon.swift` to regenerate both ICNS files, PNG previews, and the favicon.
 
 ## Project guide
 

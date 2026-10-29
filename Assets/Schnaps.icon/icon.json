@@ -1,0 +1,28 @@
+{
+  "fill": {
+    "solid": "srgb:0,0,0,0"
+  },
+  "groups": [
+    {
+      "name": "Liquid glass bottle and blueprint dimensions",
+      "layers": [
+        {
+          "name": "Bottle with external measurement rails",
+          "image-name": "Schnaps-Glass.png",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}

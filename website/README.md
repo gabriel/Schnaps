@@ -20,7 +20,7 @@ The drawing source is `Assets/Previews/Schnaps-Drawing-Subject.png`, generated w
 
 The earlier genuine Calculator captures remain in `media-source/demo-frames/` with `Scripts/export-demo.swift`. Their original WebP assets are retained as inputs for existing product media exports.
 
-The logo is the transparent empty-bottle blueprint in `Assets/Artwork/Schnaps-Blueprint.svg`. `swift Scripts/export-icon.swift` updates the website SVG, transparent favicon, and app icon together.
+The logo is the approved transparent liquid-glass bottle in `Assets/Artwork/Schnaps-Liquid-Glass.png`. `swift Scripts/export-icon.swift` updates the website PNG, transparent favicon, and app icon together.
 
 ## Appearance
 
