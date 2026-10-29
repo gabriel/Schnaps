@@ -12,9 +12,13 @@ Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloud
 
 ## Demo and branding
 
-The animated WebP shows the running Schnaps app measuring gaps and pinning a region over the small native macOS Calculator. Its frames are genuine cropped captures with only the plain, edge-connected backdrop removed; the measurement UI is not redrawn or browser-generated. No video player or animation library is loaded.
+The homepage animation combines native Schnaps hover renders with genuine Schnaps 0.6.2 captures over an editorial drawing. Hover frames use the app’s unmodified `MeasurementView`, snapshot model, and edge detector, rendered offscreen by `Scripts/render-native-hover.swift`; High tolerance skips faint paper rules so both axes are visible. The area resizing and pinning frames are app captures. The encoder only removes the edge-connected desktop backdrop. No video player or animation library is loaded.
 
-The demo uses genuine Calculator captures in `media-source/demo-frames/`, with frame timing in `timeline.json`. Run `swift Scripts/export-demo.swift` from the repository root to rebuild the animated WebP and static poster; the WebP command-line tools (`img2webp`) must be installed. The 720 × 912 px captures display at 360 × 456 CSS pixels, with responsive shrinking, a pause control, and a still image for reduced-motion preferences or disabled JavaScript.
+Run `swift Scripts/render-native-hover.swift` to regenerate the live hover frames from the app source. Then run `swift Scripts/export-drawing-demo.swift` from the repository root to encode the cropped captures in `website/media-source/drawing-frames/` using `timeline.json`. The animation and live Find Dimensions poster are transparent 880 × 1040 px WebPs displayed at no more than 400 CSS pixels wide. Pause/play, reduced-motion still behavior, and a no-JavaScript poster remain available. WebP tools (`img2webp`, `cwebp`) are required.
+
+The drawing source is `Assets/Previews/Schnaps-Drawing-Subject.png`, generated with `swift Scripts/export-illustrated-demo.swift --subject-only`. The earlier illustrated walkthrough and its exporter are retained as design source, but the homepage uses real app captures.
+
+The earlier genuine Calculator captures remain in `media-source/demo-frames/` with `Scripts/export-demo.swift`. Their original WebP assets are retained as inputs for existing product media exports.
 
 The logo is the transparent empty-bottle blueprint in `Assets/Artwork/Schnaps-Blueprint.svg`. `swift Scripts/export-icon.swift` updates the website SVG, transparent favicon, and app icon together.
 
