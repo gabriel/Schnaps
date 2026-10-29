@@ -17,3 +17,5 @@ The Swift packaging script includes both ICNS files on every supported macOS ver
 ## Liquid glass and blueprint design
 
 [Transparent PNG](Artwork/Schnaps-Liquid-Glass.png) combines an empty optical-glass bottle with blueprint dimension rails. It is a separate design asset, generated with the built-in image tool; [the full prompt](Artwork/Schnaps-Liquid-Glass.prompt.md) is included. The original alpha channel is preserved. Existing app and website icon exports remain unchanged.
+
+[Integrated measurement design](Artwork/Schnaps-Liquid-Glass-Integrated.png) embeds sapphire-blue dimension marks into the bottle glass and base. [Its generation prompt](Artwork/Schnaps-Liquid-Glass-Integrated.prompt.md) records the material and construction details. This version also preserves transparent alpha.
