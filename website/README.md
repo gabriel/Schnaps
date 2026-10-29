@@ -12,9 +12,11 @@ Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloud
 
 ## Demo and branding
 
-The homepage uses an illustrated feature walkthrough over an editorial sketchbook: oversized script lettering, ruled paper, sparse hipster placeholder copy, and handwritten coral measurement notes. The static poster combines spacing, a selected region, pinned dimensions, and CSS copying. The animation introduces the same actions in sequence, with eased cursor glides, drawn-in arrows, a continuous selection drag, pinning, and CSS copy confirmation. This is an illustration of the workflow, not a live app capture. No video player or animation library is loaded.
+The homepage animation uses genuine Schnaps 0.6.2 captures over an editorial drawing, showing hover distances, area resizing, and pinning. The app's measurement UI is preserved; the exporter only removes the edge-connected desktop backdrop. No video player or animation library is loaded.
 
-Run `swift Scripts/export-illustrated-demo.swift` from the repository root to regenerate the transparent 880 × 1040 px animated WebP, static WebP poster, and `Assets/Previews/Schnaps-Layout-Demo.png`. The WebP command-line tools (`img2webp`, `cwebp`) must be installed. SwiftUI draws the fictional subject and the illustrated measurement states from the same coordinates. The artwork displays at no more than 400 CSS pixels wide, with responsive shrinking, a pause control, and the complete still image for reduced-motion preferences or disabled JavaScript.
+Run `swift Scripts/export-drawing-demo.swift` from the repository root to encode the cropped captures in `website/media-source/drawing-frames/` using `timeline.json`. The animation and pinned-measurement poster are transparent 880 × 1040 px WebPs displayed at no more than 400 CSS pixels wide. Pause/play, reduced-motion still behavior, and a no-JavaScript poster remain available. WebP tools (`img2webp`, `cwebp`) are required.
+
+The drawing source is `Assets/Previews/Schnaps-Drawing-Subject.png`, generated with `swift Scripts/export-illustrated-demo.swift --subject-only`. The earlier illustrated walkthrough and its exporter are retained as design source, but the homepage uses real app captures.
 
 The earlier genuine Calculator captures remain in `media-source/demo-frames/` with `Scripts/export-demo.swift`. Their original WebP assets are retained as inputs for existing product media exports.
 

@@ -99,7 +99,7 @@ struct IllustratedDemo: View {
                 let point = state.cursor ?? defaultPoint
                 if state.phase == 3 {
                     var crosshair = Path(); crosshair.move(to: CGPoint(x: point.x - 6, y: point.y)); crosshair.addLine(to: CGPoint(x: point.x + 6, y: point.y)); crosshair.move(to: CGPoint(x: point.x, y: point.y - 6)); crosshair.addLine(to: CGPoint(x: point.x, y: point.y + 6)); stroke(crosshair)
-                } else if state.phase < 5 {
+                } else if state.phase >= 0 && state.phase < 5 {
                     var pointer = Path(); pointer.move(to: point); pointer.addLine(to: CGPoint(x: point.x + 2, y: point.y + 14)); pointer.addLine(to: CGPoint(x: point.x + 6, y: point.y + 9)); pointer.addLine(to: CGPoint(x: point.x + 12, y: point.y + 8)); pointer.closeSubpath()
                     context.fill(pointer, with: .color(ink)); context.stroke(pointer, with: .color(.white.opacity(0.9)), lineWidth: 1)
                 }
@@ -138,6 +138,8 @@ try MainActor.assumeIsolated {
         let png = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])!
         try png.write(to: url)
     }
+    try render(.init(phase: -1), to: root.appendingPathComponent("Assets/Previews/Schnaps-Drawing-Subject.png"))
+    if CommandLine.arguments.contains("--subject-only") { return }
     var arguments = ["img2webp", "-min_size", "-mixed", "-loop", "0", "-q", "92", "-m", "6"]
     for (index, frame) in frames.enumerated() {
         let path = staging.appendingPathComponent(String(format: "%02d.png", index))
