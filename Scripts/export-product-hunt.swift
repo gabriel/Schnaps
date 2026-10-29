@@ -5,8 +5,10 @@ import SwiftUI
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let output = root.appendingPathComponent("Assets/ProductHunt")
 let mark = NSImage(contentsOf: root.appendingPathComponent("Assets/Artwork/Schnaps-Blueprint.svg"))!
-let hover = NSImage(contentsOf: root.appendingPathComponent("website/dist/assets/schnaps-demo-poster.webp"))!
-let selection = NSImage(contentsOf: output.appendingPathComponent("Source/selection.png"))!
+// Selected states of the explicitly illustrated Layout lab homepage demo.
+let overview = NSImage(contentsOf: output.appendingPathComponent("Source/overview.png"))!
+let hover = NSImage(contentsOf: output.appendingPathComponent("Source/hover.png"))!
+let selection = NSImage(contentsOf: output.appendingPathComponent("Source/pin.png"))!
 let icon = NSImage(contentsOf: root.appendingPathComponent("Assets/Artwork/Schnaps-Dock.svg"))!
 
 struct HuntCard: View {
@@ -55,7 +57,7 @@ try MainActor.assumeIsolated {
         print("\(name): \(image.width) × \(image.height), \(png.count) bytes")
     }
     let cards = [
-        ("01-overview", "Measure your\nscreen.", "A little native Mac app.\nFree, precise, open source.", hover),
+        ("01-overview", "Measure your\nscreen.", "A little native Mac app.\nFree, precise, open source.", overview),
         ("02-find-dimensions", "Hover.\nSee the gap.", "See horizontal and vertical\ndistances between elements.", hover),
         ("03-pin-and-copy", "Measure.\nPin. Copy.", "Keep measurements on screen.\nCopy pixels, points, or CSS.", selection)
     ]
