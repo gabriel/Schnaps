@@ -89,8 +89,8 @@ h1 { font-size: clamp(40px, 4.5vw, 48px); font-weight: 600; line-height: 1.08; l
 .product-hunt-badge img { width: 200px; max-width: 100%; height: auto; }
 .badge-light { display: var(--badge-light); }
 .badge-dark { display: var(--badge-dark); }
-.showcase { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); align-items: center; gap: clamp(32px, 6vw, 80px); max-width: 860px; margin-inline: auto; padding-block: 24px 60px; }
-.app-demo { width: 100%; max-width: 360px; margin: 0 auto; }
+.showcase { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); align-items: center; gap: clamp(32px, 6vw, 80px); max-width: 860px; margin-inline: auto; padding-block: 24px 60px; }
+.app-demo { width: 100%; max-width: 400px; margin: 0 auto; }
 .app-demo img { display: block; width: 100%; height: auto; object-fit: contain; margin-bottom: -24px; }
 figcaption { color: var(--secondary); font-size: 12px; text-align: center; margin-top: 4px; }
 .demo-toggle { display: block; margin: 6px auto 0; padding: 4px 10px; border: 0; border-radius: 5px; color: var(--secondary); background: transparent; font: inherit; cursor: pointer; }
