@@ -9,6 +9,8 @@
   --button-text: #082f49;
   --focus: #3678db;
   --logo-filter: none;
+  --badge-light: block;
+  --badge-dark: none;
   --glow-blue: rgb(95 150 235 / 10%);
   --glow-violet: rgb(156 136 225 / 7%);
   --glow-teal: rgb(102 183 190 / 5%);
@@ -24,6 +26,8 @@
     --surface: #202125;
     --focus: #87b4f7;
     --logo-filter: brightness(1.45);
+    --badge-light: none;
+    --badge-dark: block;
     --glow-blue: rgb(61 112 208 / 14%);
     --glow-violet: rgb(108 83 177 / 10%);
     --glow-teal: rgb(51 127 145 / 7%);
@@ -39,6 +43,8 @@
   --surface: #202125;
   --focus: #87b4f7;
   --logo-filter: brightness(1.45);
+  --badge-light: none;
+  --badge-dark: block;
   --glow-blue: rgb(61 112 208 / 14%);
   --glow-violet: rgb(108 83 177 / 10%);
   --glow-teal: rgb(51 127 145 / 7%);
@@ -61,7 +67,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 .theme-control[data-dark="true"] .moon, .theme-control:not([data-dark="true"]) .sun { display: none; }
 .intro { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 6px 35px; padding: 35px 0 34px; }
 h1 { font-size: clamp(40px, 4.5vw, 48px); font-weight: 600; line-height: 1.08; letter-spacing: -2px; margin: 0; }
-.intro > p { grid-column: 1; grid-row: 2; font-size: 16px; color: var(--secondary); margin: 0; }
+.intro > h1 { align-self: end; }
+.intro > p { grid-column: 1; grid-row: 2; align-self: start; font-size: 16px; color: var(--secondary); margin: 0; }
 .download-block { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .download { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 20px; padding: 13px 22px; min-height: 48px; border: 1px solid rgb(100 192 232 / 70%); border-radius: 10px; background: linear-gradient(180deg, rgb(255 255 255 / 9%), transparent 45%), var(--button); color: var(--button-text); box-shadow: inset 0 1px 0 rgb(255 255 255 / 85%), inset 0 -1px 1px rgb(13 99 143 / 18%), 0 0 0 3px rgb(111 208 246 / 8%), 0 4px 18px rgb(67 161 216 / 18%); font-size: 15px; font-weight: 600; letter-spacing: -.2px; text-shadow: 0 1px 0 rgb(255 255 255 / 30%); transition: transform 180ms ease, box-shadow 180ms ease; }
 .download::before { content: ""; position: absolute; inset: 1px; border: 1px solid rgb(255 255 255 / 28%); border-radius: 8px; pointer-events: none; }
@@ -77,6 +84,11 @@ h1 { font-size: clamp(40px, 4.5vw, 48px); font-weight: 600; line-height: 1.08; l
   .download::after { display: none; }
 }
 .requirements { grid-column: 2; grid-row: 2; display: block; font-size: 9px; color: var(--secondary); text-align: center; }
+.product-hunt-badge { display: block; margin-top: 12px; line-height: 0; border-radius: 8px; }
+.product-hunt-badge:hover { opacity: .85; }
+.product-hunt-badge img { width: 200px; max-width: 100%; height: auto; }
+.badge-light { display: var(--badge-light); }
+.badge-dark { display: var(--badge-dark); }
 .showcase { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); align-items: center; gap: clamp(32px, 6vw, 80px); max-width: 860px; margin-inline: auto; padding-block: 24px 60px; }
 .app-demo { width: 100%; max-width: 360px; margin: 0 auto; }
 .app-demo img { display: block; width: 100%; height: auto; object-fit: contain; margin-bottom: -24px; }
@@ -108,6 +120,7 @@ details p { font-size: 13px; color: var(--secondary); margin-bottom: 0; }
   .nav { padding-block: 18px; }
   .nav nav { gap: 16px; font-size: 12px; }
   .intro { display: flex; flex-direction: column; gap: 0; text-align: center; padding-block: 30px; }
+  .intro > h1, .intro > p { align-self: auto; }
   h1 { letter-spacing: -1.9px; }
   .intro > p { font-size: 16px; max-width: 285px; margin: 21px auto 25px; }
   .requirements { font-size: 10px; max-width: 270px; text-align: center; margin: 0; }
