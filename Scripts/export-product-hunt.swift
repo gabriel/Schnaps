@@ -5,7 +5,7 @@ import SwiftUI
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let output = root.appendingPathComponent("Assets/ProductHunt")
 let mark = NSImage(contentsOf: root.appendingPathComponent("Assets/Artwork/Schnaps-Blueprint.svg"))!
-// Selected states of the explicitly illustrated Layout lab homepage demo.
+// Selected states of the editorial sketchbook homepage illustration.
 let overview = NSImage(contentsOf: output.appendingPathComponent("Source/overview.png"))!
 let hover = NSImage(contentsOf: output.appendingPathComponent("Source/hover.png"))!
 let selection = NSImage(contentsOf: output.appendingPathComponent("Source/pin.png"))!
