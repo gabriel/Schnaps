@@ -190,6 +190,9 @@ struct SettingsView: View {
         Group {
             Section {
                 LabeledContent("Version", value: appVersion)
+                LabeledContent("Created by") {
+                    Link("Gabriel Handford", destination: URL(string: "https://github.com/gabriel")!)
+                }
             } header: {
                 HStack(spacing: 12) {
                     if let icon = AppBranding.icon {
