@@ -11,6 +11,8 @@ try FileManager.default.createDirectory(at: staging, withIntermediateDirectories
 struct DemoState {
     var phase: Int
     var progress: CGFloat = 1
+    var reveal: CGFloat = 1
+    var cursor: CGPoint? = nil
 }
 
 struct IllustratedDemo: View {
@@ -48,7 +50,7 @@ struct IllustratedDemo: View {
                 func note(_ text: String, at point: CGPoint, size: CGFloat = 15, color: Color? = nil) {
                     context.draw(Text(text).font(.custom("Noteworthy-Light", size: size)).foregroundStyle(color ?? coral), at: point)
                 }
-                func arrow(_ a: CGPoint, _ b: CGPoint, bend: CGFloat = 2) {
+                func arrow(_ a: CGPoint, _ b: CGPoint, bend: CGFloat = 2, reveal: CGFloat = 1) {
                     var path = Path(); path.move(to: a)
                     let horizontal = a.y == b.y
                     path.addQuadCurve(to: b, control: CGPoint(x: (a.x + b.x) / 2 + (horizontal ? 0 : bend), y: (a.y + b.y) / 2 + (horizontal ? bend : 0)))
@@ -59,16 +61,16 @@ struct IllustratedDemo: View {
                         path.move(to: CGPoint(x: a.x - 3, y: a.y + 5)); path.addLine(to: a); path.addLine(to: CGPoint(x: a.x + 3, y: a.y + 5))
                         path.move(to: CGPoint(x: b.x - 3, y: b.y - 5)); path.addLine(to: b); path.addLine(to: CGPoint(x: b.x + 3, y: b.y - 5))
                     }
-                    stroke(path)
+                    stroke(path.trimmedPath(from: 0, to: reveal))
                 }
                 if state.phase >= 1 {
-                    arrow(CGPoint(x: 98, y: 184), CGPoint(x: 338, y: 184), bend: 5)
+                    arrow(CGPoint(x: 98, y: 184), CGPoint(x: 338, y: 184), bend: 5, reveal: state.phase == 1 ? state.reveal : 1)
                     note("240 × 150", at: CGPoint(x: 217, y: 167))
-                    arrow(CGPoint(x: 78, y: 75), CGPoint(x: 78, y: 176), bend: -3)
+                    arrow(CGPoint(x: 78, y: 75), CGPoint(x: 78, y: 176), bend: -3, reveal: state.phase == 1 ? state.reveal : 1)
                     note("margin-top 101", at: CGPoint(x: 145, y: 127), size: 13)
                 }
                 if state.phase >= 2 {
-                    arrow(CGPoint(x: 298, y: 89), CGPoint(x: 366, y: 89), bend: -2)
+                    arrow(CGPoint(x: 298, y: 89), CGPoint(x: 366, y: 89), bend: -2, reveal: state.phase == 2 ? state.reveal : 1)
                     note("68 pt", at: CGPoint(x: 276, y: 87), size: 13)
                 }
                 if state.phase >= 3 {
@@ -86,7 +88,7 @@ struct IllustratedDemo: View {
                     note("width: 240px; height: 150px;", at: CGPoint(x: 239, y: 453), size: 11, color: ink.opacity(0.6))
                     var check = Path(); check.move(to: CGPoint(x: 99, y: 451)); check.addLine(to: CGPoint(x: 103, y: 455)); check.addLine(to: CGPoint(x: 111, y: 446)); stroke(check)
                 }
-                let point: CGPoint = switch state.phase {
+                let defaultPoint: CGPoint = switch state.phase {
                 case 0: CGPoint(x: 348, y: 392)
                 case 1: CGPoint(x: 217, y: 184)
                 case 2: CGPoint(x: 342, y: 89)
@@ -94,6 +96,7 @@ struct IllustratedDemo: View {
                 case 4: CGPoint(x: 348, y: 367)
                 default: CGPoint(x: 345, y: 451)
                 }
+                let point = state.cursor ?? defaultPoint
                 if state.phase == 3 {
                     var crosshair = Path(); crosshair.move(to: CGPoint(x: point.x - 6, y: point.y)); crosshair.addLine(to: CGPoint(x: point.x + 6, y: point.y)); crosshair.move(to: CGPoint(x: point.x, y: point.y - 6)); crosshair.addLine(to: CGPoint(x: point.x, y: point.y + 6)); stroke(crosshair)
                 } else if state.phase < 5 {
@@ -105,9 +108,26 @@ struct IllustratedDemo: View {
     }
 }
 
-var frames: [(DemoState, Int)] = [(.init(phase: 0), 700), (.init(phase: 1), 1500), (.init(phase: 2), 750)]
-for step in 1...12 { frames.append((.init(phase: 3, progress: CGFloat(step) / 12), 65)) }
-frames += [(.init(phase: 3), 700), (.init(phase: 4), 1000), (.init(phase: 5), 2200), (.init(phase: 0), 450)]
+// Smooth cursor glides and drawn-in annotations keep each action readable.
+var frames: [(DemoState, Int)] = [(.init(phase: 0), 450)]
+func glide(phase: Int, from a: CGPoint, to b: CGPoint) {
+    for step in 1...14 {
+        let t = CGFloat(step) / 14
+        let eased = t * t * (3 - 2 * t)
+        frames.append((.init(phase: phase, cursor: CGPoint(x: a.x + (b.x - a.x) * eased, y: a.y + (b.y - a.y) * eased)), 35))
+    }
+}
+glide(phase: 0, from: CGPoint(x: 348, y: 392), to: CGPoint(x: 217, y: 184))
+for step in 1...10 { frames.append((.init(phase: 1, reveal: CGFloat(step) / 10), 40)) }
+frames.append((.init(phase: 1), 950))
+glide(phase: 1, from: CGPoint(x: 217, y: 184), to: CGPoint(x: 342, y: 89))
+for step in 1...10 { frames.append((.init(phase: 2, reveal: CGFloat(step) / 10), 35)) }
+frames.append((.init(phase: 2), 650))
+glide(phase: 2, from: CGPoint(x: 342, y: 89), to: CGPoint(x: 98, y: 204))
+for step in 0...24 { frames.append((.init(phase: 3, progress: CGFloat(step) / 24), 35)) }
+frames += [(.init(phase: 3), 650), (.init(phase: 4), 1000)]
+glide(phase: 4, from: CGPoint(x: 348, y: 367), to: CGPoint(x: 345, y: 451))
+frames += [(.init(phase: 5), 2300), (.init(phase: 0), 300)]
 
 try MainActor.assumeIsolated {
     @MainActor func render(_ state: DemoState, to url: URL) throws {
