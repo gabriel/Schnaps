@@ -2,7 +2,7 @@
 import AppKit
 import Foundation
 
-// Export a filled app icon and a separate transparent brand mark.
+// Export the sculptural glass app icon and the separate transparent brand mark.
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let manager = FileManager.default
 let source = root.appendingPathComponent("Assets/Artwork/Schnaps-Blueprint.svg")
@@ -49,8 +49,7 @@ func exportIcon(_ artwork: NSImage, name: String) throws {
     precondition(process.terminationStatus == 0, "iconutil failed")
 }
 try exportIcon(artwork, name: "Schnaps-Mark")
-let dockSVG = try Data(contentsOf: root.appendingPathComponent("Assets/Artwork/Schnaps-Dock.svg"))
-let dock = NSImage(data: dockSVG)!
+let dock = NSImage(contentsOf: root.appendingPathComponent("Assets/Artwork/Schnaps-Dock.png"))!
 try exportIcon(dock, name: "Schnaps")
 try render(dock, pixels: 512).write(to: previews.appendingPathComponent("Schnaps-Dock.png"))
-print("Exported filled Dock icon and transparent brand mark at 16–1024 px.")
+print("Exported sculptural Dock icon and transparent brand mark at 16–1024 px.")

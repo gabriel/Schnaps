@@ -11,7 +11,7 @@ let mark = NSImage(contentsOf: root.appendingPathComponent("Assets/Artwork/Schna
 let overview = NSImage(contentsOf: output.appendingPathComponent("Source/overview.png"))!
 let hover = NSImage(contentsOf: output.appendingPathComponent("Source/hover.png"))!
 let selection = NSImage(contentsOf: output.appendingPathComponent("Source/pin.png"))!
-let icon = NSImage(contentsOf: root.appendingPathComponent("Assets/Artwork/Schnaps-Dock.svg"))!
+let icon = NSImage(contentsOf: root.appendingPathComponent("Assets/Artwork/Schnaps-Dock.png"))!
 
 struct HuntCard: View {
     let screenshot: NSImage
