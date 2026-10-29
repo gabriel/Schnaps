@@ -12,7 +12,7 @@ Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloud
 
 ## Demo and branding
 
-The homepage uses an illustrated feature walkthrough over a fictional card with sparse hipster placeholder text, clearly marked “SAMPLE UI.” It shows avatar and tile spacing, a button region, pinned measurements, and CSS copying together in the static poster. The animation introduces the same actions in sequence. This is an illustration of the workflow, not a live app capture. No video player or animation library is loaded.
+The homepage uses an illustrated feature walkthrough over an editorial sketchbook: oversized script lettering, ruled paper, sparse hipster placeholder copy, and handwritten coral measurement notes. The static poster combines spacing, a selected region, pinned dimensions, and CSS copying. The animation introduces the same actions in sequence. This is an illustration of the workflow, not a live app capture. No video player or animation library is loaded.
 
 Run `swift Scripts/export-illustrated-demo.swift` from the repository root to regenerate the transparent 880 × 1040 px animated WebP, static WebP poster, and `Assets/Previews/Schnaps-Layout-Demo.png`. The WebP command-line tools (`img2webp`, `cwebp`) must be installed. SwiftUI draws the fictional subject and the illustrated measurement states from the same coordinates. The artwork displays at no more than 400 CSS pixels wide, with responsive shrinking, a pause control, and the complete still image for reduced-motion preferences or disabled JavaScript.
 
