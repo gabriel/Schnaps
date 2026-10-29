@@ -1,8 +1,9 @@
 {
   "version": "0.6.2",
   "build": "8",
-  "feedURL": "https://github.com/gabriel/Schnaps/releases/latest/download/appcast.xml",
+  "feedURL": "https://github.com/gabriel/Schnaps/releases/download/updates/appcast.xml",
   "publicEDKey": "lRwHWwUu4/1Y1in0bdq4HSrZw7eCUQnC6O7NCoraPKQ=",
   "keychainAccount": "com.gabrielhandford.Schnaps",
-  "repository": "gabriel/Schnaps"
+  "repository": "gabriel/Schnaps",
+  "defaultChannel": "stable"
 }

@@ -4,7 +4,7 @@ import Foundation
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 let manager = FileManager.default
 let environment = ProcessInfo.processInfo.environment
-let config = try JSONSerialization.jsonObject(with: Data(contentsOf: root.appendingPathComponent("Config/Release.json"))) as! [String: String]
+let config = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: environment["SCHNAPS_RELEASE_CONFIG"] ?? root.appendingPathComponent("Config/Release.json").path))) as! [String: String]
 guard environment["SCHNAPS_SIGN_IDENTITY"]?.hasPrefix("Developer ID Application:") == true else {
     fatalError("Set SCHNAPS_SIGN_IDENTITY to your Developer ID Application signing identity.")
 }
@@ -68,7 +68,7 @@ if manager.fileExists(atPath: notes.path) {
 }
 let tools = root.appendingPathComponent(".build/artifacts/sparkle/Sparkle/bin")
 try run(tools.appendingPathComponent("generate_appcast").path,
-        ["--account", account, "--download-url-prefix", "https://github.com/\(config["repository"]!)/releases/download/v\(version)/", "--embed-release-notes", output.path])
+        (config["defaultChannel"] == "beta" ? ["--channel", "beta"] : []) + ["--account", account, "--download-url-prefix", "https://github.com/\(config["repository"]!)/releases/download/v\(version)/", "--embed-release-notes", output.path])
 let appcast = output.appendingPathComponent("appcast.xml")
 try run(tools.appendingPathComponent("sign_update").path, ["--account", account, "--verify", appcast.path])
 let xml = try XMLDocument(contentsOf: appcast)
@@ -80,4 +80,5 @@ if manager.fileExists(atPath: alias.path) { try manager.removeItem(at: alias) }
 try manager.copyItem(at: dmg, to: alias)
 let checksums = try run("/usr/bin/shasum", ["-a", "256", dmg.lastPathComponent, alias.lastPathComponent], capture: true, directory: output)
 try Data(checksums.utf8).write(to: output.appendingPathComponent("SHA256SUMS"))
+try Data("verified\n".utf8).write(to: output.appendingPathComponent("packaged.txt"))
 print("Ready to publish: \(output.path)")

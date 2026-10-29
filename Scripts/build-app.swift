@@ -20,7 +20,7 @@ func run(_ executable: String, _ arguments: [String], capture: Bool = false) thr
 let architectureFlags = CommandLine.arguments.contains("--universal") ? ["--arch", "arm64", "--arch", "x86_64"] : []
 _ = try run("/usr/bin/xcrun", ["swift", "build", "-c", configuration] + architectureFlags)
 let binPath = try run("/usr/bin/xcrun", ["swift", "build", "-c", configuration] + architectureFlags + ["--show-bin-path"], capture: true)
-let release = try JSONSerialization.jsonObject(with: Data(contentsOf: root.appendingPathComponent("Config/Release.json"))) as! [String: String]
+let release = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: ProcessInfo.processInfo.environment["SCHNAPS_RELEASE_CONFIG"] ?? root.appendingPathComponent("Config/Release.json").path))) as! [String: String]
 let app = root.appendingPathComponent("build/Schnaps.app")
 let contents = app.appendingPathComponent("Contents")
 let resources = contents.appendingPathComponent("Resources")
@@ -47,6 +47,7 @@ var info: [String: Any] = [
     "CFBundleName": "Schnaps", "CFBundleDisplayName": "Schnaps",
     "CFBundleExecutable": "Schnaps", "CFBundlePackageType": "APPL",
     "CFBundleShortVersionString": release["version"]!, "CFBundleVersion": release["build"]!,
+    "SchnapsUpdateChannel": release["defaultChannel"] ?? "stable",
     "SUFeedURL": release["feedURL"]!, "SUPublicEDKey": release["publicEDKey"]!,
     "SUVerifyUpdateBeforeExtraction": true, "SURequireSignedFeed": true,
     "CFBundleIconFile": "Schnaps", "LSMinimumSystemVersion": "14.0",
