@@ -26,7 +26,7 @@ struct IllustratedDemo: View {
                 .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.white.opacity(0.12)))
                 .shadow(color: .black.opacity(0.10), radius: 12, y: 8)
                 .frame(width: 320, height: 390).offset(x: 60, y: 48)
-            Text("Layout lab").font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
+            Text("Bespoke").font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
                 .offset(x: 84, y: 70)
             Text("SAMPLE UI").font(.system(size: 8, weight: .medium, design: .monospaced)).tracking(1)
                 .foregroundStyle(secondary).offset(x: 283, y: 73)
@@ -34,26 +34,23 @@ struct IllustratedDemo: View {
                 .overlay(Text("J").font(.system(size: 22, weight: .medium)).foregroundStyle(.white))
                 .frame(width: 44, height: 44).offset(x: 84, y: 112)
             VStack(alignment: .leading, spacing: 5) {
-                Text("Jamie Example").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
-                Text("Making room for good ideas.").font(.system(size: 10)).foregroundStyle(secondary)
+                Text("Fixie Ipsum").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
+                Text("Small-batch, whatever.").font(.system(size: 10)).foregroundStyle(secondary)
             }.offset(x: 152, y: 117)
-            Text("A little room\nto get it right.")
-                .font(.system(size: 25, weight: .semibold)).tracking(-0.8).lineSpacing(1)
-                .foregroundStyle(.white).offset(x: 84, y: 179)
-            tile("Components", symbol: "square.stack.3d.up", color: Color(red: 0.65, green: 0.57, blue: 0.94))
+            Text("Artisan cloud bread,\nkinfolk echo park.")
+                .font(.system(size: 15)).lineSpacing(5)
+                .foregroundStyle(secondary).offset(x: 84, y: 187)
+            tile(symbol: "square.stack.3d.up", color: Color(red: 0.65, green: 0.57, blue: 0.94))
                 .offset(x: 84, y: 254)
-            tile("Styles", symbol: "circle.lefthalf.filled", color: Color(red: 0.42, green: 0.77, blue: 0.75))
+            tile(symbol: "circle.lefthalf.filled", color: Color(red: 0.42, green: 0.77, blue: 0.75))
                 .offset(x: 216, y: 254)
             RoundedRectangle(cornerRadius: 10).fill(Color(red: 0.49, green: 0.78, blue: 0.96))
                 .overlay {
                     HStack(spacing: 35) {
-                        Text("Create something").font(.system(size: 13, weight: .semibold))
+                        Text("Whatever").font(.system(size: 12, weight: .medium))
                         Image(systemName: "arrow.right").font(.system(size: 12, weight: .medium))
                     }.foregroundStyle(Color(red: 0.06, green: 0.16, blue: 0.24))
                 }.frame(width: 248, height: 44).offset(x: 84, y: 350)
-            Text(state.phase == 5 ? "Hover · Measure · Pin · Copy" : ["A fictional interface. A familiar workflow.", "Find dimensions", "Pin a distance", "Measure an area", "Pin the measurement", ""][state.phase])
-                .font(.system(size: 11, weight: .medium)).foregroundStyle(secondary)
-                .frame(width: 440).offset(y: 16)
             Canvas { context, _ in
                 func line(_ a: CGPoint, _ b: CGPoint, color: Color, dashed: Bool = false) {
                     var path = Path(); path.move(to: a); path.addLine(to: b)
@@ -123,12 +120,11 @@ struct IllustratedDemo: View {
         }.frame(width: 440, height: 520)
     }
 
-    private func tile(_ title: String, symbol: String, color: Color) -> some View {
+    private func tile(symbol: String, color: Color) -> some View {
         RoundedRectangle(cornerRadius: 12).fill(Color(red: 0.15, green: 0.18, blue: 0.25))
             .overlay(alignment: .leading) {
                 VStack(alignment: .leading, spacing: 7) {
                     Image(systemName: symbol).font(.system(size: 16)).foregroundStyle(color)
-                    Text(title).font(.system(size: 10, weight: .medium)).foregroundStyle(.white.opacity(0.8))
                 }.padding(.leading, 12)
             }.frame(width: 116, height: 64)
     }
