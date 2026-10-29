@@ -34,7 +34,7 @@ func clearBackdrop(_ image: NSBitmapImageRep) -> NSBitmapImageRep {
     var outside = [Bool](repeating: false, count: w * h)
     var queue: [Int] = []
     func visit(_ index: Int) {
-        if !outside[index], distance(index) <= 32 { outside[index] = true; queue.append(index) }
+        if !outside[index], distance(index) <= 8 { outside[index] = true; queue.append(index) }
     }
     for x in 0..<w { visit(x); visit((h - 1) * w + x) }
     for y in 0..<h { visit(y * w); visit(y * w + w - 1) }
