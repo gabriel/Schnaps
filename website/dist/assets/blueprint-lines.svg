@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1000" preserveAspectRatio="none" fill="none" stroke="white" stroke-width="1">
+  <!-- Sparse dimension guides, with open space around the main content. -->
+  <path d="M160 210H1280M160 202v16m1120-16v16M166 206l-6 4 6 4m1108-8 6 4-6 4"/>
+  <path d="M84 282v456m-8-456h16m-16 456h16m-12-450 4-6 4 6m-8 444 4 6 4-6"/>
+  <path d="M1356 350v320m-8-320h16m-16 320h16m-12-314 4-6 4 6m-8 308 4 6 4-6"/>
+  <path d="M400 880h640m-640-8v16m640-16v16"/>
+  <path d="M144 248v520m1152-438v360M200 848h1040" stroke-dasharray="2 8" opacity=".45"/>
+  <path d="M60 126h24m-12-12v24M1356 126h24m-12-12v24M226 880h20m-10-10v20M1194 880h20m-10-10v20"/>
+  <circle cx="72" cy="126" r="4"/><circle cx="1368" cy="126" r="4"/>
+</svg>
