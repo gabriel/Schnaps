@@ -12,9 +12,9 @@ Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloud
 
 ## Demo and branding
 
-The homepage animation uses genuine Schnaps 0.6.2 captures over an editorial drawing, showing hover distances, area resizing, and pinning. The app's measurement UI is preserved; the exporter only removes the edge-connected desktop backdrop. No video player or animation library is loaded.
+The homepage animation combines native Schnaps hover renders with genuine Schnaps 0.6.2 captures over an editorial drawing. Hover frames use the app’s unmodified `MeasurementView`, snapshot model, and edge detector, rendered offscreen by `Scripts/render-native-hover.swift`; High tolerance skips faint paper rules so both axes are visible. The area resizing and pinning frames are app captures. The encoder only removes the edge-connected desktop backdrop. No video player or animation library is loaded.
 
-Run `swift Scripts/export-drawing-demo.swift` from the repository root to encode the cropped captures in `website/media-source/drawing-frames/` using `timeline.json`. The animation and pinned-measurement poster are transparent 880 × 1040 px WebPs displayed at no more than 400 CSS pixels wide. Pause/play, reduced-motion still behavior, and a no-JavaScript poster remain available. WebP tools (`img2webp`, `cwebp`) are required.
+Run `swift Scripts/render-native-hover.swift` to regenerate the live hover frames from the app source. Then run `swift Scripts/export-drawing-demo.swift` from the repository root to encode the cropped captures in `website/media-source/drawing-frames/` using `timeline.json`. The animation and live Find Dimensions poster are transparent 880 × 1040 px WebPs displayed at no more than 400 CSS pixels wide. Pause/play, reduced-motion still behavior, and a no-JavaScript poster remain available. WebP tools (`img2webp`, `cwebp`) are required.
 
 The drawing source is `Assets/Previews/Schnaps-Drawing-Subject.png`, generated with `swift Scripts/export-illustrated-demo.swift --subject-only`. The earlier illustrated walkthrough and its exporter are retained as design source, but the homepage uses real app captures.
 

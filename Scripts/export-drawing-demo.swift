@@ -1,5 +1,5 @@
 #!/usr/bin/env swift
-// Encode cropped, genuine Schnaps captures. No measurement UI is drawn here.
+// Encode native Schnaps hover renders and cropped app captures. No measurement UI is drawn by this encoder.
 import AppKit
 import Foundation
 
@@ -97,9 +97,9 @@ encoder.waitUntilExit()
 precondition(encoder.terminationStatus == 0, "Install the WebP tools (img2webp) before exporting.")
 let poster = Process()
 poster.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-poster.arguments = ["cwebp", "-quiet", "-lossless", "-q", "75", "-m", "6", staging.appendingPathComponent("05-pinned.png").path,
+poster.arguments = ["cwebp", "-quiet", "-lossless", "-q", "75", "-m", "6", staging.appendingPathComponent("01-hover.png").path,
     "-o", output.appendingPathComponent("schnaps-drawing-demo-poster.webp").path]
 try poster.run()
 poster.waitUntilExit()
 precondition(poster.terminationStatus == 0, "Static WebP export failed.")
-print("Exported a genuine \(frames.reduce(0) { $0 + $1.duration }) ms drawing demo, 880 × 1040 px (440 × 520 CSS px).")
+print("Exported a native Schnaps \(frames.reduce(0) { $0 + $1.duration }) ms drawing demo, 880 × 1040 px (440 × 520 CSS px).")

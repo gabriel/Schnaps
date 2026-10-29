@@ -5,7 +5,11 @@
   },
   {
     "file": "01-hover.png",
-    "duration": 1800
+    "duration": 2400
+  },
+  {
+    "file": "02-hover.png",
+    "duration": 1700
   },
   {
     "file": "00-base.png",
