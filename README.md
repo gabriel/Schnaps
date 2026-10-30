@@ -57,7 +57,7 @@ Detection uses color contrast, so solid UI surfaces work best. Gradients, shadow
 
 **Check for Updates…** is available in **Settings → About Schnaps**, the menu-bar menu, and app menu. About also includes the Stable/Beta channel selector and automatic update check and installation preferences. Sparkle manages update checks and its standard permission flow. Updates and the appcast are signed with Ed25519; published app bundles and DMGs are Developer ID signed and notarized.
 
-Screen images stay in memory on your Mac unless you explicitly copy or save a screenshot. Optional CleanShot integration hands the local file to CleanShot; Schnaps does not upload it. The app has no analytics or accounts. Update checks contact GitHub. The website is hosted on Cloudflare and uses cookie-free Cloudflare Web Analytics for visits, page views, and referrers. See [updates and release process](docs/releases.md).
+Screen images stay in memory on your Mac unless you explicitly copy or save a screenshot. The app has no analytics or accounts. Update checks contact GitHub. The website is hosted on Cloudflare and uses cookie-free Cloudflare Web Analytics for visits, page views, and referrers. See [updates and release process](docs/releases.md).
 
 ## Build from source
 

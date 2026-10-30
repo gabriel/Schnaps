@@ -31,7 +31,6 @@ enum PreferenceKey {
     static let screenshotSound = "screenshotSound"
     static let screenshotPadding = "screenshotPadding"
     static let screenshotFolder = "screenshotFolder"
-    static let cleanShot = "cleanShotIntegration"
     static let appearance = "appAppearance"
     static let animations = "interfaceAnimations"
     static let overlayColor = "overlayColor"
@@ -81,7 +80,6 @@ struct SettingsView: View {
     @ObservedObject var updates: UpdateSettings
     @StateObject private var membership = ProMembership()
     @StateObject private var loginItem = LoginItem()
-    @State private var showTutorial = false
     @State private var settingsError: String?
     @AppStorage(PreferenceKey.unit) private var unit = MeasurementUnit.points.rawValue
     @AppStorage(PreferenceKey.tolerance) private var tolerance = TolerancePreset.medium.rawValue
@@ -106,7 +104,6 @@ struct SettingsView: View {
     @AppStorage(PreferenceKey.screenshotSound) private var screenshotSound: Bool = true
     @AppStorage(PreferenceKey.screenshotPadding) private var screenshotPadding: Int = 0
     @AppStorage(PreferenceKey.screenshotFolder) private var screenshotFolder: String = NSHomeDirectory()+"/Desktop"
-    @AppStorage(PreferenceKey.cleanShot) private var cleanShot: Bool = false
     @AppStorage(PreferenceKey.appearance) private var appearance: String = "system"
     @AppStorage(PreferenceKey.animations) private var animations: Bool = true
     @AppStorage(PreferenceKey.overlayColor) private var overlayColor: String = "FF375FFF"
@@ -148,7 +145,6 @@ struct SettingsView: View {
         .id(language)
         .frame(minWidth: 720, minHeight: 480)
         .environment(\.locale, Locale(identifier: language == "system" ? Locale.current.identifier : language))
-        .sheet(isPresented: $showTutorial) { tutorial }
         .alert(L("Settings"), isPresented: Binding(get: { settingsError != nil || loginItem.error != nil }, set: { if !$0 { settingsError=nil; loginItem.error=nil } })) {
             Button(L("Done"), role: .cancel) { settingsError=nil; loginItem.error=nil }
         } message: { Text(settingsError ?? loginItem.error ?? "") }
@@ -201,10 +197,10 @@ struct SettingsView: View {
                 Toggle(L("Show in menu bar"), isOn: $showMenuBar)
                 Toggle(L("Show in Dock"), isOn: $showInDock)
             } header: { Text(L("Activation")) } footer: {
-                VStack(alignment: .leading, spacing: 4) {
-                    if loginItem.needsApproval { Text(L("Approve Schnaps in System Settings → Login Items.")) }
-                    Button(L("Show Tutorial")) { showTutorial=true }.buttonStyle(.bordered).controlSize(.regular).font(.body)
-                }.font(.footnote).padding(.top, -7)
+                if loginItem.needsApproval {
+                    Text(L("Approve Schnaps in System Settings → Login Items."))
+                        .font(.footnote).padding(.top, -7)
+                }
             }
             Section(L("Measurement")) {
                 Picker(L("Retina measurements"), selection: retinaBinding) {
@@ -260,16 +256,6 @@ struct SettingsView: View {
                 }
             } footer: {
                 Text(L("Hold Option to toggle padding when capturing.")).font(.footnote).padding(.top,-7)
-            }
-            Section {
-                Toggle(L("Send captures to CleanShot"), isOn: $cleanShot).disabled(!ScreenshotExport.cleanShotAvailable)
-            } header: { Text(L("CleanShot integration")) } footer: {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(L("Open captures in CleanShot’s Quick Access Overlay."))
-                    if !ScreenshotExport.cleanShotAvailable {
-                        Link(L("Get CleanShot X"), destination: URL(string: "https://cleanshot.com")!)
-                    }
-                }.font(.footnote).padding(.top,-7)
             }
         }
     }
@@ -332,9 +318,14 @@ struct SettingsView: View {
     private func toleranceRow(_ title: String, value: Binding<Int>) -> some View {
         LabeledContent(L(title)) {
             HStack {
-                Slider(value: Binding(get: { Double(value.wrappedValue) }, set: { value.wrappedValue=Int($0) }), in: 0...100, step: 1)
+                Slider(value: Binding(get: { Double(value.wrappedValue) }, set: { value.wrappedValue=Int($0.rounded()) }), in: 0...100)
                     .accessibilityLabel(L(title))
-                Text("\(value.wrappedValue)").monospacedDigit().frame(width: 30, alignment: .trailing)
+                TextField(L(title), value: Binding(get: { value.wrappedValue }, set: { value.wrappedValue = min(100, max(0, $0)) }), format: .number.grouping(.never))
+                    .labelsHidden()
+                    .textFieldStyle(.roundedBorder)
+                    .multilineTextAlignment(.trailing)
+                    .monospacedDigit()
+                    .frame(width: 50)
             }.frame(maxWidth: 260)
         }
         .accessibilityElement(children: .contain)
@@ -348,27 +339,6 @@ struct SettingsView: View {
         panel.directoryURL=URL(fileURLWithPath:screenshotFolder)
         if panel.runModal() == .OK, let url=panel.url { screenshotFolder=url.path }
     }
-    private var tutorial: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text(L("Schnaps Tutorial")).font(.title2)
-            Text(L("Hover to find distances. Drag to measure an area."))
-            Text(L("Press Space to pin. Return copies dimensions."))
-            Text(L("C copies a screenshot. P saves it. Hold Option to toggle padding."))
-            HStack {
-                Button(L("Find Dimensions")) { startTutorialTool(.findDimensions) }
-                Button(L("Measure Area")) { startTutorialTool(.area) }
-                Spacer()
-                Button(L("Done")) { showTutorial=false }.keyboardShortcut(.defaultAction)
-            }
-        }.padding(24).frame(width: 520)
-    }
-
-    private func startTutorialTool(_ mode: MeasurementMode) {
-        showTutorial=false
-        // Allow the sheet to resign first responder before opening the canvas.
-        DispatchQueue.main.asyncAfter(deadline: .now()+0.25) { start(mode) }
-    }
-
     private var shortcuts: some View {
         Group {
             Section {

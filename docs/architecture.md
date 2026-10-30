@@ -10,7 +10,7 @@
 
 `ScreenSnapshot` uses `SCShareableContent` and `SCScreenshotManager`, excluding Schnaps's own windows. Captured CGImages are converted into tightly packed top-left-origin RGBA buffers. AppKit global coordinates are converted into local flipped canvas coordinates; each display's captured width/height ratios convert between logical points and physical pixels. The two axes are scaled independently.
 
-Snapshot images are held in memory unless the user explicitly exports a selection. Screenshot export crops the original image without measurement marks, adds bounded logical-point padding, optionally resamples Retina images to 1x, and encodes PNG or JPEG. CleanShot handoff uses a local file URL through its documented URL scheme. Freeze screen can be disabled to use a nonactivating panel over the live desktop with periodic fresh edge-detection snapshots. A refreshed capture replaces the prior scene. The overlay does not capture its own measurement marks and does not run a recording stream. Without capture permission or after a capture error, manual selection remains usable.
+Snapshot images are held in memory unless the user explicitly exports a selection. Screenshot export crops the original image without measurement marks, adds bounded logical-point padding, optionally resamples Retina images to 1x, and encodes PNG or JPEG. Freeze screen can be disabled to use a nonactivating panel over the live desktop with periodic fresh edge-detection snapshots. A refreshed capture replaces the prior scene. The overlay does not capture its own measurement marks and does not run a recording stream. Without capture permission or after a capture error, manual selection remains usable.
 
 ## Measurement core
 

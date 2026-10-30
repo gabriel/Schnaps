@@ -35,7 +35,7 @@ public struct ProCatalog: Codable, Sendable {
     public func offer(for tier: ProTier) -> Offer? {
         guard storeID > 0, productID > 0, let offer = offers[tier.rawValue], offer.variantID > 0,
               offer.checkoutURL.scheme == "https", let host = offer.checkoutURL.host,
-              host.hasSuffix(".lemonsqueezy.com"), offer.checkoutURL.path.hasPrefix("/buy/"),
+              host.hasSuffix(".lemonsqueezy.com"), ["/buy/", "/checkout/buy/"].contains(where: { offer.checkoutURL.path.hasPrefix($0) }),
               offer.checkoutURL.user == nil, offer.checkoutURL.password == nil else { return nil }
         return offer
     }

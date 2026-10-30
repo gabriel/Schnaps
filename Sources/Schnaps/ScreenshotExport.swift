@@ -5,18 +5,14 @@ import UniformTypeIdentifiers
 @MainActor
 enum ScreenshotExport {
     enum ExportError: LocalizedError {
-        case noCapture, emptySelection, encoding, cleanShotMissing
+        case noCapture, emptySelection, encoding
         var errorDescription: String? {
             switch self {
             case .noCapture: L("Screen Recording is needed for screenshots.")
             case .emptySelection: L("Select an area or point between edges first.")
             case .encoding: L("The screenshot could not be encoded.")
-            case .cleanShotMissing: L("Install CleanShot X to use this integration.")
             }
         }
-    }
-    static var cleanShotAvailable: Bool {
-        NSWorkspace.shared.urlForApplication(toOpen: URL(string: "cleanshot://add-quick-access-overlay")!) != nil
     }
     static func image(
         snapshot: ScreenSnapshot, region: CGRect, togglePadding: Bool,
@@ -71,13 +67,10 @@ enum ScreenshotExport {
                 forType: NSPasteboard.PasteboardType(format == "jpg" ? UTType.jpeg.identifier : UTType.png.identifier))
         }
         var url: URL?
-        if !copy || d.bool(forKey: PreferenceKey.cleanShot) {
-            let folder =
-                copy
-                ? FileManager.default.temporaryDirectory.appendingPathComponent("Schnaps-CleanShot", isDirectory: true)
-                : URL(
-                    fileURLWithPath: d.string(forKey: PreferenceKey.screenshotFolder) ?? NSHomeDirectory() + "/Desktop",
-                    isDirectory: true)
+        if !copy {
+            let folder = URL(
+                fileURLWithPath: d.string(forKey: PreferenceKey.screenshotFolder) ?? NSHomeDirectory() + "/Desktop",
+                isDirectory: true)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
@@ -92,14 +85,6 @@ enum ScreenshotExport {
             url = candidate
         }
         if d.bool(forKey: PreferenceKey.screenshotSound) { NSSound(named: "Tink")?.play() }
-        if d.bool(forKey: PreferenceKey.cleanShot), let url {
-            guard cleanShotAvailable else { throw ExportError.cleanShotMissing }
-            var components = URLComponents()
-            components.scheme = "cleanshot"
-            components.host = "add-quick-access-overlay"
-            components.queryItems = [URLQueryItem(name: "filepath", value: url.path)]
-            if let handoff = components.url { NSWorkspace.shared.open(handoff) }
-        }
         return url
     }
 }
