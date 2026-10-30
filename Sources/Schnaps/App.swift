@@ -17,7 +17,8 @@ struct SchnapsApp {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
-    private var statusItem: NSStatusItem!
+    private var statusItem: NSStatusItem?
+    private var applyingPreferences = false
     private var settingsWindow: NSWindow?
     private let settingsNavigation = SettingsNavigation()
     private let recordingPermission = ScreenRecordingPermission.shared
@@ -33,11 +34,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         UserDefaults.standard.register(defaults: MeasurementPreferences.defaults)
         MeasurementPreferences.selectTolerance(MeasurementPreferences.selectedTolerance)
         updateDockVisibility()
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        statusItem?.button?.image = NSImage(systemSymbolName: "ruler", accessibilityDescription: "Schnaps measurements")
+        buildMenus()
+        // Creating a status item can synchronously change its autosaved visibility defaults.
+        // Observe only once the item and menus are ready.
         NotificationCenter.default.addObserver(self, selector: #selector(preferencesChanged),
                                                name: UserDefaults.didChangeNotification, object: nil)
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "ruler", accessibilityDescription: "Schnaps measurements")
-        buildMenus()
         preferencesChanged()
         updaterController.startUpdater()
         installHotKey()
@@ -52,6 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var menuLanguage: String?
 
     private func buildMenus() {
+        guard let statusItem else { return }
         let menu = NSMenu()
         menu.addItem(item("Start Measuring", action: #selector(startDefaultTool), key: ""))
         menu.addItem(.separator())
@@ -82,8 +86,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func preferencesChanged() {
+        // AppKit visibility/policy setters can post another defaults notification inline.
+        guard !applyingPreferences, let statusItem else { return }
+        applyingPreferences = true
+        defer { applyingPreferences = false }
         updateDockVisibility()
-        statusItem?.isVisible = UserDefaults.standard.bool(forKey: PreferenceKey.showMenuBar)
+        let showMenuBar = UserDefaults.standard.bool(forKey: PreferenceKey.showMenuBar)
+        if statusItem.isVisible != showMenuBar { statusItem.isVisible = showMenuBar }
         NSApp.appearance = MeasurementPreferences.appearance
         let language = UserDefaults.standard.string(forKey: PreferenceKey.language) ?? "system"
         if language != menuLanguage {
