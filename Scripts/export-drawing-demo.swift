@@ -1,5 +1,5 @@
 #!/usr/bin/env swift
-// Encode native Schnaps hover renders and cropped app captures. No measurement UI is drawn by this encoder.
+// Encode native Schnaps view renders. No measurement UI is drawn by this encoder.
 import AppKit
 import Foundation
 
@@ -11,8 +11,8 @@ let staging = root.appendingPathComponent("build/DrawingDemoExport")
 try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
 let frames = try JSONDecoder().decode([DemoFrame].self, from: Data(contentsOf: source.appendingPathComponent("timeline.json")))
 
-// Remove only the plain, edge-connected capture backdrop. Keep the actual app,
-// cursor and measurement pixels, including antialiasing at the window boundary.
+// Remove only the plain, edge-connected backdrop. Preserve native measurement
+// pixels and antialiasing at the drawing boundary. Source renders have no cursor.
 func clearBackdrop(_ image: NSBitmapImageRep) -> NSBitmapImageRep {
     let w = image.pixelsWide, h = image.pixelsHigh
     let result = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: w, pixelsHigh: h,
