@@ -74,6 +74,7 @@ final class SettingsNavigation: ObservableObject {
 }
 
 struct SettingsView: View {
+    @Environment(\.colorScheme) private var colorScheme
     var start: (MeasurementMode) -> Void
     var shortcutWarning: String?
     @ObservedObject var navigation: SettingsNavigation
@@ -433,7 +434,7 @@ struct SettingsView: View {
                 }
             } header: {
                 HStack(spacing: 12) {
-                    if let icon = AppBranding.icon {
+                    if let icon = AppBranding.icon(dark: colorScheme == .dark) {
                         Image(nsImage: icon).resizable().scaledToFit().frame(width: 48, height: 48)
                             .accessibilityHidden(true)
                     }
