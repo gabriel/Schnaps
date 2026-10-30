@@ -27,3 +27,12 @@ The site follows the system color scheme by default. The sun/moon icon button sw
 ## Footer
 
 The footer groups download, project, feedback, and rel.me links beneath a short app description. A fixed bottom credit bar names Gabriel Handford and links to his GitHub profile. The expanded navigation stays in normal page flow; reserved bottom space keeps the fixed credit bar clear of the final links. Columns collapse on smaller screens and share the site's light/dark colors.
+
+
+## Web Analytics
+
+Cloudflare Web Analytics is configured for `getschnaps.com` in the account dashboard. Automatic injection is enabled with EU visitors excluded; keep that existing regional setting when changing the integration. Do not embed a second manual beacon in the HTML.
+
+The response CSP in `dist/_headers` permits scripts from `https://static.cloudflareinsights.com`, including Cloudflare's versioned beacon path. Reports use the same-origin `/cdn-cgi/rum` endpoint, so `connect-src` remains restricted to `'self'`. The normal local preview does not inject the analytics script. Test on the deployed hostname using a real browser; curl responses may omit automatic injection.
+
+View visits, page views, and referrers in Cloudflare → Observability → Analytics → Web analytics → getschnaps.com. The macOS app itself has no analytics. Website privacy copy distinguishes the website's cookie-free analytics from the app.
