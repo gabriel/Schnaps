@@ -41,7 +41,14 @@ jobs:
         run: |
           test -s build/Schnaps.app/Contents/Resources/Schnaps.icns
           test -s build/Schnaps.app/Contents/Resources/Schnaps-Mark.icns
-          test ! -e build/Schnaps.app/Contents/Resources/Assets.car
+          test -s build/Schnaps.app/Contents/Resources/Schnaps-Dark.icns
+          test -s build/Schnaps.app/Contents/Resources/Schnaps-Mark-Dark.icns
+          test -s build/Schnaps.app/Contents/Resources/Assets.car
+          test "$(plutil -extract CFBundleIconName raw build/Schnaps.app/Contents/Info.plist)" = Schnaps
+      - name: Verify compiled icon appearances
+        if: matrix.xcode == '26.3'
+        run: |
+          xcrun assetutil --info build/Schnaps.app/Contents/Resources/Assets.car | python3 -c 'import json,sys; icons=[x for x in json.load(sys.stdin) if x.get("AssetType")=="IconImageStack" and x.get("Name")=="Schnaps"]; assert {"NSAppearanceNameAqua", "NSAppearanceNameDarkAqua", "ISAppearanceTintable"} <= {x.get("Appearance") for x in icons}'
       - uses: actions/upload-artifact@v4
         with:
           name: Schnaps-macOS-Xcode-${{ matrix.xcode }}

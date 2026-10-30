@@ -33,10 +33,11 @@ let binary = contents.appendingPathComponent("MacOS/Schnaps")
 if manager.fileExists(atPath: binary.path) { try manager.removeItem(at: binary) }
 try manager.copyItem(at: URL(fileURLWithPath: binPath).appendingPathComponent("Schnaps"), to: binary)
 
-// Dock and About use the same approved transparent artwork.
+// Modern macOS selects Icon Composer appearances; older macOS uses transparent ICNS variants.
 let car = resources.appendingPathComponent("Assets.car")
 if manager.fileExists(atPath: car.path) { try manager.removeItem(at: car) }
-for name in ["Schnaps", "Schnaps-Mark"] {
+try manager.copyItem(at: root.appendingPathComponent("Assets/Compiled/Assets.car"), to: car)
+for name in ["Schnaps", "Schnaps-Dark", "Schnaps-Mark", "Schnaps-Mark-Dark"] {
     let icon = resources.appendingPathComponent("\(name).icns")
     if manager.fileExists(atPath: icon.path) { try manager.removeItem(at: icon) }
     try manager.copyItem(at: root.appendingPathComponent("Assets/Compiled/\(name).icns"), to: icon)
@@ -50,7 +51,7 @@ var info: [String: Any] = [
     "SchnapsUpdateChannel": release["defaultChannel"] ?? "stable",
     "SUFeedURL": release["feedURL"]!, "SUPublicEDKey": release["publicEDKey"]!,
     "SUVerifyUpdateBeforeExtraction": true, "SURequireSignedFeed": true,
-    "CFBundleIconFile": "Schnaps", "LSMinimumSystemVersion": "14.0",
+    "CFBundleIconFile": "Schnaps", "CFBundleIconName": "Schnaps", "LSMinimumSystemVersion": "14.0",
     "LSUIElement": true, "NSHighResolutionCapable": true,
     "NSScreenCaptureUsageDescription": "Schnaps captures your displays to detect edges and measure screen elements. Images stay on your Mac unless you explicitly export or share them."
 ]
