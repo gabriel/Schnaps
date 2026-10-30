@@ -55,8 +55,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let menu = NSMenu()
         menu.addItem(item("Start Measuring", action: #selector(startDefaultTool), key: ""))
         menu.addItem(.separator())
-        menu.addItem(item("Find Dimensions", action: #selector(findDimensions), key: "f"))
-        menu.addItem(item("Measure Area", action: #selector(measureArea), key: "m"))
+        menu.addItem(item("Find Dimensions", action: #selector(findDimensions), key: "f", modifiers: [.command, .shift]))
+        menu.addItem(item("Measure Area", action: #selector(measureArea), key: "m", modifiers: [.command, .shift]))
         menu.addItem(.separator())
         menu.addItem(toleranceMenuItem())
         menu.addItem(.separator())
@@ -138,8 +138,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return item
     }
 
-    private func item(_ title: String, action: Selector, key: String) -> NSMenuItem {
+    private func item(_ title: String, action: Selector, key: String, modifiers: NSEvent.ModifierFlags = .command) -> NSMenuItem {
         let item = NSMenuItem(title: L(title), action: action, keyEquivalent: key)
+        item.keyEquivalentModifierMask = modifiers
         item.target = self
         return item
     }
