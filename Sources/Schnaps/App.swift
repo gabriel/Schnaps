@@ -119,8 +119,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func toleranceMenuItem() -> NSMenuItem {
-        let parent = NSMenuItem(title: L("Color tolerance"), action: nil, keyEquivalent: "")
-        let menu = NSMenu(title: L("Color tolerance"))
+        let parent = NSMenuItem(title: L("Color Tolerance"), action: nil, keyEquivalent: "")
+        let menu = NSMenu(title: L("Color Tolerance"))
         menu.delegate = self
         for preset in TolerancePreset.allCases {
             let entry = item(preset.title, action: #selector(selectTolerance(_:)), key: "")
