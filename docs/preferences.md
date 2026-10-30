@@ -5,7 +5,7 @@ Schnaps keeps its native sidebar settings. General, Screenshots, Tolerance, and 
 ## General
 
 - Language: system default, English, Simplified Chinese, Spanish, French, Italian, Japanese, or Russian. The measurement preferences, tool feedback, and menus update immediately. Pro, Sparkle, and some existing About/shortcut copy retain their own language behavior.
-- Activation: default tool, start at login through macOS Login Items, menu-bar visibility, optional Dock icon, and a short tutorial. Reopen Schnaps from Finder or use its global shortcuts if both icons are hidden.
+- Activation: default tool, start at login through macOS Login Items, menu-bar visibility, and optional Dock icon. Reopen Schnaps from Finder or use its global shortcuts if both icons are hidden.
 - Retina: fractional points, rounded points, or physical display pixels. Display units, width/height indicators, and the cursor are independently configurable.
 - Clipboard: width/height or height/width; CSS or indented-syntax SASS in either property order. Shift-Return always copies width-first CSS. CSS and SASS use logical points as CSS pixels, regardless of Retina scaling.
 - Aspect ratios: automatic, integer standard ratios, decimal ratios, or common ratios only. Enable independently for Find Dimensions and Measure Area. Common ratios allow a 0.5% size mismatch for pixel rounding.
@@ -18,11 +18,9 @@ During measurement, C copies the current area or the rectangle formed by the two
 
 Choose an export folder, PNG/JPEG, native Retina or 1x resolution, and capture sounds. Padding ranges from 0–100 logical points; Auto adds 8% of the shorter side, bounded to 8–64 points. Padding clips at the display edge. Hold Option with C/P to toggle it: configured padding becomes zero; zero becomes Auto.
 
-Optional CleanShot integration opens the local capture in CleanShot X's Quick Access Overlay via its [documented URL API](https://cleanshot.com/docs-api). CleanShot must be installed. Its own UI handles editing and any cloud upload; Schnaps does not upload screenshots. Copies handed to CleanShot use the macOS temporary directory; saved captures use the chosen folder.
-
 ## Tolerance
 
-Customize each of Zero, Low, Medium, and High from 0–100. Choose a default preset; the menu bar, T/Shift-T, and optional scroll adjustment share this selection. Changing a preset updates active measurements immediately. Preset identity remains stable even when values overlap or are reordered.
+Customize each of Zero, Low, Medium, and High from 0–100 with a slider or an editable numeric field. Typed values are clamped to that range. Choose a default preset; the menu bar, T/Shift-T, and optional scroll adjustment share this selection. Changing a preset updates active measurements immediately. Preset identity remains stable even when values overlap or are reordered.
 
 Schnaps preserves its established defaults (0, 8, 18, 36) rather than changing existing users' edge detection. Restore Defaults resets those values and selects Medium.
 

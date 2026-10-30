@@ -37,7 +37,6 @@ private enum SchnapsTranslations {
         Start at login|登录时启动|Abrir al iniciar sesión|Ouvrir à la connexion|Apri al login|ログイン時に起動|Запускать при входе
         Show in menu bar|在菜单栏中显示|Mostrar en barra de menús|Afficher dans la barre des menus|Mostra nella barra dei menu|メニューバーに表示|Показывать в строке меню
         Show in Dock|在程序坞中显示|Mostrar en el Dock|Afficher dans le Dock|Mostra nel Dock|Dock に表示|Показывать в Dock
-        Show Tutorial|显示教程|Mostrar tutorial|Afficher le tutoriel|Mostra tutorial|使い方を表示|Показать обучение
         Measurement|测量|Medición|Mesure|Misurazione|測定|Измерение
         Retina measurements|Retina 测量|Medidas Retina|Mesures Retina|Misure Retina|Retina の測定|Измерения Retina
         Points|点|Puntos|Points|Punti|ポイント|Пункты
@@ -74,10 +73,6 @@ private enum SchnapsTranslations {
         Padding|留白|Margen|Marge|Margine|余白|Отступ
         Auto|自动|Auto|Auto|Auto|自動|Авто
         Hold Option to toggle padding when capturing.|截图时按住 Option 切换留白。|Mantén Opción para alternar el margen al capturar.|Maintenir Option pour changer la marge lors de la capture.|Tieni premuto Opzione per cambiare il margine durante la cattura.|撮影時に Option を押して余白を切り替えます。|Удерживайте Option при захвате, чтобы переключить отступ.
-        CleanShot integration|CleanShot 集成|Integración con CleanShot|Intégration CleanShot|Integrazione CleanShot|CleanShot 連携|Интеграция CleanShot
-        Send captures to CleanShot|将截图发送到 CleanShot|Enviar capturas a CleanShot|Envoyer les captures à CleanShot|Invia catture a CleanShot|画像を CleanShot に送る|Передавать снимки в CleanShot
-        Open captures in CleanShot’s Quick Access Overlay.|在 CleanShot 快速访问浮层中打开截图。|Abre las capturas en el acceso rápido de CleanShot.|Ouvrir les captures dans l’accès rapide de CleanShot.|Apri le catture nell’accesso rapido di CleanShot.|CleanShot のクイックアクセスで画像を開きます。|Открывать снимки в панели быстрого доступа CleanShot.
-        Get CleanShot X|获取 CleanShot X|Obtener CleanShot X|Obtenir CleanShot X|Ottieni CleanShot X|CleanShot X を入手|Получить CleanShot X
         Zero|零|Cero|Zéro|Zero|ゼロ|Нулевой
         Low|低|Baja|Faible|Bassa|低|Низкий
         Medium|中|Media|Moyenne|Media|中|Средний
@@ -116,10 +111,6 @@ private enum SchnapsTranslations {
         Check for Updates…|检查更新…|Buscar actualizaciones…|Rechercher des mises à jour…|Cerca aggiornamenti…|アップデートを確認…|Проверить обновления…
         Cancel|取消|Cancelar|Annuler|Annulla|キャンセル|Отмена
         Done|完成|Listo|Terminé|Fine|完了|Готово
-        Schnaps Tutorial|Schnaps 教程|Tutorial de Schnaps|Tutoriel Schnaps|Tutorial di Schnaps|Schnaps の使い方|Обучение Schnaps
-        Hover to find distances. Drag to measure an area.|悬停查找距离，拖动测量区域。|Pasa el cursor para ver distancias. Arrastra para medir un área.|Survoler pour les distances. Glisser pour mesurer une zone.|Passa il cursore per le distanze. Trascina per misurare un’area.|カーソルで距離を検出。ドラッグで領域を測定。|Наведите курсор для расстояний. Потяните для измерения области.
-        Press Space to pin. Return copies dimensions.|按空格固定，回车复制尺寸。|Espacio fija la medida. Intro copia las dimensiones.|Espace épingle. Entrée copie les dimensions.|Spazio fissa. Invio copia le dimensioni.|Space で固定、Return で寸法をコピー。|Пробел закрепляет. Return копирует размеры.
-        C copies a screenshot. P saves it. Hold Option to toggle padding.|C 复制截图，P 保存。Option 切换留白。|C copia una captura. P la guarda. Opción alterna el margen.|C copie une capture. P l’enregistre. Option change la marge.|C copia uno screenshot. P lo salva. Opzione cambia il margine.|C で画像コピー、P で保存。Option で余白を切り替え。|C копирует снимок. P сохраняет. Option переключает отступ.
         Settings|设置|Ajustes|Réglages|Impostazioni|設定|Настройки
         Schnaps Settings|Schnaps 设置|Ajustes de Schnaps|Réglages Schnaps|Impostazioni Schnaps|Schnaps 設定|Настройки Schnaps
         Color Tolerance|颜色容差|Tolerancia de color|Tolérance de couleur|Tolleranza colore|色の許容値|Цветовой допуск
@@ -134,7 +125,6 @@ private enum SchnapsTranslations {
         Screen Recording is needed for screenshots.|截图需要屏幕录制权限。|Las capturas necesitan permiso de grabación.|Les captures nécessitent l’autorisation d’enregistrement.|Gli screenshot richiedono il permesso di registrazione.|画像の保存には画面収録の許可が必要です。|Для снимков нужно разрешение записи экрана.
         Select an area or point between edges first.|请先选择区域或将指针放在边缘之间。|Selecciona un área o apunta entre bordes.|Sélectionner une zone ou pointer entre les bords.|Seleziona un’area o punta tra i bordi.|領域を選択するか、エッジの間にカーソルを置いてください。|Выберите область или наведите указатель между краями.
         The screenshot could not be encoded.|无法编码截图。|No se pudo codificar la captura.|Impossible d’encoder la capture.|Impossibile codificare lo screenshot.|画像を変換できませんでした。|Не удалось закодировать снимок.
-        Install CleanShot X to use this integration.|请安装 CleanShot X 以使用集成。|Instala CleanShot X para usar la integración.|Installer CleanShot X pour utiliser cette intégration.|Installa CleanShot X per usare l’integrazione.|連携には CleanShot X をインストールしてください。|Установите CleanShot X для интеграции.
         Screenshot failed|截图失败|Error de captura|Échec de la capture|Screenshot non riuscito|画像の保存に失敗|Ошибка снимка
         Toggle screenshot padding|切换截图留白|Alternar margen de captura|Changer la marge de capture|Cambia margine screenshot|画像の余白を切り替え|Переключить отступ снимка
         Screen points|屏幕点|Puntos de pantalla|Points de l’écran|Punti schermo|画面のポイント|Пункты экрана

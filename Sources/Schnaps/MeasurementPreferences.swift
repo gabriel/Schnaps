@@ -15,7 +15,7 @@ enum MeasurementPreferences {
         PreferenceKey.screenshotSound: true, PreferenceKey.screenshotPadding: 0,
         PreferenceKey.screenshotFolder: FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first!
             .path,
-        PreferenceKey.cleanShot: false, PreferenceKey.appearance: "system", PreferenceKey.animations: true,
+        PreferenceKey.appearance: "system", PreferenceKey.animations: true,
         PreferenceKey.overlayColor: "FF375FFF", PreferenceKey.alternativeColor: "252525FF",
         PreferenceKey.guideColor: "0A84FFFF", PreferenceKey.autoContrast: true,
         PreferenceKey.toleranceZero: 0, PreferenceKey.toleranceLow: 8,

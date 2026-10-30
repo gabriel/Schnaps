@@ -42,6 +42,7 @@ private func response(valid: Bool = true, store: Int = 123, product: Int = 456,
 
 @Test func checkoutMustBeAnOfficialHTTPSLemonSqueezyBuyLink() throws {
     #expect(try catalog().isConfigured)
+    #expect(try catalog("https://schnaps.lemonsqueezy.com/checkout/buy/00000000-0000-0000-0000-000000000001").isConfigured)
     for url in ["http://schnaps.lemonsqueezy.com/buy/sip", "https://lemonsqueezy.com.attacker.example/buy/sip",
                 "https://schnaps.lemonsqueezy.com/products/sip", "https://name:password@schnaps.lemonsqueezy.com/buy/sip"] {
         #expect(try !catalog(url).isConfigured)
