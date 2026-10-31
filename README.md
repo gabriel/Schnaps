@@ -49,13 +49,15 @@ Color tolerance has four presets: Zero, Low, Medium, and High. Choose one in the
 
 Activation shows only the measurement canvas, without a toolbar, permanent hint banner, or screen dimming. Use keyboard shortcuts to change tools, units, tolerance, and other options.
 
+Global shortcuts can be changed or cleared in **Settings → Shortcuts**, with conflict detection and a restore-defaults button. In-tool keys remain fixed.
+
 Settings include customizable tolerance presets, clipboard formats, Retina scaling, aspect ratios, snapping, live/frozen capture, screenshot export, login items, and appearance. See [measurement preferences](docs/preferences.md) for details. Each display uses its own scale and measurement canvas. Pinned measurements survive toggling the overlay during the current session; they are not saved to disk.
 
 Detection uses color contrast, so solid UI surfaces work best. Gradients, shadows, text, and photos can yield partial or broad measurements. Manual selection is always available. CSS clipboard output uses logical screen coordinates.
 
 ## Design tools
 
-Rulers, guides, frames, design grids/mockup overlays, screen templates, Loupe, Crosshair, text inspection, and image/window previews are available from the Design Tools menu and optional native floating Tool Overlay. The overlay is hidden by default; enable it in the menu bar to keep it present across restarts. Its inspector button shows tool controls; Text Inspector and previews use separate windows. Use Control-Command-E to edit markers on screen; Escape leaves them visible and click-through. Geometry, colors, and project layouts persist. See the [design tools guide](docs/design-tools.md) for shortcuts, permissions, and integration limits.
+Rulers, guides, frames, design grids/mockup overlays, screen templates, Loupe, Crosshair, text inspection, and image/window previews are available from the Design Tools menu and optional native floating Tool Overlay. The overlay is hidden by default; enable it in the menu bar to keep it present across restarts. The compact toolbar has no title bar or window controls. Its inspector button opens tool controls in a popover; Text Inspector and previews use separate windows. Use Control-Command-E to edit markers on screen; Escape leaves them visible and click-through. Geometry, colors, and project layouts persist. See the [design tools guide](docs/design-tools.md) for shortcuts, permissions, and integration limits.
 
 ## Updates and privacy
 

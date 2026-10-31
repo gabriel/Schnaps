@@ -9,16 +9,15 @@ struct ToolOverlayPreferences {
         get { defaults.bool(forKey: "showToolOverlay") }
         nonmutating set { if isEnabled != newValue { defaults.set(newValue, forKey: "showToolOverlay") } }
     }
-    var inspectorExpanded: Bool {
-        get { defaults.bool(forKey: "toolInspectorExpanded") }
-        nonmutating set { if inspectorExpanded != newValue { defaults.set(newValue, forKey: "toolInspectorExpanded") } }
-    }
+
 }
 
 @MainActor
-final class ToolOverlayController: NSObject, NSWindowDelegate, NSToolbarDelegate {
+final class ToolOverlayController: NSObject, NSWindowDelegate, NSPopoverDelegate {
     private let preferences = ToolOverlayPreferences()
     private var panel: NSPanel?
+    private var inspectorButton: NSButton?
+    private var inspector: NSPopover?
     private var terminating = false
     private var measurementActive = false
     var onVisibilityChanged: (() -> Void)?
@@ -29,7 +28,7 @@ final class ToolOverlayController: NSObject, NSWindowDelegate, NSToolbarDelegate
     var isEnabled: Bool { preferences.isEnabled }
 
     func restore() {
-        if isEnabled { show() } else { panel?.orderOut(nil) }
+        if isEnabled { show() } else { inspector?.close(); panel?.orderOut(nil) }
     }
     func toggle() { setEnabled(!isEnabled) }
     func setEnabled(_ enabled: Bool) {
@@ -39,92 +38,144 @@ final class ToolOverlayController: NSObject, NSWindowDelegate, NSToolbarDelegate
     }
     func prepareToTerminate() { terminating = true }
     func windowWillClose(_ notification: Notification) {
+        inspector?.close()
         guard !terminating else { return }
         preferences.isEnabled = false
         onVisibilityChanged?()
     }
     func measurementChanged(_ active: Bool) {
-        guard measurementActive != active else { return }
         measurementActive = active
-        resizeInspector()
-        panel?.level = NSWindow.Level(rawValue: (active ? NSWindow.Level.screenSaver : .floating).rawValue + 1)
+        if active { inspector?.close() }
+        panel?.level = paletteLevel
+    }
+    private var paletteLevel: NSWindow.Level {
+        NSWindow.Level(rawValue: (measurementActive ? NSWindow.Level.screenSaver : .floating).rawValue + 1)
     }
     func inspect() {
         beforeInspecting?()
-        preferences.inspectorExpanded = true
         setEnabled(true)
-        resizeInspector()
-        panel?.makeKeyAndOrderFront(nil)
+        guard let inspectorButton else { return }
+        if inspector == nil {
+            let popover = NSPopover()
+            popover.behavior = .semitransient
+            popover.animates = false
+            popover.delegate = self
+            popover.contentSize = NSSize(width: 440, height: 520)
+            popover.contentViewController = NSHostingController(rootView:
+                Form { ToolInspectorView() }.formStyle(.grouped).frame(width: 440, height: 520))
+            inspector = popover
+        }
+        inspector?.show(relativeTo: inspectorButton.bounds, of: inspectorButton, preferredEdge: .minY)
+        inspectorButton.state = .on
     }
+    func popoverDidClose(_ notification: Notification) { inspectorButton?.state = .off }
+
     private func show() {
         if panel == nil {
-            let window = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 520, height: 1),
-                                 styleMask: [.titled, .closable, .resizable, .utilityWindow, .nonactivatingPanel],
-                                 backing: .buffered, defer: false)
+            let stack = NSStackView()
+            stack.orientation = .horizontal
+            stack.spacing = 4
+            stack.edgeInsets = NSEdgeInsets(top: 6, left: 8, bottom: 6, right: 8)
+            let handle = PaletteDragHandle()
+            handle.image = NSImage(systemSymbolName: "ellipsis", accessibilityDescription: "Move toolbar")
+            handle.contentTintColor = .secondaryLabelColor
+            handle.toolTip = "Drag to move toolbar"
+            handle.setAccessibilityLabel("Move toolbar")
+            handle.widthAnchor.constraint(equalToConstant: 14).isActive = true
+            handle.heightAnchor.constraint(equalToConstant: 30).isActive = true
+            stack.addArrangedSubview(handle)
+            let titles = ["Find Dimensions", "Measure Area"] + DesignTool.allCases.map(\.rawValue)
+                + ["Text Inspector", "Tool Inspector", "Hide Tool Overlay"]
+            let symbols = ["arrow.up.left.and.arrow.down.right", "rectangle.dashed"] + DesignTool.allCases.map(\.symbol)
+                + ["textformat", "slider.horizontal.3", "xmark"]
+            for index in titles.indices {
+                if index == 2 || index == titles.count - 2 {
+                    let separator = NSBox()
+                    separator.boxType = .separator
+                    separator.widthAnchor.constraint(equalToConstant: 1).isActive = true
+                    separator.heightAnchor.constraint(equalToConstant: 20).isActive = true
+                    stack.addArrangedSubview(separator)
+                }
+                let button = NSButton(image: NSImage(systemSymbolName: symbols[index], accessibilityDescription: titles[index])!,
+                                      target: self, action: #selector(performTool(_:)))
+                button.tag = index
+                button.imagePosition = .imageOnly
+                button.bezelStyle = .recessed
+                button.isBordered = false
+                button.imageScaling = .scaleProportionallyDown
+                button.symbolConfiguration = NSImage.SymbolConfiguration(pointSize: index == titles.count - 1 ? 12 : 17, weight: .regular)
+                button.toolTip = titles[index]
+                button.setAccessibilityLabel(titles[index])
+                button.widthAnchor.constraint(equalToConstant: 30).isActive = true
+                button.heightAnchor.constraint(equalToConstant: 30).isActive = true
+                if index == titles.count - 2 { button.setButtonType(.pushOnPushOff); inspectorButton = button }
+                stack.addArrangedSubview(button)
+            }
+            let material = NSVisualEffectView()
+            material.material = .hudWindow
+            material.blendingMode = .behindWindow
+            material.state = .active
+            material.wantsLayer = true
+            material.layer?.cornerRadius = 10
+            material.layer?.masksToBounds = true
+            stack.translatesAutoresizingMaskIntoConstraints = false
+            material.addSubview(stack)
+            NSLayoutConstraint.activate([
+                stack.leadingAnchor.constraint(equalTo: material.leadingAnchor),
+                stack.trailingAnchor.constraint(equalTo: material.trailingAnchor),
+                stack.topAnchor.constraint(equalTo: material.topAnchor),
+                stack.bottomAnchor.constraint(equalTo: material.bottomAnchor)
+            ])
+            let size = stack.fittingSize
+            let window = ToolPalettePanel(contentRect: NSRect(origin: .zero, size: size),
+                                         styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
             window.title = "Schnaps Tools"
+            window.setAccessibilityLabel("Schnaps Tools")
             window.isReleasedWhenClosed = false
             window.hidesOnDeactivate = false
             window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-            window.level = NSWindow.Level(rawValue: NSWindow.Level.floating.rawValue + 1)
-            window.minSize = NSSize(width: 520, height: 60)
+            window.level = paletteLevel
+            window.backgroundColor = .clear
+            window.isOpaque = false
+            window.hasShadow = true
+            window.isMovableByWindowBackground = true
             window.delegate = self
-            let toolbar = NSToolbar(identifier: "SchnapsToolOverlay")
-            toolbar.delegate = self
-            toolbar.displayMode = .iconOnly
-            toolbar.sizeMode = .small
-            toolbar.allowsUserCustomization = false
-            window.toolbar = toolbar
-            window.contentViewController = NSHostingController(rootView:
-                Form { ToolInspectorView() }.formStyle(.grouped))
+            window.contentView = material
             window.center()
-            window.setFrameAutosaveName("SchnapsToolOverlay")
+            // A new autosave name avoids restoring the old titled window's oversized frame.
+            window.setFrameAutosaveName("SchnapsCompactToolPalette")
+            _ = window.setFrameUsingName("SchnapsCompactToolPalette")
+            window.setContentSize(size)
+            if let visible = window.screen?.visibleFrame {
+                window.setFrameOrigin(NSPoint(
+                    x: max(visible.minX, min(window.frame.minX, visible.maxX - size.width)),
+                    y: max(visible.minY, min(window.frame.minY, visible.maxY - size.height))))
+            }
             panel = window
-            window.level = NSWindow.Level(rawValue: (measurementActive ? NSWindow.Level.screenSaver : .floating).rawValue + 1)
-            resizeInspector()
         }
         panel?.orderFrontRegardless()
     }
-    private func resizeInspector() {
-        guard let panel else { return }
-        let top = panel.frame.maxY
-        let expanded = preferences.inspectorExpanded && !measurementActive
-        panel.contentView?.isHidden = !expanded
-        if expanded { panel.styleMask.insert(.resizable) } else { panel.styleMask.remove(.resizable) }
-        panel.setContentSize(NSSize(width: max(520, panel.contentLayoutRect.width),
-                                    height: expanded ? 540 : 1))
-        let visible = (panel.screen ?? NSScreen.main)?.visibleFrame ?? panel.frame
-        panel.setFrameOrigin(NSPoint(
-            x: max(visible.minX, min(panel.frame.minX, visible.maxX - panel.frame.width)),
-            y: max(visible.minY, min(top - panel.frame.height, visible.maxY - panel.frame.height))))
-    }
-    private var identifiers: [NSToolbarItem.Identifier] {
-        (["find", "area"] + DesignTool.allCases.indices.map { "tool\($0)" } + ["text", "inspector"]).map { .init($0) }
-    }
-    func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] { identifiers }
-    func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] { identifiers }
-    func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier id: NSToolbarItem.Identifier,
-                 willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
-        guard let index = identifiers.firstIndex(of: id) else { return nil }
-        let titles = ["Find Dimensions", "Measure Area"] + DesignTool.allCases.map(\.rawValue) + ["Text Inspector", "Show or Hide Inspector"]
-        let symbols = ["arrow.up.left.and.arrow.down.right", "rectangle.dashed"] + DesignTool.allCases.map(\.symbol) + ["textformat", "sidebar.right"]
-        let item = NSToolbarItem(itemIdentifier: id)
-        item.label = titles[index]; item.toolTip = titles[index]
-        item.image = NSImage(systemSymbolName: symbols[index], accessibilityDescription: titles[index])
-        item.target = self; item.action = #selector(performTool(_:)); item.tag = index
-        return item
-    }
-    @objc private func performTool(_ sender: NSToolbarItem) {
+    @objc private func performTool(_ sender: NSButton) {
         switch sender.tag {
         case 0: measure?(.findDimensions)
         case 1: measure?(.area)
         case 2..<(2 + DesignTool.allCases.count): activateTool?(DesignTool.allCases[sender.tag - 2])
         case 2 + DesignTool.allCases.count: showText?()
-        default:
-            beforeInspecting?()
-            preferences.inspectorExpanded.toggle()
-            resizeInspector()
+        case 3 + DesignTool.allCases.count:
+            if inspector?.isShown == true { inspector?.close() } else { inspect() }
+        default: setEnabled(false)
         }
     }
+}
+
+/// Borderless panels still need to allow keyboard focus in their native popovers.
+private final class ToolPalettePanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+}
+
+private final class PaletteDragHandle: NSImageView {
+    override func mouseDown(with event: NSEvent) { window?.performDrag(with: event) }
 }
 
 @MainActor

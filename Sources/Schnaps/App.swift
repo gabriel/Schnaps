@@ -31,7 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let updateChannels = UpdateChannelSettings()
     private lazy var updaterController = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: updateChannels, userDriverDelegate: nil)
     private var hotKeys: [EventHotKeyRef] = []
-    private var shortcutWarning: String?
+    private var recordingShortcut = false
     private var handler: EventHandlerRef?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -60,10 +60,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         preferencesChanged()
         updaterController.startUpdater()
         installHotKey()
+        ShortcutSettings.shared.onChange = { [weak self] in
+            guard let self else { return }
+            if !recordingShortcut { refreshHotKeys() }
+            buildMenus()
+        }
+        ShortcutSettings.shared.onRecordingChanged = { [weak self] recording in
+            self?.recordingShortcut = recording
+            if recording { self?.removeHotKeys() } else { self?.refreshHotKeys() }
+        }
+        ShortcutSettings.shared.checkAvailability = { binding in
+            var key: EventHotKeyRef?
+            let status = RegisterEventHotKey(binding.keyCode, binding.carbonModifiers,
+                EventHotKeyID(signature: 0x5343484E, id: 100), GetApplicationEventTarget(), 0, &key)
+            if let key { UnregisterEventHotKey(key) }
+            return status == noErr
+        }
         let launchEvent = NSAppleEventManager.shared().currentAppleEvent
         let launchedAtLogin = launchEvent?.eventID == kAEOpenApplication
             && launchEvent?.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
-        if !launchedAtLogin { showSettings() }
+        if !launchedAtLogin && !toolOverlay.isEnabled { showSettings() }
         NotificationCenter.default.addObserver(self, selector: #selector(screensChanged),
                                                name: NSApplication.didChangeScreenParametersNotification, object: nil)
     }
@@ -76,8 +92,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let menu = NSMenu()
         menu.addItem(item("Start Measuring", action: #selector(startDefaultTool), key: ""))
         menu.addItem(.separator())
-        menu.addItem(item("Find Dimensions", action: #selector(findDimensions), key: "f", modifiers: [.command, .shift]))
-        menu.addItem(item("Measure Area", action: #selector(measureArea), key: "m", modifiers: [.command, .shift]))
+        menu.addItem(shortcutItem(.dimensions, action: #selector(findDimensions)))
+        menu.addItem(shortcutItem(.area, action: #selector(measureArea)))
         menu.addItem(.separator())
         menu.addItem(toolOverlayMenuItem())
         menu.addItem(designToolsMenu())
@@ -166,8 +182,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func designToolsMenu() -> NSMenuItem {
         let parent = NSMenuItem(title: "Design Tools", action: nil, keyEquivalent: "")
         let menu = NSMenu()
-        for (index, tool) in DesignTool.allCases.enumerated() {
-            let entry = item(tool.rawValue, action: #selector(launchDesignTool(_:)), key: ["r","g","b","o","s","l","x"][index], modifiers:[.command,.control])
+        for index in DesignTool.allCases.indices {
+            let entry = shortcutItem(ShortcutAction(rawValue: UInt32(index + 3))!, action: #selector(launchDesignTool(_:)))
             entry.tag = index; menu.addItem(entry)
         }
         menu.addItem(.separator())
@@ -175,9 +191,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(item("Responsive Web Preview…", action:#selector(showBrowserPreview), key:""))
         menu.addItem(item("Text Inspector…", action: #selector(showTextTools), key: ""))
         menu.addItem(item("Tool Inspector…", action: #selector(editDesignTools), key: ""))
-        menu.addItem(item("Edit on Screen", action: #selector(editOnScreen), key: "e", modifiers:[.command,.control]))
-        menu.addItem(item("Hide Design Tools", action: #selector(hideDesignTools), key: "h", modifiers:[.command,.control]))
-        menu.addItem(item("Copy Sampled Color", action: #selector(copySampledColor), key: "c", modifiers:[.command,.control]))
+        menu.addItem(shortcutItem(.edit, action: #selector(editOnScreen)))
+        menu.addItem(shortcutItem(.hide, action: #selector(hideDesignTools)))
+        menu.addItem(shortcutItem(.copyColor, action: #selector(copySampledColor)))
         parent.submenu = menu; return parent
     }
     @objc private func launchDesignTool(_ sender: NSMenuItem) {
@@ -226,6 +242,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let item = NSMenuItem(title: L("Check for Updates…"), action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "")
         item.target = updaterController
         return item
+    }
+
+    private func shortcutItem(_ action: ShortcutAction, action selector: Selector) -> NSMenuItem {
+        let binding = ShortcutSettings.shared.binding(for: action)
+        return item(action.title, action: selector, key: binding.enabled ? binding.key : "", modifiers: binding.flags)
     }
 
     private func item(_ title: String, action: Selector, key: String, modifiers: NSEvent.ModifierFlags = .command) -> NSMenuItem {
@@ -299,7 +320,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             window.setFrameAutosaveName("SchnapSettings")
             window.isReleasedWhenClosed = false
             window.contentViewController = NSHostingController(rootView: SettingsView(
-                shortcutWarning: shortcutWarning,
                 navigation: settingsNavigation, updates: UpdateSettings(updater: updaterController.updater, channels: updateChannels)))
             window.center()
             settingsWindow = window
@@ -333,22 +353,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             return noErr
         }, 1, &eventType, pointer, &handler)
-        let shortcuts:[(UInt32,Int,UInt32)] = [
-            (1,kVK_ANSI_M,UInt32(cmdKey|shiftKey)),(2,kVK_ANSI_F,UInt32(cmdKey|shiftKey)),
-            (3,kVK_ANSI_R,UInt32(cmdKey|controlKey)),(4,kVK_ANSI_G,UInt32(cmdKey|controlKey)),
-            (5,kVK_ANSI_B,UInt32(cmdKey|controlKey)),(6,kVK_ANSI_O,UInt32(cmdKey|controlKey)),
-            (7,kVK_ANSI_S,UInt32(cmdKey|controlKey)),(8,kVK_ANSI_L,UInt32(cmdKey|controlKey)),
-            (9,kVK_ANSI_X,UInt32(cmdKey|controlKey)),(10,kVK_ANSI_E,UInt32(cmdKey|controlKey)),
-            (11,kVK_ANSI_H,UInt32(cmdKey|controlKey)),(12,kVK_ANSI_C,UInt32(cmdKey|controlKey))
-        ]
-        for (id,key,modifiers) in shortcuts {
+        refreshHotKeys()
+    }
+
+    private func removeHotKeys() {
+        for key in hotKeys { UnregisterEventHotKey(key) }
+        hotKeys.removeAll()
+    }
+    private func refreshHotKeys() {
+        removeHotKeys()
+        var errors: [String] = []
+        for action in ShortcutAction.allCases {
+            let binding = ShortcutSettings.shared.binding(for: action)
+            guard binding.enabled else { continue }
             var hotKey: EventHotKeyRef?
-            let result = RegisterEventHotKey(UInt32(key), modifiers,
-                                            EventHotKeyID(signature: 0x5343484E, id: id),
-                                            GetApplicationEventTarget(), 0, &hotKey)
+            let result = RegisterEventHotKey(binding.keyCode, binding.carbonModifiers,
+                EventHotKeyID(signature: 0x5343484E, id: action.rawValue), GetApplicationEventTarget(), 0, &hotKey)
             if result == noErr, let hotKey { hotKeys.append(hotKey) }
-            else { shortcutWarning = "A global shortcut is in use by another app. Use the Schnaps menu bar to activate the tool." }
+            else { errors.append("\(action.title): \(binding.label) is in use by macOS or another app.") }
         }
+        ShortcutSettings.shared.registrationErrors = errors
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
