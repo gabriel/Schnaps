@@ -182,3 +182,9 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 > Apply the Split Caliper with the state changes and make a beta so I can test.
 
 **Result:** replaced the static ruler symbol with the approved original Split Caliper vectors. Open jaws indicate Idle; a span and fiducial indicate Find Dimensions; an interior rectangle indicates Measure Area; offset guides indicate visible design tools. Measurement mode takes priority over marks. Starting/stopping, switching tools with S, hiding marks, and the final Escape update the icon. The 22-point template image follows native light, dark, and selected tinting. Tooltips and accessibility labels name the current state.
+
+## Current artwork in Sparkle
+
+> Old icon still in Sparkle?
+
+**Result:** confirmed that macOS’s registered application icon was still the older amber bottle while the installed ICNS contained the current glass/blueprint artwork. Sparkle’s standard UI reads the process’s named application image. Startup and appearance changes now refresh that name directly from the bundled light/dark ICNS before Sparkle uses it. The Split Caliper remains the stateful menu-bar mark.
