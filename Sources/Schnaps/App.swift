@@ -25,6 +25,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let recordingPermission = ScreenRecordingPermission.shared
     private let overlay = OverlayController()
     private let designTools = DesignToolsController()
+    private let toolOverlay = ToolOverlayController()
+    private let textInspector = TextInspectorWindow()
+    private var toolOverlayMenuItems: [NSMenuItem] = []
     private let updateChannels = UpdateChannelSettings()
     private lazy var updaterController = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: updateChannels, userDriverDelegate: nil)
     private var hotKeys: [EventHotKeyRef] = []
@@ -39,7 +42,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         updateDockVisibility()
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem?.button?.image = NSImage(systemSymbolName: "ruler", accessibilityDescription: "Schnaps measurements")
+        toolOverlay.measure = { [weak self] in self?.start(mode: $0) }
+        toolOverlay.activateTool = { [weak self] in self?.activateDesignTool($0) }
+        toolOverlay.showText = { [weak self] in self?.showTextTools() }
+        toolOverlay.beforeInspecting = { [weak self] in
+            self?.overlay.stop()
+            DesignTools.shared.editing = false
+        }
+        toolOverlay.onVisibilityChanged = { [weak self] in self?.updateToolOverlayMenu() }
+        overlay.onActivationChanged = { [weak self] in self?.toolOverlay.measurementChanged($0) }
         buildMenus()
+        toolOverlay.restore()
         // Creating a status item can synchronously change its autosaved visibility defaults.
         // Observe only once the item and menus are ready.
         NotificationCenter.default.addObserver(self, selector: #selector(preferencesChanged),
@@ -59,12 +72,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func buildMenus() {
         guard let statusItem else { return }
+        toolOverlayMenuItems.removeAll()
         let menu = NSMenu()
         menu.addItem(item("Start Measuring", action: #selector(startDefaultTool), key: ""))
         menu.addItem(.separator())
         menu.addItem(item("Find Dimensions", action: #selector(findDimensions), key: "f", modifiers: [.command, .shift]))
         menu.addItem(item("Measure Area", action: #selector(measureArea), key: "m", modifiers: [.command, .shift]))
         menu.addItem(.separator())
+        menu.addItem(toolOverlayMenuItem())
         menu.addItem(designToolsMenu())
         menu.addItem(toleranceMenuItem())
         menu.addItem(.separator())
@@ -78,6 +93,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         appMenu.addItem(item("About Schnaps", action: #selector(about), key: ""))
         appMenu.addItem(.separator())
         appMenu.addItem(item("Settings…", action: #selector(showSettings), key: ","))
+        appMenu.addItem(toolOverlayMenuItem())
         appMenu.addItem(designToolsMenu())
         appMenu.addItem(toleranceMenuItem())
         appMenu.addItem(.separator())
@@ -136,6 +152,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
+    private func toolOverlayMenuItem() -> NSMenuItem {
+        let entry = item("Tool Overlay", action: #selector(toggleToolOverlay), key: "")
+        entry.state = toolOverlay.isEnabled ? .on : .off
+        toolOverlayMenuItems.append(entry)
+        return entry
+    }
+    private func updateToolOverlayMenu() {
+        for item in toolOverlayMenuItems { item.state = toolOverlay.isEnabled ? .on : .off }
+    }
+    @objc private func toggleToolOverlay() { toolOverlay.toggle() }
+
     private func designToolsMenu() -> NSMenuItem {
         let parent = NSMenuItem(title: "Design Tools", action: nil, keyEquivalent: "")
         let menu = NSMenu()
@@ -147,7 +174,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(item("Image & Window Preview…", action:#selector(showImagePreview), key:""))
         menu.addItem(item("Responsive Web Preview…", action:#selector(showBrowserPreview), key:""))
         menu.addItem(item("Text Inspector…", action: #selector(showTextTools), key: ""))
-        menu.addItem(item("Edit Design Tools…", action: #selector(editDesignTools), key: ""))
+        menu.addItem(item("Tool Inspector…", action: #selector(editDesignTools), key: ""))
         menu.addItem(item("Edit on Screen", action: #selector(editOnScreen), key: "e", modifiers:[.command,.control]))
         menu.addItem(item("Hide Design Tools", action: #selector(hideDesignTools), key: "h", modifiers:[.command,.control]))
         menu.addItem(item("Copy Sampled Color", action: #selector(copySampledColor), key: "c", modifiers:[.command,.control]))
@@ -155,13 +182,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     @objc private func launchDesignTool(_ sender: NSMenuItem) {
         guard DesignTool.allCases.indices.contains(sender.tag) else { return }
-        overlay.stop(); settingsWindow?.orderOut(nil)
-        designTools.activate(DesignTool.allCases[sender.tag])
+        activateDesignTool(DesignTool.allCases[sender.tag])
     }
-    @objc private func editDesignTools() { DesignTools.shared.editing=false; settingsNavigation.pane = .designTools; showSettings() }
-    @objc private func showImagePreview() { ImagePreview.shared.show() }
-    @objc private func showBrowserPreview() { BrowserPreview.shared.show() }
-    @objc private func showTextTools() { settingsNavigation.pane = .text; showSettings() }
+    private func activateDesignTool(_ tool: DesignTool) {
+        overlay.stop(); settingsWindow?.orderOut(nil)
+        designTools.activate(tool)
+    }
+    @objc private func editDesignTools() { toolOverlay.inspect() }
+    @objc private func showImagePreview() { overlay.stop(); ImagePreview.shared.show() }
+    @objc private func showBrowserPreview() { overlay.stop(); BrowserPreview.shared.show() }
+    @objc private func showTextTools() { overlay.stop(); textInspector.show() }
     @objc private func editOnScreen() {
         settingsWindow?.orderOut(nil);overlay.stop()
         if !DesignTools.shared.isActive { DesignTools.shared.visible=true };DesignTools.shared.editing.toggle()
@@ -269,7 +299,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             window.setFrameAutosaveName("SchnapSettings")
             window.isReleasedWhenClosed = false
             window.contentViewController = NSHostingController(rootView: SettingsView(
-                start: { [weak self] mode in self?.start(mode: mode) }, shortcutWarning: shortcutWarning,
+                shortcutWarning: shortcutWarning,
                 navigation: settingsNavigation, updates: UpdateSettings(updater: updaterController.updater, channels: updateChannels)))
             window.center()
             settingsWindow = window
@@ -319,6 +349,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if result == noErr, let hotKey { hotKeys.append(hotKey) }
             else { shortcutWarning = "A global shortcut is in use by another app. Use the Schnaps menu bar to activate the tool." }
         }
+    }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        toolOverlay.prepareToTerminate()
+        return .terminateNow
     }
 
     func applicationWillTerminate(_ notification: Notification) {

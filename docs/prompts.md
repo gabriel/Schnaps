@@ -116,3 +116,9 @@ The app's implementation is Swift. The later update request explicitly introduce
 **Scope:** Mac tools first; iPhone and Apple Watch companion apps are deferred.
 
 **Result:** native inspectors and shortcuts for rulers, guides, frames, grids/mockups, screen templates, Loupe, Crosshair, text/Unicode inspection, responsive webpage capture, and image/window preview. Tool marks remain click-through outside editing. See [design tools](design-tools.md) for behavior, permissions, and integration limits.
+
+## Optional floating tool overlay
+
+> The overlay should be hidden by default, but if enabled in the menu bar it should stay up across restarts.
+
+**Result:** moved operational controls from Settings to an optional native floating toolbar and inspector. Menu visibility is remembered; closing the toolbar disables it. Text Inspector opens separately, and shortcuts remain usable with the toolbar hidden.

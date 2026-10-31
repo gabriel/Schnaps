@@ -1,6 +1,6 @@
 # Mac design tools
 
-Use **Schnaps → Design Tools** in the menu bar or the native **Design Tools** settings pane. The controls are standard macOS forms; the desktop contains only the tool marks. Find Dimensions and Measure Area keep their existing shortcuts and interaction.
+Use **Schnaps → Design Tools** in the menu bar or enable **Tool Overlay** for a compact native floating toolbar. It is hidden by default. Enabling it persists across app restarts; disabling it or closing its window keeps it hidden next time. Tool shortcuts work independently of this preference. The inspector button expands standard macOS controls for the active tool; **Tool Inspector…** opens it directly. Closing the toolbar leaves existing tool marks intact. Settings contains preferences rather than operational controls. Find Dimensions and Measure Area keep their existing shortcuts and interaction.
 
 ## Shortcuts
 
@@ -53,7 +53,7 @@ Saved colors persist, support JSON and named RGB Adobe ACO export, and can be im
 
 Text converts plain strings, HTML entities, percent-encoded URLs, C escapes, UTF-8 hex bytes, NSData-style bytes, and Unicode code-point/name lines. Decoding is explicit and does not execute input. HTML named references come from the WHATWG entity table; numeric references cover Unicode scalars. Invalid UTF-8, malformed escapes, and invalid code points report errors. A Windows-1252/UTF-8 repair action handles common mojibake.
 
-Search Unicode by name, pasted character, U+code, or a range such as `U+0300..U+036F`. Search runs off the main thread and cancels when the query changes. Results use the Unicode version shipped with macOS; the first 200 matches are retained and 60 shown. The character inspector shows names, general category, UTF-8 bytes, UTF-16 units, and canonical/compatibility normalization. A persistent character palette collects favorites. Installed fonts can be selected to inspect advance, ascent/descent, leading, cap/x-height, and a CSS line-height estimate for the first input line. Input, results, font, and conversion format remain in memory when switching settings panes; they are not saved to disk. Text editors use native undo/redo, clipboard actions, and Find/Find Next/Find Previous commands (Command-F, Command-G, Shift-Command-G). Saved palette entries retain their font family for icon-font glyphs.
+Search Unicode by name, pasted character, U+code, or a range such as `U+0300..U+036F`. Search runs off the main thread and cancels when the query changes. Results use the Unicode version shipped with macOS; the first 200 matches are retained and 60 shown. The character inspector shows names, general category, UTF-8 bytes, UTF-16 units, and canonical/compatibility normalization. A persistent character palette collects favorites. Installed fonts can be selected to inspect advance, ascent/descent, leading, cap/x-height, and a CSS line-height estimate for the first input line. Input, results, font, and conversion format remain in memory when closing and reopening the separate Text Inspector window; they are not saved to disk. Text editors use native undo/redo, clipboard actions, and Find/Find Next/Find Previous commands (Command-F, Command-G, Shift-Command-G). Saved palette entries retain their font family for icon-font glyphs.
 
 Command-line conversion works without opening windows:
 

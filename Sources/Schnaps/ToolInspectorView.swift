@@ -2,7 +2,7 @@ import AppKit
 import MeasurementCore
 import SwiftUI
 
-struct DesignToolsSettings: View {
+struct ToolInspectorView: View {
   @ObservedObject var tools = DesignTools.shared
   @State private var preset = ScreenTemplate.presets[3].name
   @State private var breakpoint = 960.0

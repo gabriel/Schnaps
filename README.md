@@ -55,7 +55,7 @@ Detection uses color contrast, so solid UI surfaces work best. Gradients, shadow
 
 ## Design tools
 
-Rulers, guides, frames, design grids/mockup overlays, screen templates, Loupe, Crosshair, text inspection, and image/window previews are available from the Design Tools menu and native settings. Use Control-Command-E to edit markers on screen; Escape leaves them visible and click-through. Geometry, colors, and project layouts persist. See the [design tools guide](docs/design-tools.md) for shortcuts, permissions, and integration limits.
+Rulers, guides, frames, design grids/mockup overlays, screen templates, Loupe, Crosshair, text inspection, and image/window previews are available from the Design Tools menu and optional native floating Tool Overlay. The overlay is hidden by default; enable it in the menu bar to keep it present across restarts. Its inspector button shows tool controls; Text Inspector and previews use separate windows. Use Control-Command-E to edit markers on screen; Escape leaves them visible and click-through. Geometry, colors, and project layouts persist. See the [design tools guide](docs/design-tools.md) for shortcuts, permissions, and integration limits.
 
 ## Updates and privacy
 

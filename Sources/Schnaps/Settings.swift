@@ -47,8 +47,6 @@ enum PreferenceKey {
 
 enum SettingsPane: String, CaseIterable, Identifiable {
     case general = "General"
-    case designTools = "Design Tools"
-    case text = "Text"
     case screenshots = "Screenshots"
     case tolerance = "Tolerance"
     case appearance = "Appearance"
@@ -59,8 +57,6 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .general: "gearshape"
-        case .designTools: "ruler"
-        case .text: "textformat"
         case .screenshots: "camera"
         case .tolerance: "dial.low"
         case .appearance: "paintpalette"
@@ -78,7 +74,6 @@ final class SettingsNavigation: ObservableObject {
 
 struct SettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
-    var start: (MeasurementMode) -> Void
     var shortcutWarning: String?
     @ObservedObject var navigation: SettingsNavigation
     @ObservedObject var updates: UpdateSettings
@@ -135,8 +130,6 @@ struct SettingsView: View {
             Form {
                 switch navigation.pane ?? .general {
                 case .general: general
-                case .designTools: DesignToolsSettings()
-                case .text: TextInspectorView()
                 case .screenshots: screenshots
                 case .tolerance: toleranceSettings
                 case .appearance: appearanceSettings
@@ -168,24 +161,12 @@ struct SettingsView: View {
     private var general: some View {
         Group {
             Section {
-                LabeledContent(L("Find Dimensions")) {
-                    Button(L("Find Dimensions"), action: { start(.findDimensions) })
+                Picker(L("Default tool"), selection: $defaultTool) {
+                    ForEach(MeasurementMode.allCases, id: \.rawValue) { Text(L($0.rawValue)).tag($0.rawValue) }
                 }
-            } header: {
-                Text(L("Tools"))
-            } footer: {
+            } header: { Text(L("Tools")) } footer: {
                 Text(L("Move the pointer to measure distances between edges. Drag around an object to find its bounds."))
-                    .font(.footnote)
-                    .padding(.top, -7)
-            }
-            Section {
-                LabeledContent(L("Measure Area")) {
-                    Button(L("Measure Area"), action: { start(.area) })
-                }
-            } footer: {
-                Text(L("Drag an exact rectangle, then move, resize, pin, or copy the measurement."))
-                    .font(.footnote)
-                    .padding(.top, -7)
+                    .font(.footnote).padding(.top, -7)
             }
             Section(L("Language")) {
                 Picker(L("Language"), selection: $language) {
@@ -196,9 +177,6 @@ struct SettingsView: View {
                 }
             }
             Section {
-                Picker(L("Default tool"), selection: $defaultTool) {
-                    ForEach(MeasurementMode.allCases, id: \.rawValue) { Text(L($0.rawValue)).tag($0.rawValue) }
-                }
                 Toggle(L("Start at login"), isOn: Binding(get: { loginItem.enabled || loginItem.needsApproval }, set: { loginItem.setEnabled($0) }))
                 Toggle(L("Show in menu bar"), isOn: $showMenuBar)
                 Toggle(L("Show in Dock"), isOn: $showInDock)
