@@ -23,7 +23,7 @@ final class ToolOverlayController: NSObject, NSWindowDelegate, NSPopoverDelegate
     var onVisibilityChanged: (() -> Void)?
     var measure: ((MeasurementMode) -> Void)?
     var activateTool: ((DesignTool) -> Void)?
-    var showText: (() -> Void)?
+    var showText: ((NSWindow) -> Void)?
     var beforeInspecting: (() -> Void)?
     var isEnabled: Bool { preferences.isEnabled }
 
@@ -160,7 +160,9 @@ final class ToolOverlayController: NSObject, NSWindowDelegate, NSPopoverDelegate
         case 0: measure?(.findDimensions)
         case 1: measure?(.area)
         case 2..<(2 + DesignTool.allCases.count): activateTool?(DesignTool.allCases[sender.tag - 2])
-        case 2 + DesignTool.allCases.count: showText?()
+        case 2 + DesignTool.allCases.count:
+            inspector?.close()
+            if let panel { showText?(panel) }
         case 3 + DesignTool.allCases.count:
             if inspector?.isShown == true { inspector?.close() } else { inspect() }
         default: setEnabled(false)
@@ -184,7 +186,7 @@ private final class PaletteDragHandle: NSImageView {
 @MainActor
 final class TextInspectorWindow {
     private var window: NSWindow?
-    func show() {
+    func show(below overlay: NSWindow? = nil) {
         // A floating design canvas must stop intercepting input before this window opens.
         DesignTools.shared.editing = false
         if window == nil {
@@ -197,6 +199,12 @@ final class TextInspectorWindow {
             window.center()
             window.setFrameAutosaveName("SchnapsTextInspector")
             self.window = window
+        }
+        if let window, let overlay, let screen = overlay.screen {
+            let placement = ToolWindowPlacement.below(overlay: overlay.frame, contentSize: window.frame.size,
+                                                       visibleFrame: screen.visibleFrame)
+            overlay.setFrame(placement.overlay, display: true)
+            window.setFrame(placement.content, display: true)
         }
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
