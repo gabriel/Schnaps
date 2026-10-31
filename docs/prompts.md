@@ -152,3 +152,9 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 > The overlay looks like a full window when it should be an overlay... I have Xscope installed you can use it as a comparison... the overlay should be a minimal window not with "chrome".
 
 **Result:** compared the installed xScope toolbar and replaced Schnaps’s titled utility window with a compact, draggable icon strip. It uses native symbol buttons on system HUD material, without a title bar, traffic lights, or resize controls. The inspector opens in a separate native popover rather than expanding the toolbar into a full window. The menu toggle and hide button preserve the existing opt-in visibility behavior across restarts. When enabled, relaunch opens only the strip instead of also opening Settings.
+
+## Editable global shortcuts
+
+> Allow shortcuts to be edited.
+
+**Result:** added native recording sheets for all 12 global measurement and design-tool shortcuts in Settings. Bindings can be cleared or reset to defaults, persist across restarts, and update menu equivalents immediately. Recording suspends global shortcuts; duplicate, reserved, and unavailable combinations are rejected. In-tool editing and measurement keys remain fixed and are listed separately.

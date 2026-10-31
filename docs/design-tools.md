@@ -4,6 +4,8 @@ Use **Schnaps → Design Tools** in the menu bar or enable **Tool Overlay** for 
 
 ## Shortcuts
 
+Global shortcuts below are defaults. Change or clear each one in **Settings → Shortcuts**. Edits apply immediately and persist across restarts; **Restore Default Shortcuts** resets all global bindings. Duplicate bindings and unavailable combinations are rejected. On-screen editing keys remain fixed.
+
 | Tool or action | Global shortcut |
 | --- | --- |
 | Add ruler (up to two) | Control-Command-R |
