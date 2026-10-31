@@ -35,5 +35,11 @@
         "period": 60
       }
     }
+  ],
+  "services": [
+    {
+      "binding": "ANALYTICS",
+      "service": "rel-site"
+    }
   ]
 }

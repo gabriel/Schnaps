@@ -191,3 +191,7 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 ### Schnaps PR-monitor prompt
 
 Monitor the Schnaps analytics PR on branch codex/gabriel/app-analytics in /Users/local/projects.next/Schnaps. Use gh --repo gabriel/Schnaps to identify its PR and latest head. Monitor both macOS CI matrix jobs, inspect actual failures, and fix them with the smallest safe changes after coordinating with main. Commit and push fixes, and re-monitor every changed head through success. Preserve signed feed/archive bytes and the historical bundle ID. Main owns Worker secrets, deployment, and integration checks. Log any additional delegated task prompts by appending to docs/prompts.md. Do not publish an app release or operate installed apps.
+
+### Service-binding repair monitoring prompt
+
+Re-monitor Schnaps PR #58 after the new service-binding repair is pushed. Direct receiver verification passed, but public Worker-to-Worker forwarding failed; the Worker now requires its private ANALYTICS service binding to rel-site while retaining the Schnaps-only write secret. Inspect any CI failure, coordinate before edits, make focused fixes, and re-monitor changed heads through both macOS jobs passing. No app release or installed-app operation is authorized by this monitoring task.

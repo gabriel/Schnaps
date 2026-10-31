@@ -8,7 +8,7 @@ const startsTransfer = (request, response) => request.method === 'GET' && !isPre
 export function createWorker(fetcher = fetch) {
   return { async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (url.pathname === '/api/app-starts') return receiveLaunch(request, env, fetcher);
+    if (url.pathname === '/api/app-starts') return receiveLaunch(request, env);
     if (url.pathname === '/download') {
       if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405, headers: { allow: 'GET, HEAD' } });
       try {
@@ -45,12 +45,12 @@ export function createWorker(fetcher = fetch) {
     const response = new Response(request.method === 'HEAD' ? null : upstream.body, { status: upstream.status, headers });
     const updater = updaterMetadata(request);
     if (feed && updater.isUpdater && request.method === 'GET' && [200, 304].includes(response.status)) {
-      backgroundEvent({ kind: 'check', eventID: crypto.randomUUID(), runtime: updater.runtime, version: updater.version }, env, ctx, fetcher);
+      backgroundEvent({ kind: 'check', eventID: crypto.randomUUID(), runtime: updater.runtime, version: updater.version }, env, ctx);
     } else if (artifact && startsTransfer(request, response)) {
       let website = ['hero', 'footer', 'website'].includes(url.searchParams.get('source'));
       try { website ||= new URL(request.headers.get('referer') ?? '').origin === 'https://getschnaps.com'; } catch { /* unattributed */ }
       backgroundEvent({ kind: 'transfer', eventID: crypto.randomUUID(), runtime: updater.runtime, version: artifact[3], artifact: artifact[4],
-        source: updater.isUpdater || artifact[4] === 'delta' ? 'updater' : website ? 'website' : 'direct' }, env, ctx, fetcher);
+        source: updater.isUpdater || artifact[4] === 'delta' ? 'updater' : website ? 'website' : 'direct' }, env, ctx);
     }
     return response;
   } };

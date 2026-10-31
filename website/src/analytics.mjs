@@ -1,16 +1,16 @@
 export const appID = 'com.gabrielhandford.Schnap';
 export const versionPattern = /^\d+\.\d+\.\d+(?:-beta\.[1-9]\d*)?$/;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-export async function sendEvent(event, env, fetcher = fetch) {
-  if (!env.ANALYTICS_FORWARDING_KEY) throw new Error('Analytics not configured');
-  const response = await fetcher('https://rel.me/api/analytics/schnaps', {
+export async function sendEvent(event, env) {
+  if (!env.ANALYTICS_FORWARDING_KEY || !env.ANALYTICS?.fetch) throw new Error('Analytics not configured');
+  const response = await env.ANALYTICS.fetch('https://rel.me/api/analytics/schnaps', {
     method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${env.ANALYTICS_FORWARDING_KEY}` },
     body: JSON.stringify(event), redirect: 'error', signal: AbortSignal.timeout(5000),
   });
   if (response.status !== 204) throw new Error('Analytics unavailable');
 }
-export function backgroundEvent(event, env, ctx, fetcher) {
-  ctx.waitUntil(sendEvent(event, env, fetcher).catch(() => console.error('Schnaps analytics delivery failed')));
+export function backgroundEvent(event, env, ctx) {
+  ctx.waitUntil(sendEvent(event, env).catch(() => console.error('Schnaps analytics delivery failed')));
 }
 export function updaterMetadata(request) {
   const agent = request.headers.get('user-agent') ?? '';
@@ -20,7 +20,7 @@ export function updaterMetadata(request) {
   return { isUpdater: explicit || !!legacy, version: versionPattern.test(version ?? '') ? version : 'unknown',
     runtime: (explicit ? request.headers.get('x-schnaps-runtime') === 'debug' : /Debug/.test(legacy?.[0] ?? '')) ? 'debug' : 'release' };
 }
-export async function receiveLaunch(request, env, fetcher) {
+export async function receiveLaunch(request, env) {
   const headers = { 'cache-control': 'no-store' };
   if (request.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: { ...headers, allow: 'POST' } });
   if (request.headers.get('x-schnaps-client') !== 'macos-app' ||
@@ -47,7 +47,7 @@ export async function receiveLaunch(request, env, fetcher) {
   const input = `${appID}:analytics:v1:${event.runtime}:${event.installationID.toLowerCase()}`;
   const installationHash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input))), b => b.toString(16).padStart(2, '0')).join('');
   try {
-    await sendEvent({ kind: 'launch', launchID: event.launchID, runtime: event.runtime, version: event.version, build: event.build, installationHash }, env, fetcher);
+    await sendEvent({ kind: 'launch', launchID: event.launchID, runtime: event.runtime, version: event.version, build: event.build, installationHash }, env);
     return new Response(null, { status: 204, headers });
   } catch { console.error('Schnaps launch analytics unavailable'); return new Response('Analytics unavailable', { status: 503, headers }); }
 }

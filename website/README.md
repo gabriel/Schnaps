@@ -81,7 +81,8 @@ from displayed production totals. The first reported build is a baseline;
 only later higher builds confirm upgrades. Missing/offline/older app reports
 cannot be backfilled.
 
-Forwarding uses the Worker secret `ANALYTICS_FORWARDING_KEY`; the matching REL
+Forwarding uses the private `ANALYTICS` service binding to `rel-site`, avoiding
+public Worker-to-Worker HTTP routing, and the Worker secret `ANALYTICS_FORWARDING_KEY`; the matching REL
 secret is `SCHNAPS_ANALYTICS_KEY`. The key is fixed to Schnaps writes, grants no
 reads and no REL writes, and never appears in browser or app code. Set both with
 Wrangler's credential stdin. Delivery is bounded to five seconds, does not block

@@ -14,7 +14,7 @@ function fixture() {
     }
     return new Response(status === 304 || init.method === 'HEAD' ? null : 'signed bytes', { status, headers: { etag: '"signed"', 'content-range': status === 206 ? 'bytes 0-3/12' : '', 'content-type': 'application/octet-stream' } });
   };
-  const env = { ANALYTICS_FORWARDING_KEY: 'test-only-key', ASSETS: { fetch: async () => new Response('no', { status: 404 }) } };
+  const env = { ANALYTICS: { fetch: fetcher }, ANALYTICS_FORWARDING_KEY: 'test-only-key', ASSETS: { fetch: async () => new Response('no', { status: 404 }) } };
   const worker = createWorker(fetcher), ctx = { waitUntil: promise => pending.push(promise) };
   return { events, calls, env, fetcher, setStatus: value => { status = value; }, async request(path, options) {
     const result = await worker.fetch(new Request('https://getschnaps.com' + path, options), env, ctx);
@@ -70,14 +70,15 @@ test('installation identity is hashed in the Schnaps namespace before authentica
 
 test('analytics outages do not block archive bytes or forward credentials to GitHub', async () => {
   const pending = [], observed = [];
-  const worker = createWorker(async (url, init = {}) => {
+  const fetcher = async (url, init = {}) => {
     observed.push({ url, init });
     if (url === 'https://rel.me/api/analytics/schnaps') return new Response('unavailable', { status: 503 });
     assert.equal(init.headers.get('authorization'), null);
     return new Response('archive bytes', { headers: { 'content-type': 'application/octet-stream' } });
-  });
+  };
+  const worker = createWorker(fetcher);
   const response = await worker.fetch(new Request('https://getschnaps.com/updates/artifacts/v0.7.4/Schnaps-0.7.4.dmg'),
-    { ANALYTICS_FORWARDING_KEY: 'test-only-key' }, { waitUntil: promise => pending.push(promise) });
+    { ANALYTICS: { fetch: fetcher }, ANALYTICS_FORWARDING_KEY: 'test-only-key' }, { waitUntil: promise => pending.push(promise) });
   assert.equal(response.status, 200);
   assert.equal(await response.text(), 'archive bytes');
   await Promise.all(pending);
