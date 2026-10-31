@@ -8,7 +8,7 @@ Preview from the repository root:
 python3 -m http.server 5173 --directory website/dist
 ```
 
-Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloudflare account. `wrangler.jsonc` retains the existing custom domain. No secrets are stored in the website source. The download points to the stable DMG alias on the latest GitHub release.
+Deploy from `website/` with `npx wrangler deploy`, using the authenticated Cloudflare account. `wrangler.jsonc` retains the existing custom domain. No secrets are stored in the website source. The download goes through `/download`, which records an aggregate count and redirects to the stable DMG alias on the latest GitHub release.
 
 ## Demo and branding
 
@@ -36,3 +36,16 @@ Cloudflare Web Analytics is configured for `getschnaps.com` in the account dashb
 The response CSP in `dist/_headers` permits scripts from `https://static.cloudflareinsights.com`, including Cloudflare's versioned beacon path. Reports use the same-origin `/cdn-cgi/rum` endpoint, so `connect-src` remains restricted to `'self'`. The normal local preview does not inject the analytics script. Test on the deployed hostname using a real browser; curl responses may omit automatic injection.
 
 View visits, page views, and referrers in Cloudflare → Observability → Analytics → Web analytics → getschnaps.com. The macOS app itself has no analytics. Website privacy copy distinguishes the website's cookie-free analytics from the app.
+
+## Private download dashboard
+
+Open [Schnaps download counts in Cloudflare D1 Studio](https://dash.cloudflare.com/6128bb221178e44c1d29224882a9dd77/workers/d1/databases/f63f4b6d-00e2-4210-a7a5-c742ccc3c1aa/studio). This uses your existing Cloudflare account login; no public stats endpoint or dashboard is deployed.
+
+- `download_totals`: the `all` row is the total since tracking was enabled. Other rows show hero, footer, and direct-link starts; do not sum those with `all`.
+- `download_daily`: counts by UTC date. Sort by `day` for the daily trend.
+
+These count GET requests to `/download`, not completed downloads, installs, or unique visitors. HEAD and prefetch/prerender requests are excluded; bots and repeat clicks can still count. GitHub release links, Sparkle updates, and downloads that bypass the website are not included. GitHub independently exposes per-asset download counts, including historical releases. No historical counts are backfilled into the website totals.
+
+Only a fixed source category, UTC day, and aggregate counter are stored in D1. No IP, user agent, cookie, full URL, or referrer is stored by this counter. Download redirects are never cached. Database errors do not block downloads. The existing Web Analytics regional setting is unchanged; aggregate download counting runs on the server for all regions.
+
+On a new environment, apply `npx wrangler d1 migrations apply schnaps-downloads --remote` before deploying. Test the handler with `node --test website/tests/downloads.test.mjs` from the repository root. The SQL counters use an atomic D1 batch to keep total, source, and daily counts consistent.

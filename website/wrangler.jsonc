@@ -1,6 +1,26 @@
 {
   "name": "getschnaps",
   "compatibility_date": "2026-10-28",
-  "assets": { "directory": "dist", "not_found_handling": "404-page" },
-  "routes": [{ "pattern": "getschnaps.com", "custom_domain": true }],
+  "assets": {
+    "directory": "dist",
+    "not_found_handling": "404-page",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/download"
+    ]
+  },
+  "routes": [
+    {
+      "pattern": "getschnaps.com",
+      "custom_domain": true
+    }
+  ],
+  "main": "src/worker.mjs",
+  "d1_databases": [
+    {
+      "binding": "DOWNLOADS",
+      "database_name": "schnaps-downloads",
+      "database_id": "f63f4b6d-00e2-4210-a7a5-c742ccc3c1aa"
+    }
+  ]
 }
