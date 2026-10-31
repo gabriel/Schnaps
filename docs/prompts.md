@@ -111,14 +111,38 @@ The app's implementation is Swift. The later update request explicitly introduce
 
 ## Mac design and inspection tools
 
-> Add all the features from xScope that are missing.
+> Add all the features from xscope that are missing.
 
-**Scope:** Mac tools first; iPhone and Apple Watch companion apps are deferred.
+When asked whether to include companion apps:
 
-**Result:** native inspectors and shortcuts for rulers, guides, frames, grids/mockups, screen templates, Loupe, Crosshair, text/Unicode inspection, responsive webpage capture, and image/window preview. Tool marks remain click-through outside editing. See [design tools](design-tools.md) for behavior, permissions, and integration limits.
+> All Mac tools first.
+
+**Scope:** extend Schnaps’s existing Find Dimensions and Measure Area workflows with Mac design and inspection tools. iPhone and Apple Watch companion apps and remote pairing are deferred. This is an independent implementation, not a claim of complete xScope compatibility.
+
+**Result:**
+
+- **Rulers:** two independently scaled and rotated rulers, calipers, square extensions, fractional marks, length/angle synchronization, and edge snapping.
+- **Guides and frames:** precise position and size fields, linked movement, locking, duplication, aspect ratios, grids, margins, gutters, baseline spacing, screenshot export, and saved JSON layouts.
+- **Design overlays:** image/clipboard mockups with adjustable opacity, grids, window following, and optional Accessibility-based window resizing for breakpoint checks.
+- **Screens:** editable screen presets, usable-area insets, keyboard areas, safe areas, approximate vision previews, and simulated 1× display rendering.
+- **Loupe and Crosshair:** live magnification, pixel grid, sRGB color sampling, multiple color-code formats, contrast comparison, saved palettes, RGB ACO/JSON exchange, and relative-origin coordinates.
+- **Text Inspector:** Unicode and Font Awesome search, explicit text encoding/decoding, normalization, glyph metrics, saved characters, native Find/Undo, and command-line conversion.
+- **Content previews:** separate image/window and responsive WebKit windows, selected-window live capture, and full-page PNG/PDF export.
+
+Screen Recording is requested for features that inspect screen pixels or enumerate windows. Ordinary marker placement does not require it. Accessibility is used only for explicitly resizing another app’s window. Proprietary Photoshop/Acorn document APIs are not included; file/window previews provide that workflow. See [design tools](design-tools.md) for shortcuts, permissions, export limits, and supported formats.
+
+**Validation:** geometry, color math, text conversion, marker persistence, and export bounds have automated coverage. Native checks covered ruler editing, permission cancellation/approval, live Loupe, selected-window capture, cross-display attachment, responsive exports, native Find, and saved glyph fonts. The physical-mouse hover check was skipped at the user’s request.
+
+## Move operational controls out of Settings
+
+> For xscope features you need to add an overlay, not have them in the Settings UI right?
+
+**Result:** moved operational controls into a native floating toolbar and expandable inspector using AppKit panels, standard toolbar buttons, and grouped forms. Text Inspector and content previews open in separate native windows. Settings keeps preferences, permissions, shortcuts, and About. Desktop marks stay click-through outside explicit editing; the measurement canvas remains minimal.
 
 ## Optional floating tool overlay
 
-> The overlay should be hidden by default, but if enabled in the menu bar it should stay up across restarts.
+> ok do it... the overlay should be hidden by default, but if it is enabled (in the menubar) then it should stay up across restarts.. some people want overlay always present and some people don't use it
 
-**Result:** moved operational controls from Settings to an optional native floating toolbar and inspector. Menu visibility is remembered; closing the toolbar disables it. Text Inspector opens separately, and shortcuts remain usable with the toolbar hidden.
+**Result:** added a checked **Tool Overlay** menu item. The toolbar is hidden by default; enabling it persists across restarts. Disabling it or closing its window keeps it hidden next time. Closing the toolbar leaves existing tool marks intact, and menus and shortcuts remain usable while it is hidden. During measurement, the inspector temporarily collapses; exiting measurement restores it.
+
+**Validation:** checked enabled restart, close-and-restart opt-out, toolbar activation of tools, inspector restoration after measurement, and the separate Text Inspector window. All 41 Swift tests and both macOS CI builds passed for the implementation.
