@@ -1,16 +1,19 @@
 export const appID = 'com.gabrielhandford.Schnap';
 export const versionPattern = /^\d+\.\d+\.\d+(?:-beta\.[1-9]\d*)?$/;
+function deliveryFailure(code) { const error = new Error('Analytics delivery failed'); error.analyticsCode = code; return error; }
+function failureCode(error) { return /^(missing-key|missing-service|http-[0-9]{3})$/.test(error?.analyticsCode ?? '') ? error.analyticsCode : 'transport'; }
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export async function sendEvent(event, env) {
-  if (!env.ANALYTICS_FORWARDING_KEY || !env.ANALYTICS?.fetch) throw new Error('Analytics not configured');
+  if (!env.ANALYTICS_FORWARDING_KEY) throw deliveryFailure('missing-key');
+  if (!env.ANALYTICS?.fetch) throw deliveryFailure('missing-service');
   const response = await env.ANALYTICS.fetch('https://rel.me/api/analytics/schnaps', {
     method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${env.ANALYTICS_FORWARDING_KEY}` },
     body: JSON.stringify(event), redirect: 'error', signal: AbortSignal.timeout(5000),
   });
-  if (response.status !== 204) throw new Error('Analytics unavailable');
+  if (response.status !== 204) throw deliveryFailure(`http-${response.status}`);
 }
 export function backgroundEvent(event, env, ctx) {
-  ctx.waitUntil(sendEvent(event, env).catch(() => console.error('Schnaps analytics delivery failed')));
+  ctx.waitUntil(sendEvent(event, env).catch(error => console.error('Schnaps analytics delivery failed', failureCode(error))));
 }
 export function updaterMetadata(request) {
   const agent = request.headers.get('user-agent') ?? '';
@@ -49,5 +52,5 @@ export async function receiveLaunch(request, env) {
   try {
     await sendEvent({ kind: 'launch', launchID: event.launchID, runtime: event.runtime, version: event.version, build: event.build, installationHash }, env);
     return new Response(null, { status: 204, headers });
-  } catch { console.error('Schnaps launch analytics unavailable'); return new Response('Analytics unavailable', { status: 503, headers }); }
+  } catch (error) { console.error('Schnaps launch analytics unavailable', failureCode(error)); return new Response('Analytics unavailable', { status: 503, headers }); }
 }
