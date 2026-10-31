@@ -46,6 +46,12 @@ jobs:
           test -s build/Schnaps.app/Contents/Resources/Schnaps-Mark-Dark.icns
           test -s build/Schnaps.app/Contents/Resources/Assets.car
           test "$(plutil -extract CFBundleIconName raw build/Schnaps.app/Contents/Info.plist)" = Schnaps
+      - name: Verify design-tool font and acknowledgements
+        run: |
+          test -s build/Schnaps.app/Contents/Resources/FontAwesome.otf
+          test -s build/Schnaps.app/Contents/Resources/Acknowledgements/FontAwesome-OFL.txt
+          test -s build/Schnaps.app/Contents/Resources/Acknowledgements/FontAwesome-Metadata-MIT.txt
+          test -s build/Schnaps.app/Contents/Resources/Acknowledgements/HTML-Entities.txt
       - name: Verify compiled icon appearances
         if: matrix.xcode == '26.3'
         run: |

@@ -61,11 +61,19 @@ let framework = contents.appendingPathComponent("Frameworks/Sparkle.framework")
 try manager.createDirectory(at: framework.deletingLastPathComponent(), withIntermediateDirectories: true)
 if manager.fileExists(atPath: framework.path) { try manager.removeItem(at: framework) }
 _ = try run("/usr/bin/ditto", [root.appendingPathComponent(".build/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework").path, framework.path])
+let fontDestination=resources.appendingPathComponent("FontAwesome.otf")
+if manager.fileExists(atPath:fontDestination.path) { try manager.removeItem(at:fontDestination) }
+try manager.copyItem(at:root.appendingPathComponent("Assets/Fonts/FontAwesome.otf"),to:fontDestination)
 let acknowledgements = resources.appendingPathComponent("Acknowledgements")
 try manager.createDirectory(at: acknowledgements, withIntermediateDirectories: true)
 let sparkleLicense = acknowledgements.appendingPathComponent("Sparkle-LICENSE.txt")
 if manager.fileExists(atPath: sparkleLicense.path) { try manager.removeItem(at: sparkleLicense) }
 try manager.copyItem(at: root.appendingPathComponent(".build/checkouts/Sparkle/LICENSE"), to: sparkleLicense)
+for source in try manager.contentsOfDirectory(at:root.appendingPathComponent("Assets/Licenses"),includingPropertiesForKeys:nil) where source.pathExtension == "txt" {
+    let target=acknowledgements.appendingPathComponent(source.lastPathComponent)
+    if manager.fileExists(atPath:target.path) { try manager.removeItem(at:target) }
+    try manager.copyItem(at:source,to:target)
+}
 let identity = ProcessInfo.processInfo.environment["SCHNAPS_SIGN_IDENTITY"]
     ?? ProcessInfo.processInfo.environment["SCHNAP_SIGN_IDENTITY"] ?? "-"
 let distribution = identity.hasPrefix("Developer ID Application:")

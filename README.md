@@ -53,11 +53,15 @@ Settings include customizable tolerance presets, clipboard formats, Retina scali
 
 Detection uses color contrast, so solid UI surfaces work best. Gradients, shadows, text, and photos can yield partial or broad measurements. Manual selection is always available. CSS clipboard output uses logical screen coordinates.
 
+## Design tools
+
+Rulers, guides, frames, design grids/mockup overlays, screen templates, Loupe, Crosshair, text inspection, and image/window previews are available from the Design Tools menu and native settings. Use Control-Command-E to edit markers on screen; Escape leaves them visible and click-through. Geometry, colors, and project layouts persist. See the [design tools guide](docs/design-tools.md) for shortcuts, permissions, and integration limits.
+
 ## Updates and privacy
 
 **Check for Updates…** is available in **Settings → About Schnaps**, the menu-bar menu, and app menu. About also includes the Stable/Beta channel selector and automatic update check and installation preferences. Sparkle manages update checks and its standard permission flow. Updates and the appcast are signed with Ed25519; published app bundles and DMGs are Developer ID signed and notarized.
 
-Screen images stay in memory on your Mac unless you explicitly copy or save a screenshot. The app has no analytics or accounts. Update checks contact GitHub. The website is hosted on Cloudflare and uses cookie-free Cloudflare Web Analytics for visits, page views, and referrers. See [updates and release process](docs/releases.md).
+Screen images stay in memory on your Mac unless you explicitly copy or save a screenshot. The app has no analytics or accounts. Update checks contact GitHub. The optional responsive preview contacts websites you open. Accessibility is needed only for resizing another app’s attached window; Screen Recording is needed for live pixel/window inspection. Manually placed markers and text tools work without either permission. The website is hosted on Cloudflare and uses cookie-free Cloudflare Web Analytics for visits, page views, and referrers. See [updates and release process](docs/releases.md).
 
 ## Build from source
 
@@ -86,4 +90,4 @@ The app, About, and website use the transparent liquid-glass bottle with externa
 
 GitHub Actions tests and packages on macOS 15 / Xcode 16.4 and macOS 26 / Xcode 26.3. The app retains its original `com.gabrielhandford.Schnap` bundle identifier to preserve preferences and Screen Recording permission through the Schnaps rename.
 
-Inspired by [Vernier](https://usevernier.com/) and the measurement workflow in [PixelSnap](https://pixelsnap.com/). Implemented independently; their application source and artwork are not included. Sparkle's license is bundled with the app in `Contents/Resources/Acknowledgements`.
+Inspired by [xScope](https://xscopeapp.com/), [Vernier](https://usevernier.com/) and the measurement workflow in [PixelSnap](https://pixelsnap.com/). Implemented independently; their application source and artwork are not included. Sparkle's license is bundled with the app in `Contents/Resources/Acknowledgements`.

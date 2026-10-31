@@ -6,3 +6,5 @@
 - [Website](../website/README.md): static site source and Cloudflare deployment.
 - [Icon](../Assets/README.md): editable Icon Composer source, exports, and the final image-generation prompt.
 - [Measurement and screenshot preferences](preferences.md)
+
+- [Mac design tools](design-tools.md): rulers, guides, frames, overlays, screen templates, Loupe, Crosshair, text, and previews.

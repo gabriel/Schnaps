@@ -47,6 +47,8 @@ enum PreferenceKey {
 
 enum SettingsPane: String, CaseIterable, Identifiable {
     case general = "General"
+    case designTools = "Design Tools"
+    case text = "Text"
     case screenshots = "Screenshots"
     case tolerance = "Tolerance"
     case appearance = "Appearance"
@@ -57,6 +59,8 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .general: "gearshape"
+        case .designTools: "ruler"
+        case .text: "textformat"
         case .screenshots: "camera"
         case .tolerance: "dial.low"
         case .appearance: "paintpalette"
@@ -131,6 +135,8 @@ struct SettingsView: View {
             Form {
                 switch navigation.pane ?? .general {
                 case .general: general
+                case .designTools: DesignToolsSettings()
+                case .text: TextInspectorView()
                 case .screenshots: screenshots
                 case .tolerance: toleranceSettings
                 case .appearance: appearanceSettings
@@ -348,6 +354,23 @@ struct SettingsView: View {
                 Text(L("Global"))
             } footer: {
                 if let shortcutWarning { Text(shortcutWarning).font(.footnote).padding(.top, -7) }
+            }
+            Section("Design Tools · Global") {
+                shortcut("Rulers / Guides / Frames", "⌃⌘R / ⌃⌘G / ⌃⌘B")
+                shortcut("Design Overlay / Screens", "⌃⌘O / ⌃⌘S")
+                shortcut("Loupe / Crosshair", "⌃⌘L / ⌃⌘X")
+                shortcut("Edit on screen / Hide all", "⌃⌘E / ⌃⌘H")
+                shortcut("Copy sampled color", "⌃⌘C")
+            }
+            Section("While Editing Design Tools") {
+                shortcut("Move / move by ten points", "Arrows / ⇧Arrows")
+                shortcut("Rotate ruler 1° / 5° / 0.1°", "⌥Arrows / ⇧⌥Arrows / ⌃⌥Arrows")
+                shortcut("Next horizontal guide / vertical guide / frame", "H / V / F")
+                shortcut("Set / reset crosshair origin", "O / R")
+                shortcut("Pin loupe position", "Space")
+                shortcut("Copy color / save swatch", "C / ⇧C")
+                shortcut("Delete selected marker", "Delete")
+                shortcut("Leave markers and return to work", "Escape")
             }
             Section(L("Screenshots")) {
                 shortcut("Copy screenshot", "C")
