@@ -27,6 +27,7 @@ jobs:
           make build/tools/schnaps-release
           swiftc -swift-version 6 -typecheck Scripts/export-demo.swift
           node --check website/dist/site.js
+          node --test website/tests/downloads.test.mjs
       - name: Build native application
         run: swift Scripts/build-app.swift
       - name: Verify bundle signature
