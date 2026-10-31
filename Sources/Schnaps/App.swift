@@ -90,6 +90,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             entry.keyEquivalentModifierMask=key=="Z" ? [.command,.shift]:[.command]
             editMenu.addItem(entry)
         }
+        editMenu.addItem(.separator())
+        for (title,key,tag) in [("Find…","f",1),("Find Next","g",2),("Find Previous","G",3)] {
+            let entry=NSMenuItem(title:title,action:Selector("performFindPanelAction:"),keyEquivalent:key.lowercased())
+            entry.keyEquivalentModifierMask=key=="G" ? [.command,.shift]:[.command];entry.tag=tag
+            editMenu.addItem(entry)
+        }
         let appItem = NSMenuItem()
         appItem.submenu = appMenu
         mainMenu.addItem(appItem)

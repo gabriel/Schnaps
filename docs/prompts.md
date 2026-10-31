@@ -108,3 +108,11 @@ The app's implementation is Swift. The later update request explicitly introduce
 > Fix tolerance in menubar.. should be Zero, Low, Medium, High choices. Remove the overlay on activation... just have the simplest UI... the user will use shortcuts to change stuff we don't need overlay buttons.
 
 **Result:** native checked tolerance submenus and a matching settings picker replace sliders. Zero/Low/Medium/High map to 0/8/18/36. Scroll steps between these presets, while T / Shift-T cycles them. Saved slider values migrate to the nearest preset. The measurement canvas retains its rulers and selection handles but removes the toolbar, permanent hint banner, and screen tint. Only brief action/error feedback appears, with shortcuts documented in Settings.
+
+## Mac design and inspection tools
+
+> Add all the features from xScope that are missing.
+
+**Scope:** Mac tools first; iPhone and Apple Watch companion apps are deferred.
+
+**Result:** native inspectors and shortcuts for rulers, guides, frames, grids/mockups, screen templates, Loupe, Crosshair, text/Unicode inspection, responsive webpage capture, and image/window preview. Tool marks remain click-through outside editing. See [design tools](design-tools.md) for behavior, permissions, and integration limits.

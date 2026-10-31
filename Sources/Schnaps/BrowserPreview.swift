@@ -115,15 +115,31 @@ final class BrowserPreview: NSObject, ObservableObject, WKNavigationDelegate {
   private func capturePNG() async throws -> Data {
     let originalURL = webView.url
     let setup = #"""
-      const changes=[];
+      const x=scrollX,y=scrollY;
+      const pageHeight=Math.max(document.documentElement.scrollHeight,document.body?.scrollHeight||0);
+      const records=[];
       for (const element of document.querySelectorAll('*')) {
-        const position=getComputedStyle(element).position;
-        if (position==='fixed'||position==='sticky') {
-          changes.push([element,element.getAttribute('style')]);
-          element.style.setProperty('position',position==='fixed'?'absolute':'relative','important');
+        const style=getComputedStyle(element),position=style.position;
+        if(position==='fixed'||position==='sticky') {
+          const rect=element.getBoundingClientRect(),bottom=parseFloat(style.bottom);
+          records.push({element,style:element.getAttribute('style'),position,rect,bottom,
+            bottomAnchored:position==='fixed'&&Number.isFinite(bottom)&&rect.top>innerHeight/2&&Math.abs(rect.bottom+bottom-innerHeight)<3});
         }
       }
-      globalThis.schnapsCapture={x:scrollX,y:scrollY,changes};
+      globalThis.schnapsCapture={x,y,changes:records.map(item=>[item.element,item.style])};
+      for(const item of records) {
+        const element=item.element;
+        element.style.setProperty('position',item.position==='fixed'?'absolute':'relative','important');
+        if(item.position==='fixed') {
+          const parent=element.offsetParent,parentRect=parent?.getBoundingClientRect();
+          const baseX=parentRect?parentRect.left+scrollX+(parent.clientLeft||0):0;
+          const baseY=parentRect?parentRect.top+scrollY+(parent.clientTop||0):0;
+          const top=item.bottomAnchored?pageHeight-item.rect.height-item.bottom:item.rect.top;
+          for(const [property,value] of Object.entries({top:(top-baseY)+'px',left:(item.rect.left-baseX)+'px',right:'auto',bottom:'auto',width:item.rect.width+'px',height:item.rect.height+'px','box-sizing':'border-box'})) {
+            element.style.setProperty(property,value,'important');
+          }
+        }
+      }
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
       return {width:document.documentElement.clientWidth,height:Math.max(document.documentElement.scrollHeight,document.body?.scrollHeight||0),viewport:innerHeight};
       """#
