@@ -2,6 +2,8 @@
 
 Use **Schnaps → Design Tools** in the menu bar or enable **Tool Overlay** for a compact, titleless floating toolbar. It is hidden by default. Enabling it persists across app restarts and opens just the toolbar at launch; disabling it or closing its window keeps it hidden next time. Tool shortcuts work independently of this preference. Drag the grip to move it; the × button hides it. The inspector button opens standard macOS controls in a popover for the active tool; **Tool Inspector…** opens it directly. Closing the toolbar leaves existing tool marks intact. Settings contains preferences rather than operational controls. Find Dimensions and Measure Area keep their existing shortcuts and interaction.
 
+The Split Caliper menu-bar glyph shows open jaws when idle and offset guides while design tools are visible. Find Dimensions and Measure Area have their own glyphs and take priority while measuring. The tooltip names the active state. Showing only the floating toolbar does not count as a visible design mark.
+
 ## Shortcuts
 
 Global shortcuts below are defaults. Change or clear each one in **Settings → Shortcuts**. Edits apply immediately and persist across restarts; **Restore Default Shortcuts** resets all global bindings. Duplicate bindings and unavailable combinations are rejected. On-screen editing keys remain fixed.
