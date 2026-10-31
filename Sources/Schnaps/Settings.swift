@@ -74,7 +74,6 @@ final class SettingsNavigation: ObservableObject {
 
 struct SettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
-    var start: (MeasurementMode) -> Void
     var shortcutWarning: String?
     @ObservedObject var navigation: SettingsNavigation
     @ObservedObject var updates: UpdateSettings
@@ -162,24 +161,12 @@ struct SettingsView: View {
     private var general: some View {
         Group {
             Section {
-                LabeledContent(L("Find Dimensions")) {
-                    Button(L("Find Dimensions"), action: { start(.findDimensions) })
+                Picker(L("Default tool"), selection: $defaultTool) {
+                    ForEach(MeasurementMode.allCases, id: \.rawValue) { Text(L($0.rawValue)).tag($0.rawValue) }
                 }
-            } header: {
-                Text(L("Tools"))
-            } footer: {
+            } header: { Text(L("Tools")) } footer: {
                 Text(L("Move the pointer to measure distances between edges. Drag around an object to find its bounds."))
-                    .font(.footnote)
-                    .padding(.top, -7)
-            }
-            Section {
-                LabeledContent(L("Measure Area")) {
-                    Button(L("Measure Area"), action: { start(.area) })
-                }
-            } footer: {
-                Text(L("Drag an exact rectangle, then move, resize, pin, or copy the measurement."))
-                    .font(.footnote)
-                    .padding(.top, -7)
+                    .font(.footnote).padding(.top, -7)
             }
             Section(L("Language")) {
                 Picker(L("Language"), selection: $language) {
@@ -190,9 +177,6 @@ struct SettingsView: View {
                 }
             }
             Section {
-                Picker(L("Default tool"), selection: $defaultTool) {
-                    ForEach(MeasurementMode.allCases, id: \.rawValue) { Text(L($0.rawValue)).tag($0.rawValue) }
-                }
                 Toggle(L("Start at login"), isOn: Binding(get: { loginItem.enabled || loginItem.needsApproval }, set: { loginItem.setEnabled($0) }))
                 Toggle(L("Show in menu bar"), isOn: $showMenuBar)
                 Toggle(L("Show in Dock"), isOn: $showInDock)
@@ -348,6 +332,23 @@ struct SettingsView: View {
                 Text(L("Global"))
             } footer: {
                 if let shortcutWarning { Text(shortcutWarning).font(.footnote).padding(.top, -7) }
+            }
+            Section("Design Tools · Global") {
+                shortcut("Rulers / Guides / Frames", "⌃⌘R / ⌃⌘G / ⌃⌘B")
+                shortcut("Design Overlay / Screens", "⌃⌘O / ⌃⌘S")
+                shortcut("Loupe / Crosshair", "⌃⌘L / ⌃⌘X")
+                shortcut("Edit on screen / Hide all", "⌃⌘E / ⌃⌘H")
+                shortcut("Copy sampled color", "⌃⌘C")
+            }
+            Section("While Editing Design Tools") {
+                shortcut("Move / move by ten points", "Arrows / ⇧Arrows")
+                shortcut("Rotate ruler 1° / 5° / 0.1°", "⌥Arrows / ⇧⌥Arrows / ⌃⌥Arrows")
+                shortcut("Next horizontal guide / vertical guide / frame", "H / V / F")
+                shortcut("Set / reset crosshair origin", "O / R")
+                shortcut("Pin loupe position", "Space")
+                shortcut("Copy color / save swatch", "C / ⇧C")
+                shortcut("Delete selected marker", "Delete")
+                shortcut("Leave markers and return to work", "Escape")
             }
             Section(L("Screenshots")) {
                 shortcut("Copy screenshot", "C")

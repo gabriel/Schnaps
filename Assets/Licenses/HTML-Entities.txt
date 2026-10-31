@@ -1,0 +1,7 @@
+WHATWG HTML named character references
+Source: https://html.spec.whatwg.org/entities.json
+Copyright WHATWG contributors. Licensed under Creative Commons Attribution 4.0 International.
+License: https://creativecommons.org/licenses/by/4.0/
+Copyright policy: https://whatwg.org/copyright
+
+The source table was converted into a Swift string dictionary, retaining semicolon-terminated entity names and their Unicode character sequences. No WHATWG code executes at runtime.

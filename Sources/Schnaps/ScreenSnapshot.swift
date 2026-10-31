@@ -4,6 +4,14 @@ import AppKit
 @preconcurrency import ScreenCaptureKit
 import MeasurementCore
 
+@MainActor
+enum PreviewWindowRole {
+    static let browser=NSUserInterfaceItemIdentifier("SchnapsBrowserPreview")
+    static let image=NSUserInterfaceItemIdentifier("SchnapsImagePreview")
+    static var capturableIDs:Set<CGWindowID> { Set(NSApp.windows.filter{$0.isVisible && ($0.identifier==browser || $0.identifier==image)}.map{CGWindowID($0.windowNumber)}) }
+    static var sourceIDs:Set<CGWindowID> { Set(NSApp.windows.filter{$0.isVisible && $0.identifier==browser}.map{CGWindowID($0.windowNumber)}) }
+}
+
 struct ScreenSnapshot {
     let image: CGImage
     let pixels: PixelBuffer
@@ -26,7 +34,8 @@ struct ScreenSnapshot {
     @MainActor
     static func capture() async throws -> [CGDirectDisplayID: ScreenSnapshot] {
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
-        let ownWindows = content.windows.filter { $0.owningApplication?.processID == ProcessInfo.processInfo.processIdentifier }
+        let previews=PreviewWindowRole.capturableIDs
+        let ownWindows = content.windows.filter { $0.owningApplication?.processID == ProcessInfo.processInfo.processIdentifier && !previews.contains($0.windowID) }
         var snapshots: [CGDirectDisplayID: ScreenSnapshot] = [:]
         for screen in NSScreen.screens {
             guard let id = (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value,
