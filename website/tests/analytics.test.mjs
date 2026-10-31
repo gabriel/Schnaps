@@ -10,6 +10,7 @@ function fixture() {
     calls.push({ url: String(url), init });
     if (url === 'https://rel.me/api/analytics/schnaps') {
       assert.equal(init.headers.authorization, 'Bearer test-only-key');
+      assert.equal(init.redirect, 'manual');
       events.push(JSON.parse(init.body)); return new Response(null, { status: 204 });
     }
     return new Response(status === 304 || init.method === 'HEAD' ? null : 'signed bytes', { status, headers: { etag: '"signed"', 'content-range': status === 206 ? 'bytes 0-3/12' : '', 'content-type': 'application/octet-stream' } });
@@ -94,4 +95,15 @@ test('native input rejects non-string identities and versions before forwarding'
     assert.equal(response.status, 400);
   }
   assert.equal(f.events.length, 0);
+});
+
+test('collector redirects are rejected without a second request', async () => {
+  let calls = 0;
+  const env = { ANALYTICS_FORWARDING_KEY: 'test-only-key', ANALYTICS: { fetch: async (_url, init) => {
+    assert.equal(init.redirect, 'manual'); calls++;
+    return new Response(null, { status: 302, headers: { location: 'https://outside.example' } });
+  } } };
+  const id = 'abcdef01-1234-4321-8321-123456789012';
+  const response = await receiveLaunch(new Request('https://getschnaps.com/api/app-starts', { method: 'POST', headers: { 'content-type': 'application/json', 'x-schnaps-client': 'macos-app' }, body: JSON.stringify({ launchID: id, installationID: id, version: '0.7.4', build: '16', runtime: 'debug' }) }), env);
+  assert.equal(response.status, 503); assert.equal(calls, 1);
 });

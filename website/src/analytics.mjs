@@ -8,7 +8,7 @@ export async function sendEvent(event, env) {
   if (!env.ANALYTICS?.fetch) throw deliveryFailure('missing-service');
   const response = await env.ANALYTICS.fetch('https://rel.me/api/analytics/schnaps', {
     method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${env.ANALYTICS_FORWARDING_KEY}` },
-    body: JSON.stringify(event), redirect: 'error', signal: AbortSignal.timeout(5000),
+    body: JSON.stringify(event), redirect: 'manual', signal: AbortSignal.timeout(5000),
   });
   if (response.status !== 204) throw deliveryFailure(`http-${response.status}`);
 }
