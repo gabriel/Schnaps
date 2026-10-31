@@ -44,7 +44,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem?.button?.image = NSImage(systemSymbolName: "ruler", accessibilityDescription: "Schnaps measurements")
         toolOverlay.measure = { [weak self] in self?.start(mode: $0) }
         toolOverlay.activateTool = { [weak self] in self?.activateDesignTool($0) }
-        toolOverlay.showText = { [weak self] in self?.showTextTools() }
+        toolOverlay.showText = { [weak self] palette in
+            guard let self else { return }
+            overlay.stop()
+            textInspector.show(below: palette)
+        }
         toolOverlay.beforeInspecting = { [weak self] in
             self?.overlay.stop()
             DesignTools.shared.editing = false

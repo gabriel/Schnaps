@@ -23,6 +23,8 @@ final class BrowserPreview: NSObject, ObservableObject, WKNavigationDelegate {
     webView.navigationDelegate = self
   }
   func show() {
+    // Keep the marks, but let clicks and keyboard focus reach this native window.
+    DesignTools.shared.editing = false
     if window == nil {
       let window = NSWindow(
         contentRect: CGRect(x: 0, y: 0, width: 1060, height: 760),

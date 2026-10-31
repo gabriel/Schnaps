@@ -164,3 +164,15 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 > I wonder if escape should be a way to undo the last thing.. and escape multiple times is more undo until everything is gone.
 
 **Result:** Escape dismisses the most recently shown design marker, Loupe, or Crosshair. Repeated presses clear the screen in reverse appearance order; key repeat is ignored. Dismissed markers retain their geometry in the layout and can be restored from the inspector. Native popovers and other applications retain their own Escape behavior. Turning off Edit on Screen still leaves marks visible and click-through. This is dismissal history, not undo for geometry or text edits.
+
+## Interacting with Text Inspector from the overlay
+
+> I tapped text on the overlay and the window came up but I couldn’t interact with it.
+
+**Result:** opening Text Inspector, Image & Window Preview, or Responsive Web Preview now ends on-screen marker editing before presenting the native window. Existing marks remain visible and click-through, so the editing canvas cannot intercept the new window’s clicks or keyboard input. The guard is in each window’s show method so menu and overlay entry points behave consistently.
+
+## Text window placement below the overlay
+
+> When hitting text, have the top of the window open under the bottom of the overlay so they aren’t competing for space.
+
+**Result:** the toolbar’s Text button positions the inspector’s outer frame directly below the toolbar with an 8-point gap, centered underneath it. Placement uses the toolbar’s display and keeps both windows within the usable screen area, moving the pair up when needed. Opening Text Inspector from the menu retains its normal remembered placement.
