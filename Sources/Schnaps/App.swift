@@ -63,7 +63,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let launchEvent = NSAppleEventManager.shared().currentAppleEvent
         let launchedAtLogin = launchEvent?.eventID == kAEOpenApplication
             && launchEvent?.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
-        if !launchedAtLogin { showSettings() }
+        if !launchedAtLogin && !toolOverlay.isEnabled { showSettings() }
         NotificationCenter.default.addObserver(self, selector: #selector(screensChanged),
                                                name: NSApplication.didChangeScreenParametersNotification, object: nil)
     }
