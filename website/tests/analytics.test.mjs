@@ -83,3 +83,14 @@ test('analytics outages do not block archive bytes or forward credentials to Git
   await Promise.all(pending);
   assert.equal(observed.length, 2);
 });
+
+test('native input rejects non-string identities and versions before forwarding', async () => {
+  const f = fixture();
+  const id = 'abcdef01-1234-4321-8321-123456789012';
+  for (const invalid of [{ launchID: [id] }, { installationID: [id] }, { version: ['0.7.4'] }]) {
+    const body = JSON.stringify({ launchID: id, installationID: id, version: '0.7.4', build: '16', runtime: 'debug', ...invalid });
+    const response = await receiveLaunch(new Request('https://getschnaps.com/api/app-starts', { method: 'POST', headers: { 'content-type': 'application/json', 'x-schnaps-client': 'macos-app' }, body }), f.env, f.fetcher);
+    assert.equal(response.status, 400);
+  }
+  assert.equal(f.events.length, 0);
+});

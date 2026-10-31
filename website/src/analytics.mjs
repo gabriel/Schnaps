@@ -41,8 +41,8 @@ export async function receiveLaunch(request, env, fetcher) {
     event = JSON.parse(text + decoder.decode());
   } catch { return new Response('Invalid JSON', { status: 400, headers }); }
   finally { reader.releaseLock(); }
-  if (!event || !uuid.test(event.launchID ?? '') || !uuid.test(event.installationID ?? '') ||
-      !versionPattern.test(event.version ?? '') || typeof event.build !== 'string' || !/^[1-9]\d{0,14}$/.test(event.build) ||
+  if (!event || typeof event.launchID !== 'string' || typeof event.installationID !== 'string' || typeof event.version !== 'string' ||
+      !uuid.test(event.launchID) || !uuid.test(event.installationID) || !versionPattern.test(event.version) || typeof event.build !== 'string' || !/^[1-9]\d{0,14}$/.test(event.build) ||
       !Number.isSafeInteger(Number(event.build)) || !['release', 'debug'].includes(event.runtime)) return new Response('Invalid event', { status: 400, headers });
   const input = `${appID}:analytics:v1:${event.runtime}:${event.installationID.toLowerCase()}`;
   const installationHash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input))), b => b.toString(16).padStart(2, '0')).join('');
