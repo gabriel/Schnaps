@@ -56,8 +56,9 @@ final class DesignCanvas: NSView {
   override func draw(_ dirtyRect: NSRect) {
     NSColor.clear.setFill()
     dirtyRect.fill(using: .copy)
-    guard state.visible else { return }
-    let active = state.markers.filter { $0.display == displayID }
+    guard state.isActive else { return }
+    let active =
+      state.visible ? state.markers.filter { $0.display == displayID && $0.isVisible } : []
     for marker in active { draw(marker) }
     let point = pointer
     if state.crosshair, bounds.contains(point) {
@@ -71,9 +72,12 @@ final class DesignCanvas: NSView {
       line(
         CGPoint(x: point.x, y: 0), CGPoint(x: point.x, y: bounds.height), color: color,
         width: state.lineWidth)
-      let origin = state.relativeOrigin ?? .zero
+      let relative =
+        state.relativeOrigin.map { origin in
+          CGPoint(x: NSEvent.mouseLocation.x - origin.x, y: origin.y - NSEvent.mouseLocation.y)
+        } ?? point
       caption(
-        "x \(number(point.x-origin.x))  y \(number(point.y-origin.y)) pt",
+        "x \(number(relative.x))  y \(number(relative.y)) pt",
         at: CGPoint(x: point.x + 14, y: point.y + 14))
     }
     if state.loupe {
@@ -102,7 +106,7 @@ final class DesignCanvas: NSView {
         "\(marker.vertical ? "x" : "y") \(number(marker.vertical ? marker.x : marker.y)) pt",
         at: CGPoint(x: marker.vertical ? marker.x + 4 : 8, y: marker.vertical ? 8 : marker.y + 4))
       let peers = state.markers.filter {
-        $0.display == marker.display && $0.tool == .guides && $0.vertical == marker.vertical
+        $0.display == marker.display && $0.isVisible && $0.tool == .guides && $0.vertical == marker.vertical
           && ($0.vertical ? $0.x > marker.x : $0.y > marker.y)
       }
       if let next = peers.min(by: {
@@ -353,7 +357,7 @@ final class DesignCanvas: NSView {
   }
   override func mouseDown(with event: NSEvent) {
     let point = convert(event.locationInWindow, from: nil)
-    let candidates = state.markers.filter { $0.display == displayID && !$0.locked }
+    let candidates = state.markers.filter { $0.display == displayID && $0.isVisible && !$0.locked }
     guard
       let selected = candidates.reversed().first(where: { m in
         if m.tool == .ruler {
@@ -364,7 +368,10 @@ final class DesignCanvas: NSView {
         return m.rect.insetBy(dx: -8, dy: -8).contains(point)
       })
     else {
-      if state.crosshair { state.relativeOrigin = point }
+      if state.crosshair {
+        state.relativeOrigin = CGPoint(
+          x: point.x + display.frame.minX, y: display.frame.maxY - point.y)
+      }
       return
     }
     state.selectedID = selected.id
@@ -460,7 +467,7 @@ final class DesignCanvas: NSView {
         if state.loupe {
           state.frozenLoupe = state.frozenLoupe == nil ? NSEvent.mouseLocation : nil
         }
-      case "o": state.relativeOrigin = pointer
+      case "o": state.relativeOrigin = NSEvent.mouseLocation
       case "r": state.relativeOrigin = nil
       case "c":
         if state.loupe {

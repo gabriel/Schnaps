@@ -32,6 +32,7 @@ struct DesignMarker: Identifiable, Codable, Equatable {
   var x = 100.0, y = 100.0, width = 320.0, height = 240.0
   var angle = 0.0, scale = 1.0
   var vertical = false, locked = false
+  var isVisible = true
   var columns = 1, rows = 1
   var spacing = 0.0, margin = 16.0, gutter = 16.0
   var opacity = 0.6, imageName: String?
@@ -111,6 +112,7 @@ final class DesignTools: ObservableObject {
   }
   @Published var error: String?
   @Published var availableWindows: [DesignWindow] = []
+  var isActive: Bool { visible || loupe || crosshair }
   var redraw: (() -> Void)?
   var show: ((DesignTool) -> Void)?
   var capture: ((Bool) -> Void)?
@@ -131,6 +133,20 @@ final class DesignTools: ObservableObject {
       }
     }
     swatches = Array((defaults.stringArray(forKey: "designSwatches") ?? []).prefix(128))
+    rehomeMissingDisplays()
+  }
+  func rehomeMissingDisplays() {
+    guard let main = NSScreen.main else { return }
+    let ids = Set(NSScreen.screens.map { Self.displayID($0) })
+    let result = markers.map { marker in
+      guard !ids.contains(marker.display) else { return marker }
+      var marker = marker
+      marker.display = Self.displayID(main)
+      marker.x = min(max(0, marker.x), max(0, main.frame.width - min(40, marker.width)))
+      marker.y = min(max(0, marker.y), max(0, main.frame.height - min(40, marker.height)))
+      return marker
+    }
+    if result != markers { markers = result }
   }
   var selected: DesignMarker? { markers.first { $0.id == selectedID } }
   func update(_ change: (inout DesignMarker) -> Void) {
@@ -391,7 +407,6 @@ final class DesignToolsController {
       } else {
         state.crosshair.toggle()
       }
-      state.visible = true
       state.editing = false
     } else {
       state.add(tool)
@@ -422,10 +437,11 @@ final class DesignToolsController {
       window.close()
     }
     windows = []
+    state.rehomeMissingDisplays()
     synchronize()
   }
   private func synchronize() {
-    guard state.visible else {
+    guard state.isActive else {
       for window in windows { window.orderOut(nil) }
       ticker?.invalidate()
       ticker = nil
@@ -481,7 +497,10 @@ final class DesignToolsController {
     }
   }
   private func tick() {
-    if state.crosshair || state.loupe || state.vision != .normal {
+    let screenPreview =
+      state.visible && state.markers.contains { $0.tool == .screens && $0.isVisible }
+      && (state.vision != .normal || state.retinaPreview)
+    if state.crosshair || state.loupe || screenPreview {
       for window in windows { window.contentView?.needsDisplay = true }
     }
     if Date().timeIntervalSince(lastWindowUpdate) > 0.5 {
@@ -489,7 +508,7 @@ final class DesignToolsController {
       followWindows()
     }
     let needsPixels =
-      state.loupe || state.retinaPreview || state.vision != .normal
+      state.loupe || screenPreview
       || (state.crosshair && UserDefaults.standard.bool(forKey: PreferenceKey.autoContrast))
       || (state.editing && NSEvent.modifierFlags.contains(.control))
     guard needsPixels, !capturing, Date().timeIntervalSince(lastCapture) > 0.25,
@@ -501,20 +520,21 @@ final class DesignToolsController {
       defer { self?.capturing = false }
       do {
         let frames = try await ScreenSnapshot.capture()
-        guard !Task.isCancelled, let self, self.state.visible else { return }
+        guard !Task.isCancelled, let self, self.state.isActive else { return }
         self.snapshots = frames
       } catch { /* A transient capture failure keeps the last frame. */  }
     }
   }
   private func followWindows() {
-    guard state.markers.contains(where: { $0.attachedWindow != nil }),
+    guard state.visible,
+      state.markers.contains(where: { $0.attachedWindow != nil && $0.isVisible }),
       ScreenRecordingPermission.shared.granted,
       let list = CGWindowListCopyWindowInfo(
         [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]]
     else { return }
     var result = state.markers
     for index in result.indices {
-      guard let id = result[index].attachedWindow,
+      guard result[index].isVisible, let id = result[index].attachedWindow,
         let info = list.first(where: {
           ($0[kCGWindowNumber as String] as? NSNumber)?.uint32Value == id
         }),

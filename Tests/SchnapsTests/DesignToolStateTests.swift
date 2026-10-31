@@ -9,9 +9,10 @@ import Testing
   let defaults = try #require(UserDefaults(suiteName: name))
   defer { defaults.removePersistentDomain(forName: name) }
   let tools = DesignTools(defaults: defaults)
-  var first = DesignMarker(tool: .ruler, display: 0)
+  let display = NSScreen.main.map { DesignTools.displayID($0) } ?? 0
+  var first = DesignMarker(tool: .ruler, display: display)
   first.width = 200
-  var second = DesignMarker(tool: .ruler, display: 0)
+  var second = DesignMarker(tool: .ruler, display: display)
   second.width = 100
   tools.markers = [first, second]
   tools.selectedID = first.id
@@ -69,4 +70,18 @@ import Testing
       #expect(abs(Int(pixels.bytes[1]) - Int(pixels.bytes[2])) <= 2)
     }
   }
+}
+
+@Test @MainActor func loupeDoesNotRestoreHiddenMarkerWorkspace() {
+  let name = "Schnaps.Visibility.Tests." + UUID().uuidString
+  let defaults = UserDefaults(suiteName: name)!
+  defer { defaults.removePersistentDomain(forName: name) }
+  let tools = DesignTools(defaults: defaults)
+  tools.loupe = true
+  #expect(tools.isActive && !tools.visible)
+  tools.crosshair = true
+  tools.loupe = false
+  #expect(tools.isActive && !tools.visible)
+  tools.hide()
+  #expect(!tools.isActive && !tools.visible)
 }

@@ -23,7 +23,7 @@ While editing: drag to move, Option-drag to duplicate, drag a rectangle's bottom
 
 Two rulers have independent position, length, scale, angle, calipers, square extensions, and quarter/third/half/golden-ratio marks. Length and angle synchronization are independent. Native numeric fields accept precise values. Ruler labels use the existing points/display-pixels preference; dimensions in the inspector are logical points.
 
-Guides span the selected display and label their coordinates and distance to the next parallel guide. Frames expose origin, size, aspect ratio, center marks, rows/columns, margins, gutters, and baseline spacing. Matching guides or frames can move together. Markers can be locked, duplicated, centered, assigned to any connected display, and copied/saved as screenshots. Capture uses the existing export preferences and excludes Schnaps's marks.
+Guides span the selected display and label their coordinates and distance to the next parallel guide. Frames expose origin, size, aspect ratio, center marks, rows/columns, margins, gutters, and baseline spacing. Matching guides or frames can move together. Markers can be shown/hidden individually, locked for on-screen editing, duplicated, centered, assigned to any connected display, and copied/saved as screenshots. Capture uses the existing export preferences and excludes Schnaps's marks.
 
 Layouts persist across launches, but start hidden. Save/load layouts as JSON for separate projects. A layout contains geometry, colors, and grids; imported layouts detach transient window IDs and omit mockup-image references. If an imported display is absent, markers use the main display. Mockup images are copied to Application Support when selected so reopening the app does not require the original file to remain in place.
 
@@ -41,7 +41,7 @@ Screens includes phone, tablet, laptop, desktop, TV, watch, and social-asset log
 
 Screens and Loupe offer approximate protanopia, deuteranopia, tritanopia, grayscale, and blurred-vision previews. These are design aids, not clinical simulations. Screens can downsample a Retina capture to simulate a 1× display. Live previews require Screen Recording.
 
-Crosshair follows the pointer, reports coordinates from each display's top-left, and supports an arbitrary relative origin. While editing, click or press O to set the origin; R resets it. Line width is adjustable; automatic contrast uses the existing preference and captured pixels when available.
+Crosshair follows the pointer, reports coordinates from each display's top-left, and supports an arbitrary relative origin. While editing, click or press O to set the origin; R resets it. Relative origins remain correct across displays. Line width is adjustable; automatic contrast uses the existing preference and captured pixels when available.
 
 ## Loupe and palettes
 

@@ -16,6 +16,11 @@ final class ImagePreview: NSObject, ObservableObject, NSWindowDelegate {
   private var task: Task<Void, Never>?
   private var fileDate: Date?
   func show() {
+    if !NSScreen.screens.contains(where: { DesignTools.displayID($0) == displayID }),
+      let main = NSScreen.main
+    {
+      displayID = DesignTools.displayID(main)
+    }
     if window == nil {
       let window = NSWindow(
         contentRect: CGRect(x: 0, y: 0, width: 800, height: 700),
@@ -38,6 +43,7 @@ final class ImagePreview: NSObject, ObservableObject, NSWindowDelegate {
     panel.allowsMultipleSelection = false
     if panel.runModal() == .OK, let url = panel.url {
       file = url
+      fileDate = nil
       source = "File"
       readFile()
       setLive(true)
@@ -57,12 +63,12 @@ final class ImagePreview: NSObject, ObservableObject, NSWindowDelegate {
       image = NSImage(contentsOf: file)
       fileDate = properties.contentModificationDate
     }
-    if image == nil { error = "The image could not be opened." }
+    if image == nil { error = "The image could not be opened." } else { error = nil }
   }
   func paste() {
     source = "Clipboard"
     image = NSImage(pasteboard: .general)
-    if image == nil { error = "The clipboard does not contain an image." }
+    if image == nil { error = "The clipboard does not contain an image." } else { error = nil }
   }
   func setLive(_ enabled: Bool) {
     live = enabled
@@ -113,6 +119,7 @@ final class ImagePreview: NSObject, ObservableObject, NSWindowDelegate {
         contentFilter: SCContentFilter(desktopIndependentWindow: source), configuration: config)
       guard !Task.isCancelled else { return }
       image = NSImage(cgImage: captured, size: source.frame.size)
+      error = nil
     } catch {
       self.error = error.localizedDescription
       setLive(false)

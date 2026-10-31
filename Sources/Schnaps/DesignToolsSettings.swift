@@ -33,7 +33,7 @@ struct DesignToolsSettings: View {
           ? "Toggle \(tools.tool.rawValue)" : "Add \(tools.tool.rawValue)"
       ) { tools.show?(tools.tool) }
       Toggle("Show design markers", isOn: $tools.visible)
-      Toggle("Edit on screen", isOn: $tools.editing).disabled(!tools.visible)
+      Toggle("Edit on screen", isOn: $tools.editing).disabled(!tools.isActive)
       Button("Hide All", action: tools.hide)
       Button("Image & Window Preview…") { ImagePreview.shared.show() }
       Button("Responsive Web Preview…") { BrowserPreview.shared.show() }
@@ -90,6 +90,7 @@ struct DesignToolsSettings: View {
         }
         field("X (pt)", \.x)
         field("Y (pt)", \.y)
+        toggle("Show marker", \.isVisible)
         toggle("Lock position", \.locked)
         Toggle("Move matching markers together", isOn: $tools.linked)
       }

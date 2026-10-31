@@ -158,7 +158,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func showTextTools() { settingsNavigation.pane = .text; showSettings() }
     @objc private func editOnScreen() {
         settingsWindow?.orderOut(nil);overlay.stop()
-        DesignTools.shared.visible=true;DesignTools.shared.editing.toggle()
+        if !DesignTools.shared.isActive { DesignTools.shared.visible=true };DesignTools.shared.editing.toggle()
     }
     @objc private func copySampledColor() { DesignTools.shared.copyColor() }
     @objc private func hideDesignTools() { DesignTools.shared.hide() }
