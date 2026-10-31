@@ -187,3 +187,7 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 
 > Can we also track all the same stats for the app Schnaps at ~/projects.next/Schnaps/ and deployed to getschnaps.com
 > So make the dashboard support multiple apps and have an apps selection with REL as default.
+
+### Schnaps PR-monitor prompt
+
+Monitor the Schnaps analytics PR on branch codex/gabriel/app-analytics in /Users/local/projects.next/Schnaps. Use gh --repo gabriel/Schnaps to identify its PR and latest head. Monitor both macOS CI matrix jobs, inspect actual failures, and fix them with the smallest safe changes after coordinating with main. Commit and push fixes, and re-monitor every changed head through success. Preserve signed feed/archive bytes and the historical bundle ID. Main owns Worker secrets, deployment, and integration checks. Log any additional delegated task prompts by appending to docs/prompts.md. Do not publish an app release or operate installed apps.
