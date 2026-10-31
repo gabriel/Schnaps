@@ -185,6 +185,8 @@ private final class PaletteDragHandle: NSImageView {
 final class TextInspectorWindow {
     private var window: NSWindow?
     func show() {
+        // A floating design canvas must stop intercepting input before this window opens.
+        DesignTools.shared.editing = false
         if window == nil {
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 680, height: 650),
                                   styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)

@@ -16,6 +16,8 @@ final class ImagePreview: NSObject, ObservableObject, NSWindowDelegate {
   private var task: Task<Void, Never>?
   private var fileDate: Date?
   func show() {
+    // Keep the marks, but let clicks and keyboard focus reach this native window.
+    DesignTools.shared.editing = false
     if !NSScreen.screens.contains(where: { DesignTools.displayID($0) == displayID }),
       let main = NSScreen.main
     {
