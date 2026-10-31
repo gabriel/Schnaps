@@ -176,3 +176,9 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 > When hitting text, have the top of the window open under the bottom of the overlay so they aren’t competing for space.
 
 **Result:** the toolbar’s Text button positions the inspector’s outer frame directly below the toolbar with an 8-point gap, centered underneath it. Placement uses the toolbar’s display and keeps both windows within the usable screen area, moving the pair up when needed. Opening Text Inspector from the menu retains its normal remembered placement.
+
+## Split Caliper menu-bar icon
+
+> Apply the Split Caliper with the state changes and make a beta so I can test.
+
+**Result:** replaced the static ruler symbol with the approved original Split Caliper vectors. Open jaws indicate Idle; a span and fiducial indicate Find Dimensions; an interior rectangle indicates Measure Area; offset guides indicate visible design tools. Measurement mode takes priority over marks. Starting/stopping, switching tools with S, hiding marks, and the final Escape update the icon. The 22-point template image follows native light, dark, and selected tinting. Tooltips and accessibility labels name the current state.

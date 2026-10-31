@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import Carbon
+import Combine
 import Sparkle
 import MeasurementCore
 
@@ -28,6 +29,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let toolOverlay = ToolOverlayController()
     private let textInspector = TextInspectorWindow()
     private var toolOverlayMenuItems: [NSMenuItem] = []
+    private let menuBarStatus = MenuBarStatus(designTools: .shared)
+    private var statusIconSubscription: AnyCancellable?
     private let updateChannels = UpdateChannelSettings()
     private lazy var updaterController = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: updateChannels, userDriverDelegate: nil)
     private var hotKeys: [EventHotKeyRef] = []
@@ -41,7 +44,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         MeasurementPreferences.selectTolerance(MeasurementPreferences.selectedTolerance)
         updateDockVisibility()
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem?.button?.image = NSImage(systemSymbolName: "ruler", accessibilityDescription: "Schnaps measurements")
+        statusIconSubscription = menuBarStatus.$state.removeDuplicates().sink { [weak self] state in
+            self?.updateMenuBarIcon(state)
+        }
+        overlay.onStateChanged = { [weak self] mode in self?.menuBarStatus.measurementChanged(mode) }
         toolOverlay.measure = { [weak self] in self?.start(mode: $0) }
         toolOverlay.activateTool = { [weak self] in self?.activateDesignTool($0) }
         toolOverlay.showText = { [weak self] palette in
@@ -86,6 +92,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if !launchedAtLogin && !toolOverlay.isEnabled { showSettings() }
         NotificationCenter.default.addObserver(self, selector: #selector(screensChanged),
                                                name: NSApplication.didChangeScreenParametersNotification, object: nil)
+    }
+
+    private func updateMenuBarIcon(_ state: MenuBarIconState) {
+        guard let button = statusItem?.button else { return }
+        button.image = MenuBarIcon.image(for: state)
+        let description = "Schnaps — \(L(state.title))"
+        button.toolTip = description
+        button.setAccessibilityLabel(description)
     }
 
     private var menuLanguage: String?
@@ -153,6 +167,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menuLanguage = language
             buildMenus()
             settingsWindow?.title = L("Schnaps Settings")
+            updateMenuBarIcon(menuBarStatus.state)
         }
     }
 
