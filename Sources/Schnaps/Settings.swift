@@ -333,7 +333,7 @@ struct SettingsView: View {
                 shortcut("Pin loupe position", "Space")
                 shortcut("Copy color / save swatch", "C / ⇧C")
                 shortcut("Delete selected marker", "Delete")
-                shortcut("Leave markers and return to work", "Escape")
+                shortcut("Dismiss most recent tool", "Escape (repeat to clear)")
             }
             Section(L("Screenshots")) {
                 shortcut("Copy screenshot", "C")

@@ -19,7 +19,7 @@ Global shortcuts below are defaults. Change or clear each one in **Settings → 
 | Hide design tools | Control-Command-H |
 | Copy sampled color | Control-Command-C |
 
-While editing: drag to move, Option-drag to duplicate, drag a rectangle's bottom-right corner to resize, or drag a ruler's endpoint to set length and angle. Shift constrains ruler angles to 45° increments. Control snaps the pointer to detected edges when Screen Recording is allowed. Arrows nudge one logical point; Shift-Arrows nudge ten. Option-Arrows rotate a ruler 1°, Shift-Option-Arrows 5°, and Control-Option-Arrows 0.1°. Delete removes the selected marker. H/V/F select the next horizontal guide, vertical guide, or frame. Escape keeps markers visible and makes the windows click-through.
+While editing: drag to move, Option-drag to duplicate, drag a rectangle's bottom-right corner to resize, or drag a ruler's endpoint to set length and angle. Shift constrains ruler angles to 45° increments. Control snaps the pointer to detected edges when Screen Recording is allowed. Arrows nudge one logical point; Shift-Arrows nudge ten. Option-Arrows rotate a ruler 1°, Shift-Option-Arrows 5°, and Control-Option-Arrows 0.1°. Delete removes the selected marker. H/V/F select the next horizontal guide, vertical guide, or frame. Escape dismisses the most recently shown marker, Loupe, or Crosshair; repeated presses clear the screen one item at a time. Holding Escape does not dismiss additional tools. Turn off Edit on Screen to leave marks visible and click-through. Escape applies while the design canvas or tool palette has keyboard focus; it does not replace Escape in other applications. A native inspector popover closes first.
 
 ## Rulers, guides, and frames
 
@@ -27,7 +27,7 @@ Two rulers have independent position, length, scale, angle, calipers, square ext
 
 Guides span the selected display and label their coordinates and distance to the next parallel guide. Frames expose origin, size, aspect ratio, center marks, rows/columns, margins, gutters, and baseline spacing. Matching guides or frames can move together. Markers can be shown/hidden individually, locked for on-screen editing, duplicated, centered, assigned to any connected display, and copied/saved as screenshots. Capture uses the existing export preferences and excludes Schnaps's marks.
 
-Layouts persist across launches, but start hidden. Save/load layouts as JSON for separate projects. A layout contains geometry, colors, and grids; imported layouts detach transient window IDs and omit mockup-image references. If an imported display is absent, markers use the main display. Mockup images are copied to Application Support when selected so reopening the app does not require the original file to remain in place.
+Layouts persist across launches, but start hidden. Escape hides individual markers without deleting their saved geometry; restore them with the inspector’s Show marker switch. Delete removes the selected marker from the layout. Save/load layouts as JSON for separate projects. A layout contains geometry, colors, and grids; imported layouts detach transient window IDs and omit mockup-image references. If an imported display is absent, markers use the main display. Mockup images are copied to Application Support when selected so reopening the app does not require the original file to remain in place.
 
 ## Design overlays and responsive preview
 

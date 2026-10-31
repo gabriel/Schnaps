@@ -82,21 +82,41 @@ final class DesignTools: ObservableObject {
   static let shared = DesignTools()
   @Published var markers: [DesignMarker] = [] {
     didSet {
+      presentationOrder.removeAll { entry in
+        if case .marker(let id) = entry { return !markers.contains { $0.id == id } }
+        return false
+      }
+      for marker in markers where marker.isVisible {
+        if !oldValue.contains(where: { $0.id == marker.id && $0.isVisible }) {
+          recordPresentation(.marker(marker.id))
+        }
+      }
       persist()
       redraw?()
     }
   }
   @Published var selectedID: UUID?
   @Published var tool: DesignTool = .ruler
-  @Published var visible = false { didSet { redraw?() } }
+  @Published var visible = false {
+    didSet {
+      if visible && !oldValue {
+        for marker in markers where marker.isVisible { recordPresentation(.marker(marker.id)) }
+      }
+      redraw?()
+    }
+  }
   @Published var editing = false { didSet { redraw?() } }
   @Published var linked = false
   @Published var synchronizeLength = false
   @Published var synchronizeAngle = false
-  @Published var crosshair = false { didSet { redraw?() } }
+  @Published var crosshair = false {
+    didSet { if crosshair && !oldValue { recordPresentation(.crosshair) }; redraw?() }
+  }
   @Published var relativeOrigin: CGPoint? { didSet { redraw?() } }
   @Published var lineWidth = 1.0 { didSet { redraw?() } }
-  @Published var loupe = false { didSet { redraw?() } }
+  @Published var loupe = false {
+    didSet { if loupe && !oldValue { recordPresentation(.loupe) }; redraw?() }
+  }
   @Published var zoom = 8.0 { didSet { redraw?() } }
   @Published var pixelGrid = true
   @Published var colorFormat = "Hex"
@@ -112,9 +132,40 @@ final class DesignTools: ObservableObject {
   }
   @Published var error: String?
   @Published var availableWindows: [DesignWindow] = []
-  var isActive: Bool { visible || loupe || crosshair }
+  var hasVisibleMarkers: Bool { visible && markers.contains(where: \.isVisible) }
+  var isActive: Bool { hasVisibleMarkers || loupe || crosshair }
+  private enum Presentation: Equatable { case marker(UUID), loupe, crosshair }
+  private var presentationOrder: [Presentation] = []
+  private func recordPresentation(_ entry: Presentation) {
+    presentationOrder.removeAll { $0 == entry }
+    presentationOrder.append(entry)
+  }
+  /// Dismiss appearances, not saved geometry or arbitrary edits. Restoring a marker
+  /// from the inspector makes it the newest appearance again.
+  @discardableResult func dismissLastTool() -> Bool {
+    let last = presentationOrder.last { entry in
+      switch entry {
+      case .marker(let id): visible && markers.contains { $0.id == id && $0.isVisible }
+      case .loupe: loupe
+      case .crosshair: crosshair
+      }
+    }
+    guard let last else { return false }
+    presentationOrder.removeAll { $0 == last }
+    switch last {
+    case .marker(let id):
+      if let index = markers.firstIndex(where: { $0.id == id }) { markers[index].isVisible = false }
+      if selectedID == id { selectedID = markers.last(where: \.isVisible)?.id }
+      if !markers.contains(where: \.isVisible) { visible = false }
+    case .loupe: loupe = false
+    case .crosshair: crosshair = false
+    }
+    if !isActive { editing = false }
+    return true
+  }
   var redraw: (() -> Void)?
   var show: ((DesignTool) -> Void)?
+  var dismiss: (() -> Void)?
   var capture: ((Bool) -> Void)?
   var colorSample: InspectorColor?
   var contrastSample: InspectorColor?
@@ -190,8 +241,12 @@ final class DesignTools: ObservableObject {
     guard let screen else { return }
     let display = Self.displayID(screen)
     if kind == .ruler && markers.filter({ $0.tool == .ruler }).count >= 2 {
-      selectedID = markers.first(where: { $0.tool == .ruler })?.id
+      selectedID = markers.first(where: { $0.tool == .ruler && !$0.isVisible })?.id
+        ?? markers.first(where: { $0.tool == .ruler })?.id
+      update { $0.isVisible = true }
+      tool = kind
       visible = true
+      if let selectedID { recordPresentation(.marker(selectedID)) }
       editing = true
       return
     }
@@ -384,10 +439,12 @@ final class DesignToolsController {
   private var capturing = false
   private var lastWindowUpdate = Date.distantPast
   private var previousApp: NSRunningApplication?
+  private var dismissingTool = false
   init() {
     state.redraw = { [weak self] in self?.synchronize() }
     state.show = { [weak self] tool in self?.activate(tool) }
     state.capture = { [weak self] copy in self?.captureSelected(copy: copy) }
+    state.dismiss = { [weak self] in self?.dismissLastTool() }
     NotificationCenter.default.addObserver(
       forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
     ) { [weak self] _ in
@@ -412,6 +469,23 @@ final class DesignToolsController {
       state.add(tool)
     }
     synchronize()
+    if (tool == .loupe && state.loupe) || (tool == .crosshair && state.crosshair),
+      let window = windows.first(where: { $0.frame.contains(NSEvent.mouseLocation) }) {
+      previousApp = NSWorkspace.shared.frontmostApplication
+      window.makeKey()
+      window.makeFirstResponder(window.contentView)
+    }
+  }
+  private func restorePreviousApplication() {
+    guard let previousApp else { return }
+    for window in windows where window.isKeyWindow { window.resignKey() }
+    if previousApp.processIdentifier != ProcessInfo.processInfo.processIdentifier { previousApp.activate(options: []) }
+    self.previousApp = nil
+  }
+  private func dismissLastTool() {
+    dismissingTool = true
+    _ = state.dismissLastTool()
+    dismissingTool = false
   }
   private func requestCapture() {
     let alert = NSAlert()
@@ -450,6 +524,7 @@ final class DesignToolsController {
       snapshots = [:]
       state.colorSample = nil
       state.frozenLoupe = nil
+      restorePreviousApplication()
       return
     }
     if windows.isEmpty {
@@ -485,11 +560,7 @@ final class DesignToolsController {
       window.makeKey()
       window.makeFirstResponder(window.contentView)
     }
-    if !state.editing, let previousApp {
-      for window in windows where window.isKeyWindow { window.resignKey() }
-      previousApp.activate(options: [])
-      self.previousApp = nil
-    }
+    if !state.editing && !dismissingTool { restorePreviousApplication() }
     if ticker == nil {
       ticker = Timer.scheduledTimer(withTimeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
         MainActor.assumeIsolated { self?.tick() }

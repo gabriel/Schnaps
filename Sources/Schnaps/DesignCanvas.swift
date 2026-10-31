@@ -437,13 +437,16 @@ final class DesignCanvas: NSView {
     originals = []
   }
   override func keyDown(with event: NSEvent) {
+    if event.keyCode == 53 {
+      if !event.isARepeat { state.dismiss?() }
+      return
+    }
     guard state.editing else {
       super.keyDown(with: event)
       return
     }
     let step = event.modifierFlags.contains(.shift) ? 10.0 : 1.0
     switch event.keyCode {
-    case 53: state.editing = false
     case 123, 124, 125, 126:
       if event.modifierFlags.contains(.option), state.selected?.tool == .ruler {
         let rotation =

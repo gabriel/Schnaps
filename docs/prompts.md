@@ -158,3 +158,9 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 > Allow shortcuts to be edited.
 
 **Result:** added native recording sheets for all 12 global measurement and design-tool shortcuts in Settings. Bindings can be cleared or reset to defaults, persist across restarts, and update menu equivalents immediately. Recording suspends global shortcuts; duplicate, reserved, and unavailable combinations are rejected. In-tool editing and measurement keys remain fixed and are listed separately.
+
+## Escape dismisses tools one at a time
+
+> I wonder if escape should be a way to undo the last thing.. and escape multiple times is more undo until everything is gone.
+
+**Result:** Escape dismisses the most recently shown design marker, Loupe, or Crosshair. Repeated presses clear the screen in reverse appearance order; key repeat is ignored. Dismissed markers retain their geometry in the layout and can be restored from the inspector. Native popovers and other applications retain their own Escape behavior. Turning off Edit on Screen still leaves marks visible and click-through. This is dismissal history, not undo for geometry or text edits.
