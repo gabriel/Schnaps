@@ -13,6 +13,8 @@ enum PreviewWindowRole {
 }
 
 struct ScreenSnapshot {
+    static let settingsWindowIdentifier = NSUserInterfaceItemIdentifier("SchnapsSettings")
+
     let image: CGImage
     let pixels: PixelBuffer
     let scaleX: CGFloat
@@ -34,8 +36,15 @@ struct ScreenSnapshot {
     @MainActor
     static func capture() async throws -> [CGDirectDisplayID: ScreenSnapshot] {
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
-        let previews=PreviewWindowRole.capturableIDs
-        let ownWindows = content.windows.filter { $0.owningApplication?.processID == ProcessInfo.processInfo.processIdentifier && !previews.contains($0.windowID) }
+        // Settings remains part of the frozen desktop, just like preview windows.
+        let settingsIDs = NSApp.windows.filter {
+            $0.isVisible && $0.identifier == settingsWindowIdentifier
+        }.map { CGWindowID($0.windowNumber) }
+        let capturableIDs = PreviewWindowRole.capturableIDs.union(settingsIDs)
+        let ownWindows = content.windows.filter {
+            $0.owningApplication?.processID == ProcessInfo.processInfo.processIdentifier
+                && !capturableIDs.contains($0.windowID)
+        }
         var snapshots: [CGDirectDisplayID: ScreenSnapshot] = [:]
         for screen in NSScreen.screens {
             guard let id = (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value,

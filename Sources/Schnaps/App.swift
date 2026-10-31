@@ -205,7 +205,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         activateDesignTool(DesignTool.allCases[sender.tag])
     }
     private func activateDesignTool(_ tool: DesignTool) {
-        overlay.stop(); settingsWindow?.orderOut(nil)
+        overlay.stop()
         designTools.activate(tool)
     }
     @objc private func editDesignTools() { toolOverlay.inspect() }
@@ -213,7 +213,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func showBrowserPreview() { overlay.stop(); BrowserPreview.shared.show() }
     @objc private func showTextTools() { overlay.stop(); textInspector.show() }
     @objc private func editOnScreen() {
-        settingsWindow?.orderOut(nil);overlay.stop()
+        overlay.stop()
         if !DesignTools.shared.isActive { DesignTools.shared.visible=true };DesignTools.shared.editing.toggle()
     }
     @objc private func copySampledColor() { DesignTools.shared.copyColor() }
@@ -288,7 +288,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                         guard let self else { return }
                         await recordingPermission.request()
                         if recordingPermission.granted {
-                            settingsWindow?.orderOut(nil)
                             overlay.toggle(mode: mode)
                         }
                     }
@@ -296,11 +295,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 return
             }
             guard response == .alertSecondButtonReturn else { return }
-            settingsWindow?.orderOut(nil)
             overlay.toggle(mode: .area)
             return
         }
-        settingsWindow?.orderOut(nil)
         overlay.toggle(mode: mode)
     }
 
@@ -317,6 +314,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if settingsWindow == nil {
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 780, height: 560),
                                   styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
+            window.identifier = ScreenSnapshot.settingsWindowIdentifier
             window.title = L("Schnaps Settings")
             window.titlebarAppearsTransparent = true
             window.toolbarStyle = .unified
@@ -347,8 +345,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 switch id.id {
                 case 1,2: delegate.start(mode:id.id==2 ? .findDimensions:.area)
                 case 3...9:
-                    delegate.overlay.stop();delegate.settingsWindow?.orderOut(nil)
-                    delegate.designTools.activate(DesignTool.allCases[Int(id.id)-3])
+                    delegate.activateDesignTool(DesignTool.allCases[Int(id.id)-3])
                 case 10: delegate.editOnScreen()
                 case 11: delegate.hideDesignTools()
                 case 12: delegate.copySampledColor()
