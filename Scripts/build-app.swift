@@ -48,6 +48,7 @@ var info: [String: Any] = [
     "CFBundleName": "Schnaps", "CFBundleDisplayName": "Schnaps",
     "CFBundleExecutable": "Schnaps", "CFBundlePackageType": "APPL",
     "CFBundleShortVersionString": release["version"]!, "CFBundleVersion": release["build"]!,
+    "SchnapsBuildConfiguration": configuration,
     "SchnapsUpdateChannel": release["defaultChannel"] ?? "stable",
     "SUFeedURL": release["feedURL"]!, "SUPublicEDKey": release["publicEDKey"]!,
     "SUVerifyUpdateBeforeExtraction": true, "SURequireSignedFeed": true,

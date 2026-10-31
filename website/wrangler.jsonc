@@ -6,7 +6,10 @@
     "not_found_handling": "404-page",
     "binding": "ASSETS",
     "run_worker_first": [
-      "/download"
+      "/download",
+      "/appcast.xml",
+      "/updates/*",
+      "/api/app-starts"
     ]
   },
   "routes": [
@@ -21,6 +24,16 @@
       "binding": "DOWNLOADS",
       "database_name": "schnaps-downloads",
       "database_id": "f63f4b6d-00e2-4210-a7a5-c742ccc3c1aa"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "LAUNCH_RATE_LIMITER",
+      "namespace_id": "3101",
+      "simple": {
+        "limit": 120,
+        "period": 60
+      }
     }
   ]
 }

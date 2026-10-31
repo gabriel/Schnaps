@@ -22,5 +22,10 @@ final class UpdateChannelSettings: NSObject, ObservableObject, SPUUpdaterDelegat
         // A beta's default opt-in must survive its next stable-channel update.
         defaults.set(channel.rawValue, forKey: Self.preferenceKey)
     }
+    func updater(_ updater: SPUUpdater, willDownloadUpdate item: SUAppcastItem, with request: NSMutableURLRequest) {
+        if let original = request.url, let proxy = UpdateAnalyticsRouting.proxyURL(for: original) {
+            request.url = proxy
+        }
+    }
     func allowedChannels(for updater: SPUUpdater) -> Set<String> { channel.allowedSparkleChannels }
 }
