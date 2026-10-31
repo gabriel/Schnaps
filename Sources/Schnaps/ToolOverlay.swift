@@ -172,6 +172,9 @@ final class ToolOverlayController: NSObject, NSWindowDelegate, NSPopoverDelegate
 private final class ToolPalettePanel: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
+    override func cancelOperation(_ sender: Any?) {
+        if NSApp.currentEvent?.isARepeat != true { DesignTools.shared.dismiss?() }
+    }
 }
 
 private final class PaletteDragHandle: NSImageView {

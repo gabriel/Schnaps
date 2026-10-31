@@ -41,7 +41,7 @@ struct ToolInspectorView: View {
       Text("Design tools")
     } footer: {
       Text(
-        "Drag to move. Drag a ruler’s end to rotate; hold Shift for 45°. Control snaps to detected edges. Escape leaves markers visible and lets clicks pass through."
+        "Drag to move. Drag a ruler’s end to rotate; hold Shift for 45°. Control snaps to detected edges. Escape dismisses the last shown tool. Turn off editing to keep marks visible and let clicks pass through."
       ).font(.footnote).padding(.top, -7)
     }
     if tools.tool == .loupe {
