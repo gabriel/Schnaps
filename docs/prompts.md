@@ -146,3 +146,9 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 **Result:** added a checked **Tool Overlay** menu item. The toolbar is hidden by default; enabling it persists across restarts. Disabling it or closing its window keeps it hidden next time. Closing the toolbar leaves existing tool marks intact, and menus and shortcuts remain usable while it is hidden. During measurement, the inspector temporarily collapses; exiting measurement restores it.
 
 **Validation:** checked enabled restart, close-and-restart opt-out, toolbar activation of tools, inspector restoration after measurement, and the separate Text Inspector window. All 41 Swift tests and both macOS CI builds passed for the implementation.
+
+## Editable global shortcuts
+
+> Allow shortcuts to be edited.
+
+**Result:** added native recording sheets for all 12 global measurement and design-tool shortcuts in Settings. Bindings can be cleared or reset to defaults, persist across restarts, and update menu equivalents immediately. Recording suspends global shortcuts; duplicate, reserved, and unavailable combinations are rejected. In-tool editing and measurement keys remain fixed and are listed separately.

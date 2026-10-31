@@ -74,7 +74,6 @@ final class SettingsNavigation: ObservableObject {
 
 struct SettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
-    var shortcutWarning: String?
     @ObservedObject var navigation: SettingsNavigation
     @ObservedObject var updates: UpdateSettings
     @StateObject private var membership = ProMembership()
@@ -325,21 +324,7 @@ struct SettingsView: View {
     }
     private var shortcuts: some View {
         Group {
-            Section {
-                shortcut("Find Dimensions", "⇧⌘F")
-                shortcut("Measure Area", "⇧⌘M")
-            } header: {
-                Text(L("Global"))
-            } footer: {
-                if let shortcutWarning { Text(shortcutWarning).font(.footnote).padding(.top, -7) }
-            }
-            Section("Design Tools · Global") {
-                shortcut("Rulers / Guides / Frames", "⌃⌘R / ⌃⌘G / ⌃⌘B")
-                shortcut("Design Overlay / Screens", "⌃⌘O / ⌃⌘S")
-                shortcut("Loupe / Crosshair", "⌃⌘L / ⌃⌘X")
-                shortcut("Edit on screen / Hide all", "⌃⌘E / ⌃⌘H")
-                shortcut("Copy sampled color", "⌃⌘C")
-            }
+            ShortcutEditor()
             Section("While Editing Design Tools") {
                 shortcut("Move / move by ten points", "Arrows / ⇧Arrows")
                 shortcut("Rotate ruler 1° / 5° / 0.1°", "⌥Arrows / ⇧⌥Arrows / ⌃⌥Arrows")
