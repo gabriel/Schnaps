@@ -12,6 +12,7 @@ final class OverlayController: NSObject {
     private var savedDistances: [CGDirectDisplayID: [DimensionSpan]] = [:]
     private var mode: MeasurementMode = .area
     var onActivationChanged: ((Bool) -> Void)?
+    var onStateChanged: ((MeasurementMode?) -> Void)?
     var isActive: Bool { preparing || !windows.isEmpty }
 
     override init() {
@@ -33,6 +34,7 @@ final class OverlayController: NSObject {
         self.mode = mode
         preparing = true
         onActivationChanged?(true)
+        onStateChanged?(mode)
         previousApp = NSWorkspace.shared.frontmostApplication
         let token = UUID()
         generation = token
@@ -52,7 +54,10 @@ final class OverlayController: NSObject {
                                            scale: screen.backingScaleFactor, snapshot: snapshots[id], mode: mode)
                 view.pinned = (saved[id] ?? []).map { $0.intersection(view.bounds) }.filter { !$0.isNull && !$0.isEmpty }
                 view.pinnedDistances = savedDistances[id] ?? []
-                view.onModeChanged = { [weak self] mode in self?.mode = mode }
+                view.onModeChanged = { [weak self] mode in
+                    self?.mode = mode
+                    self?.onStateChanged?(mode)
+                }
                 view.onClose = { [weak self] in self?.stop() }
                 view.onRefresh = { [weak self, weak view] in
                     guard let view else { return }
@@ -94,6 +99,7 @@ final class OverlayController: NSObject {
         }
         windows.removeAll()
         onActivationChanged?(false)
+        onStateChanged?(nil)
         if let previousApp, previousApp.processIdentifier != ProcessInfo.processInfo.processIdentifier {
             previousApp.activate(options: [])
         }
