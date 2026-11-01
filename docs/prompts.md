@@ -203,3 +203,14 @@ Re-monitor Schnaps PR #58 after the new service-binding repair is pushed. Direct
 Delegated monitor prompt:
 
 > Monitor the current anonymous-install analytics PR and Schnaps PR #58 after the pushed SHAs are supplied. Verify latest heads, ready state, mergeability, and every CI check using gh with explicit --repo. Investigate and fix attributable failures with the smallest safe changes after coordinating edits with root. Root owns source and native verification; do not edit or build concurrently. Follow repository runtime/build isolation rules. Report verified SHAs and checks; re-monitor every changed head.
+
+User clarification:
+
+> Both REL and Schnaps
+
+Validated 15 Worker tests, the complete Swift suite, Debug packaging/signature,
+and deployed the Worker. This Mac's Release analytics exclusion preference is
+enabled; the next reporting release honors it. No pre-existing Schnaps analytics
+installation UUID was found. Live Debug/excluded launch requests return 204 and
+the browser exclusion form returns a secure boolean cookie. Browser exclusion
+remains per browser and site; local browser automation is disabled in Work settings.
