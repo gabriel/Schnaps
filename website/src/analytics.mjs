@@ -3,6 +3,21 @@ export const versionPattern = /^\d+\.\d+\.\d+(?:-beta\.[1-9]\d*)?$/;
 function deliveryFailure(code) { const error = new Error('Analytics delivery failed'); error.analyticsCode = code; return error; }
 function failureCode(error) { return /^(missing-key|missing-service|http-[0-9]{3})$/.test(error?.analyticsCode ?? '') ? error.analyticsCode : 'transport'; }
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export function excludesAnalytics(request) {
+  return request.headers.get('x-analytics-excluded') === '1' ||
+    (request.headers.get('cookie') ?? '').split(';').some(part => part.trim() === '__Host-analytics_excluded=1');
+}
+export function browserExclusion(request) {
+  const headers = { 'cache-control': 'no-store', 'content-type': 'text/html; charset=utf-8',
+    'content-security-policy': "default-src 'none'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'", 'referrer-policy': 'no-referrer' };
+  if (request.method === 'POST') {
+    if (request.headers.get('origin') !== new URL(request.url).origin) return new Response('Forbidden', { status: 403, headers });
+    return new Response(null, { status: 303, headers: { ...headers, location: '/analytics/exclude',
+      'set-cookie': '__Host-analytics_excluded=1; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000' } });
+  }
+  if (request.method !== 'GET') return new Response('Method not allowed', { status: 405, headers: { ...headers, allow: 'GET, POST' } });
+  return new Response(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="robots" content="noindex"><title>Exclude this browser</title><h1>Exclude this browser from statistics</h1><p>${excludesAnalytics(request) ? 'This browser is excluded.' : 'Exclude future Schnaps downloads from this browser. This saves only an on/off cookie, with no unique identifier.'}</p><form method="post"><button>Exclude this browser</button></form></html>`, { headers });
+}
 export async function sendEvent(event, env) {
   if (!env.ANALYTICS_FORWARDING_KEY) throw deliveryFailure('missing-key');
   if (!env.ANALYTICS?.fetch) throw deliveryFailure('missing-service');
@@ -48,6 +63,7 @@ export async function receiveLaunch(request, env) {
       !uuid.test(event.launchID) || !uuid.test(event.installationID) || !versionPattern.test(event.version) || typeof event.build !== 'string' || !/^[1-9]\d{0,14}$/.test(event.build) ||
       !Number.isSafeInteger(Number(event.build)) || !['release', 'debug'].includes(event.runtime)) return new Response('Invalid event', { status: 400, headers });
   const input = `${appID}:analytics:v1:${event.runtime}:${event.installationID.toLowerCase()}`;
+  if (event.runtime === 'debug' || excludesAnalytics(request)) return new Response(null, { status: 204, headers });
   const installationHash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input))), b => b.toString(16).padStart(2, '0')).join('');
   try {
     await sendEvent({ kind: 'launch', launchID: event.launchID, runtime: event.runtime, version: event.version, build: event.build, installationHash }, env);

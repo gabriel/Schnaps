@@ -77,9 +77,21 @@ The Worker hashes that UUID using the Schnaps app ID, schema, and runtime before
 forwarding it. The raw installation ID never reaches the central dashboard.
 No licensing, account, hardware, browser, screenshot, or inspected-text identity
 is used. Removing the app's preferences resets the ID. Debug builds are excluded
-from displayed production totals. The first reported build is a baseline;
+from reporting entirely: the client sends nothing and the Worker discards any
+Debug launch/check/download telemetry it receives. The first reported build is a baseline;
 only later higher builds confirm upgrades. Missing/offline/older app reports
 cannot be backfilled.
+
+For your own Release install, set
+`defaults write com.gabrielhandford.Schnap SchnapsAnalyticsExcluded -bool true`
+and relaunch. This suppresses launch requests and adds only a non-identifying
+`X-Analytics-Excluded: 1` boolean to Sparkle requests. The Worker still serves
+signed feed/archive bytes but does not forward counters. Use
+`https://getschnaps.com/analytics/exclude` to exclude future downloads from this
+browser with a secure HttpOnly boolean cookie, with no visitor ID. The private
+REL dashboard can exclude a Schnaps analytics installation UUID retrospectively
+from launch/upgrade reports. Unique installs are app-scoped distinct hashes,
+not distinct people; older anonymous file/check counts cannot be separated.
 
 Forwarding uses the private `ANALYTICS` service binding to `rel-site`, avoiding
 public Worker-to-Worker HTTP routing, and the Worker secret `ANALYTICS_FORWARDING_KEY`; the matching REL

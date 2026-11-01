@@ -1,4 +1,4 @@
-import { backgroundEvent, receiveLaunch, updaterMetadata, versionPattern } from './analytics.mjs';
+import { backgroundEvent, receiveLaunch, updaterMetadata, versionPattern, excludesAnalytics, browserExclusion } from './analytics.mjs';
 const feedURL = 'https://github.com/gabriel/Schnaps/releases/download/updates/appcast.xml';
 const upstreamBase = 'https://github.com/gabriel/Schnaps/releases/download/';
 const isPrefetch = request => /prefetch|prerender/i.test(`${request.headers.get('Sec-Purpose') ?? ''} ${request.headers.get('Purpose') ?? ''}`);
@@ -8,6 +8,7 @@ const startsTransfer = (request, response) => request.method === 'GET' && !isPre
 export function createWorker(fetcher = fetch) {
   return { async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname === '/analytics/exclude') return browserExclusion(request);
     if (url.pathname === '/api/app-starts') return receiveLaunch(request, env);
     if (url.pathname === '/download') {
       if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405, headers: { allow: 'GET, HEAD' } });
@@ -44,6 +45,7 @@ export function createWorker(fetcher = fetch) {
     if (artifact) headers.set('content-disposition', `attachment; filename="${artifact[2]}"`);
     const response = new Response(request.method === 'HEAD' ? null : upstream.body, { status: upstream.status, headers });
     const updater = updaterMetadata(request);
+    if (updater.runtime === 'debug' || excludesAnalytics(request)) return response;
     if (feed && updater.isUpdater && request.method === 'GET' && [200, 304].includes(response.status)) {
       backgroundEvent({ kind: 'check', eventID: crypto.randomUUID(), runtime: updater.runtime, version: updater.version }, env, ctx);
     } else if (artifact && startsTransfer(request, response)) {

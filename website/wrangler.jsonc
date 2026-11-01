@@ -9,7 +9,8 @@
       "/download",
       "/appcast.xml",
       "/updates/*",
-      "/api/app-starts"
+      "/api/app-starts",
+      "/analytics/exclude"
     ]
   },
   "routes": [

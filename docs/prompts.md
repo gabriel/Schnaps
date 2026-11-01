@@ -195,3 +195,11 @@ Monitor the Schnaps analytics PR on branch codex/gabriel/app-analytics in /Users
 ### Service-binding repair monitoring prompt
 
 Re-monitor Schnaps PR #58 after the new service-binding repair is pushed. Direct receiver verification passed, but public Worker-to-Worker forwarding failed; the Worker now requires its private ANALYTICS service binding to rel-site while retaining the Schnaps-only write secret. Inspect any CI failure, coordinate before edits, make focused fixes, and re-monitor changed heads through both macOS jobs passing. No app release or installed-app operation is authorized by this monitoring task.
+
+## 2026-10-31 · Anonymous install counts and personal exclusions
+
+> I want to track all the stats from not me and not debug builds.. I also really want to know unique users without other tracking.. so maybe an install_id identifier and thats it with no tie to a user at all
+
+Delegated monitor prompt:
+
+> Monitor the current anonymous-install analytics PR and Schnaps PR #58 after the pushed SHAs are supplied. Verify latest heads, ready state, mergeability, and every CI check using gh with explicit --repo. Investigate and fix attributable failures with the smallest safe changes after coordinating edits with root. Root owns source and native verification; do not edit or build concurrently. Follow repository runtime/build isolation rules. Report verified SHAs and checks; re-monitor every changed head.

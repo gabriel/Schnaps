@@ -23,6 +23,24 @@ function fixture() {
   } };
 }
 
+test('Debug and excluded traffic is discarded without forwarding or changing downloads', async () => {
+  const f = fixture(), path = '/updates/artifacts/v0.7.4/Schnaps-0.7.4.dmg';
+  for (const headers of [{ 'x-analytics-excluded': '1' }, { cookie: '__Host-analytics_excluded=1' },
+    { 'x-schnaps-client': 'macos-updater', 'x-schnaps-runtime': 'debug' }]) {
+    assert.equal(await (await f.request(path, { headers })).text(), 'signed bytes');
+    assert.equal(await (await f.request('/appcast.xml', { headers })).text(), 'signed bytes');
+  }
+  const id = 'abcdef01-1234-4321-8321-123456789012';
+  const response = await f.request('/api/app-starts', { method: 'POST', headers: { 'content-type': 'application/json', 'x-schnaps-client': 'macos-app' },
+    body: JSON.stringify({ launchID: id, installationID: id, version: '0.7.4', build: '16', runtime: 'debug' }) });
+  assert.equal(response.status, 204);
+  assert.equal(f.events.length, 0);
+  assert.equal((await f.request('/analytics/exclude', { method: 'POST', headers: { origin: 'https://outside.example' } })).status, 403);
+  const optout = await f.request('/analytics/exclude', { method: 'POST', headers: { origin: 'https://getschnaps.com' } });
+  assert.equal(optout.status, 303);
+  assert.match(optout.headers.get('set-cookie'), /^__Host-analytics_excluded=1;/);
+});
+
 test('signed feed bytes, conditional responses, and updater metadata survive the proxy', async () => {
   const f = fixture(), headers = { 'user-agent': 'Schnaps/0.7.4 Sparkle/2.10.1' };
   const feed = await f.request('/appcast.xml', { headers });
@@ -47,7 +65,7 @@ test('first-party file starts distinguish website, direct, updater, Debug, and f
   await f.request(path, { headers: { purpose: 'prefetch' } });
   f.setStatus(404); await f.request(path);
   assert.deepEqual(f.events.map(event => [event.source, event.version, event.runtime]), [
-    ['website', '0.7.4', 'release'], ['direct', '0.7.4', 'release'], ['updater', '0.7.4', 'debug'],
+    ['website', '0.7.4', 'release'], ['direct', '0.7.4', 'release'],
   ]);
   assert.equal((await f.request('/updates/artifacts/v0.7.3/Schnaps-0.7.4.dmg')).status, 404);
   assert.ok(f.calls.every(call => !call.url.includes('example.com')));
@@ -104,6 +122,6 @@ test('collector redirects are rejected without a second request', async () => {
     return new Response(null, { status: 302, headers: { location: 'https://outside.example' } });
   } } };
   const id = 'abcdef01-1234-4321-8321-123456789012';
-  const response = await receiveLaunch(new Request('https://getschnaps.com/api/app-starts', { method: 'POST', headers: { 'content-type': 'application/json', 'x-schnaps-client': 'macos-app' }, body: JSON.stringify({ launchID: id, installationID: id, version: '0.7.4', build: '16', runtime: 'debug' }) }), env);
+  const response = await receiveLaunch(new Request('https://getschnaps.com/api/app-starts', { method: 'POST', headers: { 'content-type': 'application/json', 'x-schnaps-client': 'macos-app' }, body: JSON.stringify({ launchID: id, installationID: id, version: '0.7.4', build: '16', runtime: 'release' }) }), env);
   assert.equal(response.status, 503); assert.equal(calls, 1);
 });

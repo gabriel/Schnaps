@@ -9,6 +9,7 @@ final class SchnapsLaunchReporter {
     private let installationID: UUID
     private let version: String
     private let build: String
+    private let defaults: UserDefaults
     private var task: URLSessionDataTask?
     private var hasStarted = false
 
@@ -31,6 +32,7 @@ final class SchnapsLaunchReporter {
         self.launchID = launchID
         self.version = version
         self.build = build
+        self.defaults = defaults
         // This random identifier belongs only to Schnaps's preferences domain. Never
         // reuse licensing identifiers, browser identities, hardware IDs, or Keychain.
         let key = "SchnapsAnalyticsInstallationID"
@@ -46,6 +48,7 @@ final class SchnapsLaunchReporter {
     func start(runtime: String) {
         guard !hasStarted else { return }
         hasStarted = true
+        guard runtime == "release", !defaults.bool(forKey: "SchnapsAnalyticsExcluded") else { return }
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

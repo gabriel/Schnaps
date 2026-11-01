@@ -74,6 +74,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         launchReporter = reporter
         reporter.start(runtime: runtime)
         updaterController.updater.httpHeaders = [
+            "X-Analytics-Excluded": UserDefaults.standard.bool(forKey: "SchnapsAnalyticsExcluded") ? "1" : "0",
             "X-Schnaps-Client": "macos-updater",
             "X-Schnaps-App-Version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown",
             "X-Schnaps-Runtime": runtime
