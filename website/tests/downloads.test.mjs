@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import worker from '../src/worker.mjs';
+import { createWorker } from '../src/worker.mjs';
+const worker = createWorker(async () => new Response(null, { status: 302, headers: { location: 'https://github.com/gabriel/Schnaps/releases/download/v0.7.4/Schnaps.dmg' } }));
 
 function context({ fail = false } = {}) {
   const writes = [], pending = [];
@@ -23,11 +24,10 @@ for (const [query, source] of [['?source=hero', 'hero'], ['?source=footer', 'foo
     const response = await worker.fetch(new Request(`https://getschnaps.com/download${query}`), c.env, c.ctx);
     await Promise.all(c.pending);
     assert.equal(response.status, 302);
-    assert.equal(response.headers.get('Location'), 'https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg');
+    assert.equal(response.headers.get('Location'), `/updates/artifacts/v0.7.4/Schnaps-0.7.4.dmg?source=${source}`);
     assert.equal(response.headers.get('Cache-Control'), 'no-store');
     assert.equal(await response.text(), '');
-    assert.deepEqual(c.writes.slice(0, 2).map(x => x.value), ['all', source]);
-    assert.match(c.writes[2].value, /^\d{4}-\d{2}-\d{2}$/);
+    assert.equal(c.writes.length, 0); // Only the subsequent file transfer counts centrally.
   });
 }
 

@@ -19,6 +19,7 @@ struct SchnapsApp {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
+    private var launchReporter: SchnapsLaunchReporter?
     private var statusItem: NSStatusItem?
     private var applyingPreferences = false
     private var settingsWindow: NSWindow?
@@ -68,6 +69,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(preferencesChanged),
                                                name: UserDefaults.didChangeNotification, object: nil)
         preferencesChanged()
+        let runtime = Bundle.main.object(forInfoDictionaryKey: "SchnapsBuildConfiguration") as? String == "release" ? "release" : "debug"
+        let reporter = SchnapsLaunchReporter()
+        launchReporter = reporter
+        reporter.start(runtime: runtime)
+        updaterController.updater.httpHeaders = [
+            "X-Analytics-Excluded": UserDefaults.standard.bool(forKey: "SchnapsAnalyticsExcluded") ? "1" : "0",
+            "X-Schnaps-Client": "macos-updater",
+            "X-Schnaps-App-Version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown",
+            "X-Schnaps-Runtime": runtime
+        ]
         updaterController.startUpdater()
         installHotKey()
         ShortcutSettings.shared.onChange = { [weak self] in
@@ -397,6 +408,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        launchReporter?.stop()
         for hotKey in hotKeys { UnregisterEventHotKey(hotKey) }
         if let handler { RemoveEventHandler(handler) }
     }

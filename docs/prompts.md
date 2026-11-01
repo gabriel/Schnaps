@@ -182,3 +182,35 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 > Apply the Split Caliper with the state changes and make a beta so I can test.
 
 **Result:** replaced the static ruler symbol with the approved original Split Caliper vectors. Open jaws indicate Idle; a span and fiducial indicate Find Dimensions; an interior rectangle indicates Measure Area; offset guides indicate visible design tools. Measurement mode takes priority over marks. Starting/stopping, switching tools with S, hiding marks, and the final Escape update the icon. The 22-point template image follows native light, dark, and selected tinting. Tooltips and accessibility labels name the current state.
+
+## 2026-10-31: Multi-app analytics
+
+> Can we also track all the same stats for the app Schnaps at ~/projects.next/Schnaps/ and deployed to getschnaps.com
+> So make the dashboard support multiple apps and have an apps selection with REL as default.
+
+### Schnaps PR-monitor prompt
+
+Monitor the Schnaps analytics PR on branch codex/gabriel/app-analytics in /Users/local/projects.next/Schnaps. Use gh --repo gabriel/Schnaps to identify its PR and latest head. Monitor both macOS CI matrix jobs, inspect actual failures, and fix them with the smallest safe changes after coordinating with main. Commit and push fixes, and re-monitor every changed head through success. Preserve signed feed/archive bytes and the historical bundle ID. Main owns Worker secrets, deployment, and integration checks. Log any additional delegated task prompts by appending to docs/prompts.md. Do not publish an app release or operate installed apps.
+
+### Service-binding repair monitoring prompt
+
+Re-monitor Schnaps PR #58 after the new service-binding repair is pushed. Direct receiver verification passed, but public Worker-to-Worker forwarding failed; the Worker now requires its private ANALYTICS service binding to rel-site while retaining the Schnaps-only write secret. Inspect any CI failure, coordinate before edits, make focused fixes, and re-monitor changed heads through both macOS jobs passing. No app release or installed-app operation is authorized by this monitoring task.
+
+## 2026-10-31 · Anonymous install counts and personal exclusions
+
+> I want to track all the stats from not me and not debug builds.. I also really want to know unique users without other tracking.. so maybe an install_id identifier and thats it with no tie to a user at all
+
+Delegated monitor prompt:
+
+> Monitor the current anonymous-install analytics PR and Schnaps PR #58 after the pushed SHAs are supplied. Verify latest heads, ready state, mergeability, and every CI check using gh with explicit --repo. Investigate and fix attributable failures with the smallest safe changes after coordinating edits with root. Root owns source and native verification; do not edit or build concurrently. Follow repository runtime/build isolation rules. Report verified SHAs and checks; re-monitor every changed head.
+
+User clarification:
+
+> Both REL and Schnaps
+
+Validated 15 Worker tests, the complete Swift suite, Debug packaging/signature,
+and deployed the Worker. This Mac's Release analytics exclusion preference is
+enabled; the next reporting release honors it. No pre-existing Schnaps analytics
+installation UUID was found. Live Debug/excluded launch requests return 204 and
+the browser exclusion form returns a secure boolean cookie. Browser exclusion
+remains per browser and site; local browser automation is disabled in Work settings.

@@ -4,7 +4,7 @@
 
 **A native screen measurement app for macOS.** Find dimensions, measure gaps, and keep the details that make a design work.
 
-[Website](https://getschnaps.com) · [Download for Mac](https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg) · [Releases](https://github.com/gabriel/Schnaps/releases) · [Documentation](docs/README.md)
+[Website](https://getschnaps.com) · [Download for Mac](https://getschnaps.com/download) · [Releases](https://github.com/gabriel/Schnaps/releases) · [Documentation](docs/README.md)
 
 ## Requirements and installation
 
@@ -63,7 +63,7 @@ Rulers, guides, frames, design grids/mockup overlays, screen templates, Loupe, C
 
 **Check for Updates…** is available in **Settings → About Schnaps**, the menu-bar menu, and app menu. About also includes the Stable/Beta channel selector and automatic update check and installation preferences. Sparkle manages update checks and its standard permission flow. Updates and the appcast are signed with Ed25519; published app bundles and DMGs are Developer ID signed and notarized.
 
-Screen images stay in memory on your Mac unless you explicitly copy or save a screenshot. The app has no analytics or accounts. Update checks contact GitHub. The optional responsive preview contacts websites you open. Accessibility is needed only for resizing another app’s attached window; Screen Recording is needed for live pixel/window inspection. Manually placed markers and text tools work without either permission. The website is hosted on Cloudflare and uses cookie-free Cloudflare Web Analytics for visits, page views, and referrers. See [updates and release process](docs/releases.md).
+Screen images stay in memory on your Mac unless you explicitly copy or save a screenshot. The app reports its version and a random Schnaps-only installation identifier for aggregate launch and update statistics. The identifier is hashed at getschnaps.com before forwarding to the private multi-app dashboard; it is not shared with other apps, accounts, hardware IDs, or browser identities. No screenshots or inspected text are sent as analytics. There are no app accounts. Update checks and downloads use a first-party proxy for signed GitHub releases. The optional responsive preview contacts websites you open. Accessibility is needed only for resizing another app’s attached window; Screen Recording is needed for live pixel/window inspection. Manually placed markers and text tools work without either permission. The website is hosted on Cloudflare and uses cookie-free Cloudflare Web Analytics for visits, page views, and referrers. See [updates and release process](docs/releases.md).
 
 ## Build from source
 

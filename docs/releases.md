@@ -59,7 +59,7 @@ The website is deployed with Wrangler from `website/`. Cloudflare provisions HTT
 
 About Schnaps → Updates → Channel offers Stable and Beta. Stable is the default for normal builds; a fresh beta install defaults to Beta. An explicit choice persists across builds. Beta permits Sparkle's `beta` channel plus normal stable updates; Stable permits only normal releases. Switching to Stable does not downgrade an already installed beta: it receives the next stable build with a higher build number.
 
-New builds use the signed combined feed at `https://github.com/gabriel/Schnaps/releases/download/updates/appcast.xml`. The `updates` prerelease is only a feed host. Existing clients keep using the stable latest-release feed; stable releases still publish `appcast.xml` and `Schnaps.dmg` at the legacy latest-release URLs. Beta releases are GitHub prereleases and never become Latest or replace the stable website download.
+New builds use `https://getschnaps.com/appcast.xml`, a byte-identical first-party proxy of the signed combined feed at `https://github.com/gabriel/Schnaps/releases/download/updates/appcast.xml`. The app routes archive requests through its first-party proxy without modifying signed feed or archive bytes. The `updates` prerelease is only a feed host. Existing clients keep using the stable latest-release feed; stable releases still publish `appcast.xml` and `Schnaps.dmg` at the legacy latest-release URLs. Beta releases are GitHub prereleases and never become Latest or replace the stable website download.
 
 ### One-command beta publication
 
