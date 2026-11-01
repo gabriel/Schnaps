@@ -182,3 +182,15 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 > Apply the Split Caliper with the state changes and make a beta so I can test.
 
 **Result:** replaced the static ruler symbol with the approved original Split Caliper vectors. Open jaws indicate Idle; a span and fiducial indicate Find Dimensions; an interior rectangle indicates Measure Area; offset guides indicate visible design tools. Measurement mode takes priority over marks. Starting/stopping, switching tools with S, hiding marks, and the final Escape update the icon. The 22-point template image follows native light, dark, and selected tinting. Tooltips and accessibility labels name the current state.
+
+## Keep Settings open while using tools
+
+> When Schnaps is activated, some windows disappear (like Settings window)... is that normal?
+
+> Can you make the Settings window reappear when I exit the tool, if it was open before?
+
+> I don't think we want to close settings when opened tbh
+
+> Merge the PR
+
+**Result:** removed explicit Settings hiding when starting measurement, design tools, and on-screen editing, including keyboard shortcuts and screen-recording permission flows. Included visible Settings windows in screen snapshots so they remain visible beneath the frozen measurement overlay. PR #57 was merged; all 48 local tests and both macOS CI checks passed.
