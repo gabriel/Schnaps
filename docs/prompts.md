@@ -296,6 +296,8 @@ remains per browser and site; local browser automation is disabled in Work setti
 
 > Should 0.7.5 include the analytics change that merged into main after beta.3?
 
+> Include current main (recommended; follows the stable release workflow)
+
 **PR monitor sub-agent prompt:**
 
 > Monitor the release PR for branch codex/gabriel/release-0.7.5 in /Users/gabe/projects.next/Schnap until all checks finish. Fix failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge or publish a release. Report the final head SHA, check results, and PR URL. Other open PRs are outside this task.
