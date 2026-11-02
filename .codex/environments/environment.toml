@@ -1,0 +1,35 @@
+version = 1
+name = "Schnaps"
+
+[setup]
+script = ""
+
+[[actions]]
+name = "Run Debug App"
+icon = "run"
+command = "make dev"
+
+[[actions]]
+name = "Test"
+icon = "tool"
+command = "make test"
+
+[[actions]]
+name = "Plan Beta"
+icon = "tool"
+command = "make plan-beta"
+
+[[actions]]
+name = "Build Release Tool"
+icon = "tool"
+command = "make build/tools/schnaps-release"
+
+[[actions]]
+name = "Publish Beta"
+icon = "tool"
+command = "make beta"
+
+[[actions]]
+name = "Publish Stable Release"
+icon = "tool"
+command = "make release"

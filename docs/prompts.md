@@ -214,3 +214,88 @@ enabled; the next reporting release honors it. No pre-existing Schnaps analytics
 installation UUID was found. Live Debug/excluded launch requests return 204 and
 the browser exclusion form returns a secure boolean cookie. Browser exclusion
 remains per browser and site; local browser automation is disabled in Work settings.
+## Keep Settings open while using tools
+
+> When Schnaps is activated, some windows disappear (like Settings window)... is that normal?
+
+> Can you make the Settings window reappear when I exit the tool, if it was open before?
+
+> I don't think we want to close settings when opened tbh
+
+> Merge the PR
+
+**Result:** removed explicit Settings hiding when starting measurement, design tools, and on-screen editing, including keyboard shortcuts and screen-recording permission flows. Included visible Settings windows in screen snapshots so they remain visible beneath the frozen measurement overlay. PR #57 was merged; all 48 local tests and both macOS CI checks passed.
+
+## Find Dimensions label placement
+
+> The Find Dimensions tool is showing the dimensions in weird places.. the y value position label seems to be very off
+
+**Workflow instructions:**
+
+> Create a branch and PR. Commit and push changes when applicable. In a sub-agent, monitor the PR and fix failures. If a PR changes after a successful run, monitor the PR again in a sub-agent to make sure it passes.
+>
+> Keep a log of all the prompts used in a docs/prompts.md file (appended).
+
+**Result:** center the vertical label on its measured span using the actual text width and height, with a consistent gap beside the line. Both dimension labels try the opposite side and nearby positions to avoid collisions, stay inside the display, and remain near their span when crowded instead of repeatedly drifting downward. Added regression coverage for alignment, variable text widths, collisions, crowded labels, and display edges.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the current branch's PR until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
+
+## Debug build and launch command
+
+> Add "make dev" which builds and starts the app (in Debug)
+
+**Result:** added a phony `dev` target that packages the Debug app using the existing build script and launches a new instance of `build/Schnaps.app`. Documented the command in the source-build instructions.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the current branch's PR until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
+
+## Codex environment Makefile actions
+
+> Add codex environment with actions for tasks in the makefile
+
+**Result:** added `.codex/environments/environment.toml` with actions for every runnable Makefile target: Debug launch, tests, beta planning, release-tool build, beta publishing, and stable publishing. No automatic setup commands are needed. Documented the actions in the README.
+
+**PR monitor coordination prompt:**
+
+> I am adding the user's requested Codex environment actions to the existing PR #61 branch. Please pause monitoring the current SHA; I will push the update shortly, then ask you to monitor the new head. Do not change source files meanwhile.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the current branch's PR until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
+
+## Combined Find Dimensions label at the crosshair
+
+> The find dimensions label should always be next to the center (bottom right), and always {w} x {h}
+
+**Reference:** attached screenshot showing the desired combined width × height readout.
+
+**Result:** Find Dimensions draws one width × height label 10 points below and right of the axes' intersection, rather than separate labels at each span's midpoint. Held and full pinned measurements use the same combined label. Detected regions use their center. Labels stay in place when other labels overlap, clamping only at display edges. Unit scaling and number rounding still apply, while unit suffixes, axis indicators, and aspect ratios are omitted. Measure Area and independently pinned single-axis distances retain their existing presentation.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the PR for branch codex/gabriel/combined-dimensions-label in /Users/gabe/.codex/worktrees/3ae3/Schnap-dimensions until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
+
+**Follow-up request:**
+
+> Create PR
+
+**Validation:** all 60 Swift tests passed; `git diff --check` passed.
+
+## 2026-11-02 · Fix and merge analytics PR #58
+
+> Fix and merge https://github.com/gabriel/Schnaps/pull/58
+
+**Workflow instructions:**
+
+> Create a branch and PR. Commit and push changes when applicable. In a sub-agent, monitor the PR and fix failures. If a PR changes after a successful run, monitor the PR again in a sub-agent to make sure it passes.
+>
+> Keep a log of all the prompts used in a docs/prompts.md file (appended).
+
+**Result:** merged current main into the existing analytics PR branch, preserving both prompt histories and the newer Settings, development commands, and Find Dimensions changes.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor PR #58 in gabriel/Schnaps at its latest pushed head until all checks finish. Verify the head SHA and mergeability. Investigate actual failures and fix attributable failures with minimal changes; append any additional prompts to docs/prompts.md, commit and push to codex/gabriel/app-analytics, and monitor each changed head again. Coordinate before editing or building locally because root owns local validation. Do not merge the PR or publish/deploy anything. Report the verified head SHA and final check results.
