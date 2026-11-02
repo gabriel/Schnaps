@@ -284,6 +284,22 @@ remains per browser and site; local browser automation is disabled in Work setti
 
 **Validation:** all 60 Swift tests passed; `git diff --check` passed.
 
+## Promote the current beta to stable
+
+> I want the current beta to be released to stable
+
+**Workflow instructions:** create a branch and PR, commit and push applicable changes, have a sub-agent monitor the PR and fix failures, monitor again after further pushes, and append prompts to this log.
+
+**Result:** prepare Schnaps 0.7.5 with stable as its default update channel and build 20, higher than 0.7.5-beta.3 (19). Add release notes for the beta's menu-bar states, combined dimension label, and Settings visibility fixes. Publish through the signed, notarized stable release workflow after CI passes and the release PR is merged.
+
+**Release-source clarification:**
+
+> Should 0.7.5 include the analytics change that merged into main after beta.3?
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the release PR for branch codex/gabriel/release-0.7.5 in /Users/gabe/projects.next/Schnap until all checks finish. Fix failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge or publish a release. Report the final head SHA, check results, and PR URL. Other open PRs are outside this task.
+
 ## 2026-11-02 · Fix and merge analytics PR #58
 
 > Fix and merge https://github.com/gabriel/Schnaps/pull/58
