@@ -81,8 +81,8 @@ extension DesignTools {
       else { return false }
       var p = CGPoint.zero
       var s = CGSize.zero
-      guard AXValueGetValue(unsafeBitCast(position, to: AXValue.self), .cgPoint, &p),
-        AXValueGetValue(unsafeBitCast(size, to: AXValue.self), .cgSize, &s)
+      guard AXValueGetValue(unsafeDowncast(position, to: AXValue.self), .cgPoint, &p),
+        AXValueGetValue(unsafeDowncast(size, to: AXValue.self), .cgSize, &s)
       else { return false }
       return abs(p.x - rect.minX) < 2 && abs(p.y - rect.minY) < 2 && abs(s.width - rect.width) < 2
         && abs(s.height - rect.height) < 2

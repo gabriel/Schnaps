@@ -252,3 +252,20 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 > Create PR
 
 **Validation:** all 60 Swift tests passed; `git diff --check` passed.
+
+
+## Fix compile warnings
+
+> Fix compile warnings
+
+**Workflow instructions:**
+
+> Create a branch and PR. Commit and push changes when applicable. In a sub-agent, monitor the PR and fix failures. If a PR changes after a successful run, monitor the PR again in a sub-agent to make sure it passes.
+>
+> Keep a log of all the prompts used in a docs/prompts.md file (appended).
+
+**Result:** replaced the string-based Find menu selector with a checked `#selector` and replaced Accessibility `unsafeBitCast` calls with `unsafeDowncast` after the existing Core Foundation type checks.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the PR for branch codex/gabriel/fix-compile-warnings in /Users/gabe/.codex/worktrees/7da4/Schnap until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
