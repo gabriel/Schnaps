@@ -69,6 +69,8 @@ Screen images stay in memory on your Mac unless you explicitly copy or save a sc
 
 Run `make dev` to build the app in Debug configuration and launch a new instance of `build/Schnaps.app`.
 
+Codex local environment actions in `.codex/environments/environment.toml` run the Makefile tasks: Debug launch, tests, beta planning, release-tool build, and beta/stable publishing.
+
 ```sh
 swift test
 swift Scripts/build-app.swift

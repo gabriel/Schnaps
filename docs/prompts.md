@@ -204,3 +204,17 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 **PR monitor sub-agent prompt:**
 
 > Monitor the current branch's PR until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
+
+## Codex environment Makefile actions
+
+> Add codex environment with actions for tasks in the makefile
+
+**Result:** added `.codex/environments/environment.toml` with actions for every runnable Makefile target: Debug launch, tests, beta planning, release-tool build, beta publishing, and stable publishing. No automatic setup commands are needed. Documented the actions in the README.
+
+**PR monitor coordination prompt:**
+
+> I am adding the user's requested Codex environment actions to the existing PR #61 branch. Please pause monitoring the current SHA; I will push the update shortly, then ask you to monitor the new head. Do not change source files meanwhile.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the current branch's PR until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
