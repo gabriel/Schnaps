@@ -568,7 +568,10 @@ final class MeasurementView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        let description = (selection ?? (heldDimensions ?? liveDimensions)?.rect).map { presentation.label($0, scale: scale) }
+        let description = (selection ?? (heldDimensions ?? liveDimensions)?.rect).map {
+            mode == .findDimensions ? FindDimensionsLabel.text(for: $0, presentation: presentation, scale: scale)
+                : presentation.label($0, scale: scale)
+        }
         setAccessibilityValue(description ?? "No active measurement")
         if let snapshot, UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) {
             NSImage(cgImage: snapshot.image, size: bounds.size).draw(in: bounds, from: .zero,
@@ -591,10 +594,26 @@ final class MeasurementView: NSView {
         var labels: [CGRect] = []
         for (index, rect) in pinned.enumerated() { drawMeasurement(rect, index: index + 1, active: false, labels: &labels) }
         if let rect = selection { drawMeasurement(rect, index: nil, active: true, labels: &labels) }
-        for distance in pinnedDistances { drawDistance(distance, held: true, labels: &labels) }
+        var distanceIndex = 0
+        while distanceIndex < pinnedDistances.count {
+            let horizontal = pinnedDistances[distanceIndex]
+            if distanceIndex + 1 < pinnedDistances.count,
+               let dimensions = FindDimensionsLabel.pair(horizontal, pinnedDistances[distanceIndex + 1]) {
+                drawDistance(dimensions.horizontal, held: true, labels: &labels, showLabel: false)
+                drawDistance(dimensions.vertical, held: true, labels: &labels, showLabel: false)
+                drawDimensionsLabel(dimensions.rect,
+                    at: CGPoint(x: dimensions.vertical.start.x, y: dimensions.horizontal.start.y), labels: &labels)
+                distanceIndex += 2
+            } else {
+                drawDistance(horizontal, held: true, labels: &labels)
+                distanceIndex += 1
+            }
+        }
         if let dimensions = heldDimensions ?? liveDimensions {
-            drawDistance(dimensions.horizontal, held: heldDimensions != nil, labels: &labels)
-            drawDistance(dimensions.vertical, held: heldDimensions != nil, labels: &labels)
+            drawDistance(dimensions.horizontal, held: heldDimensions != nil, labels: &labels, showLabel: false)
+            drawDistance(dimensions.vertical, held: heldDimensions != nil, labels: &labels, showLabel: false)
+            drawDimensionsLabel(dimensions.rect,
+                at: CGPoint(x: dimensions.vertical.start.x, y: dimensions.horizontal.start.y), labels: &labels)
         }
         if let message {
             NSGraphicsContext.saveGraphicsState()
@@ -621,7 +640,11 @@ final class MeasurementView: NSView {
                 handle.fill(); color.setStroke(); handle.stroke()
             }
         }
-        let text = (index.map { "\($0)  ·  " } ?? "") + presentation.label(rect, scale: scale) + (aspectRatio(rect,distance:mode == .findDimensions).map { " · " + $0 } ?? "")
+        if mode == .findDimensions {
+            drawDimensionsLabel(rect, at: CGPoint(x: rect.midX, y: rect.midY), labels: &labels)
+            return
+        }
+        let text = (index.map { "\($0)  ·  " } ?? "") + presentation.label(rect, scale: scale) + (aspectRatio(rect,distance:false).map { " · " + $0 } ?? "")
         var position = CGPoint(x: rect.midX, y: rect.maxY + 10)
         if position.y > bounds.height - 40 { position.y = max(8, rect.minY - 34) }
         var label = labelRect(text, at: position, centered: true)
@@ -636,7 +659,16 @@ final class MeasurementView: NSView {
              color: color.withAlphaComponent(0.65), dashed: true)
         labels.append(pill(text, at: position, centered: true, color: color))
     }
-    private func drawDistance(_ distance: DimensionSpan, held: Bool, labels: inout [CGRect]) {
+    private func drawDimensionsLabel(_ measurement: CGRect, at center: CGPoint, labels: inout [CGRect]) {
+        let text = FindDimensionsLabel.text(for: measurement, presentation: presentation, scale: scale)
+        let textSize = (text as NSString).size(withAttributes: textAttributes)
+        let rect = FindDimensionsLabel.frame(at: center,
+            size: CGSize(width: textSize.width + 22, height: 28), in: bounds)
+        drawPill(text, in: rect)
+        labels.append(rect)
+    }
+
+    private func drawDistance(_ distance: DimensionSpan, held: Bool, labels: inout [CGRect], showLabel: Bool = true) {
         let color = measurementColor(at: CGPoint(x:(distance.start.x+distance.end.x)/2,y:(distance.start.y+distance.end.y)/2))
         line(from: distance.start, to: distance.end, color: color, dashed: held)
         let horizontal = distance.isHorizontal
@@ -646,8 +678,8 @@ final class MeasurementView: NSView {
             line(from: CGPoint(x: point.x - dx, y: point.y - dy),
                  to: CGPoint(x: point.x + dx, y: point.y + dy), color: color, dashed: false)
         }
+        guard showLabel else { return }
         let text = presentation.distance(distance.length,scale:scale,horizontal:horizontal)
-            + (horizontal ? (heldDimensions ?? liveDimensions).flatMap { aspectRatio($0.rect,distance:true) }.map { " · " + $0 } ?? "" : "")
         let textSize = (text as NSString).size(withAttributes: textAttributes)
         let rect = DimensionLabelPlacement.frame(for: distance,
             size: CGSize(width: textSize.width + 22, height: 28), in: bounds, avoiding: labels)
