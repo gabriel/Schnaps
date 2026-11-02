@@ -194,3 +194,13 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 > Merge the PR
 
 **Result:** removed explicit Settings hiding when starting measurement, design tools, and on-screen editing, including keyboard shortcuts and screen-recording permission flows. Included visible Settings windows in screen snapshots so they remain visible beneath the frozen measurement overlay. PR #57 was merged; all 48 local tests and both macOS CI checks passed.
+
+## Debug build and launch command
+
+> Add "make dev" which builds and starts the app (in Debug)
+
+**Result:** added a phony `dev` target that packages the Debug app using the existing build script and launches a new instance of `build/Schnaps.app`. Documented the command in the source-build instructions.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the current branch's PR until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
