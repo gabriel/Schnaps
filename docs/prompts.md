@@ -210,3 +210,22 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 **PR monitor sub-agent prompt:**
 
 > Monitor the current branch's PR until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
+
+
+## Combined Find Dimensions label at the crosshair
+
+> The find dimensions label should always be next to the center (bottom right), and always {w} x {h}
+
+**Reference:** attached screenshot showing the desired combined width × height readout.
+
+**Result:** Find Dimensions draws one width × height label 10 points below and right of the axes' intersection, rather than separate labels at each span's midpoint. Held and full pinned measurements use the same combined label. Detected regions use their center. Labels stay in place when other labels overlap, clamping only at display edges. Unit scaling and number rounding still apply, while unit suffixes, axis indicators, and aspect ratios are omitted. Measure Area and independently pinned single-axis distances retain their existing presentation.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the PR for branch codex/gabriel/combined-dimensions-label in /Users/gabe/.codex/worktrees/3ae3/Schnap-dimensions until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
+
+**Follow-up request:**
+
+> Create PR
+
+**Validation:** all 60 Swift tests passed; `git diff --check` passed.
