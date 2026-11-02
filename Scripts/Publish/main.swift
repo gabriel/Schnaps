@@ -84,19 +84,7 @@ struct Manifest: Codable {
         else { throw PublishError("Invalid release configuration.") }
         let revision = try runner.run(["git", "rev-parse", "HEAD"], capture: true)
         if !planOnly {
-            guard try runner.run(["git", "status", "--porcelain"], capture: true).isEmpty else {
-                throw PublishError("Commit or stash changes before publishing.")
-            }
-            let branch = try runner.run(["git", "branch", "--show-current"], capture: true)
-            if channel == .stable && branch != "main" {
-                throw PublishError("Publish stable releases from main; beta releases may use a pushed feature branch.")
-            }
-            guard !branch.isEmpty,
-                try runner.run(["git", "ls-remote", "origin", "refs/heads/\(branch)"], capture: true).hasPrefix(
-                    revision)
-            else {
-                throw PublishError("Push the current branch before publishing its commit.")
-            }
+            try runner.run(["sh", "Scripts/check-release-source.sh"])
         }
         let lock = root.appendingPathComponent("build/Publish.lock")
         try manager.createDirectory(at: lock.deletingLastPathComponent(), withIntermediateDirectories: true)
