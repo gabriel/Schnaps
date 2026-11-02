@@ -1,6 +1,6 @@
 {
-  "version": "0.7.4",
-  "build": "16",
+  "version": "0.7.5",
+  "build": "20",
   "feedURL": "https://getschnaps.com/appcast.xml",
   "publicEDKey": "lRwHWwUu4/1Y1in0bdq4HSrZw7eCUQnC6O7NCoraPKQ=",
   "keychainAccount": "com.gabrielhandford.Schnaps",
