@@ -648,15 +648,11 @@ final class MeasurementView: NSView {
         }
         let text = presentation.distance(distance.length,scale:scale,horizontal:horizontal)
             + (horizontal ? (heldDimensions ?? liveDimensions).flatMap { aspectRatio($0.rect,distance:true) }.map { " · " + $0 } ?? "" : "")
-        var position = horizontal
-            ? CGPoint(x: (distance.start.x + distance.end.x) / 2, y: distance.start.y + 10)
-            : CGPoint(x: distance.start.x + 44, y: (distance.start.y + distance.end.y) / 2)
-        for _ in 0..<12 {
-            let rect = labelRect(text, at: position, centered: true)
-            if labels.contains(where: { $0.intersects(rect) }) { position.y += 30 }
-            else { break }
-        }
-        labels.append(pill(text, at: position, centered: true, color: color))
+        let textSize = (text as NSString).size(withAttributes: textAttributes)
+        let rect = DimensionLabelPlacement.frame(for: distance,
+            size: CGSize(width: textSize.width + 22, height: 28), in: bounds, avoiding: labels)
+        drawPill(text, in: rect)
+        labels.append(rect)
     }
 
     private func line(from start: CGPoint, to end: CGPoint, color: NSColor, dashed: Bool) {
@@ -682,11 +678,14 @@ final class MeasurementView: NSView {
     @discardableResult
     private func pill(_ text: String, at point: CGPoint, centered: Bool, color: NSColor) -> CGRect {
         let rect = labelRect(text, at: point, centered: centered)
+        drawPill(text, in: rect)
+        return rect
+    }
+    private func drawPill(_ text: String, in rect: CGRect) {
         NSColor.windowBackgroundColor.setFill()
         rect.fill()
         var attributes = textAttributes
         attributes[.foregroundColor] = NSColor.labelColor
         (text as NSString).draw(in: rect.insetBy(dx: 11, dy: 6), withAttributes: attributes)
-        return rect
     }
 }

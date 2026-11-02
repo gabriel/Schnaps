@@ -195,6 +195,22 @@ Screen Recording is requested for features that inspect screen pixels or enumera
 
 **Result:** removed explicit Settings hiding when starting measurement, design tools, and on-screen editing, including keyboard shortcuts and screen-recording permission flows. Included visible Settings windows in screen snapshots so they remain visible beneath the frozen measurement overlay. PR #57 was merged; all 48 local tests and both macOS CI checks passed.
 
+## Find Dimensions label placement
+
+> The Find Dimensions tool is showing the dimensions in weird places.. the y value position label seems to be very off
+
+**Workflow instructions:**
+
+> Create a branch and PR. Commit and push changes when applicable. In a sub-agent, monitor the PR and fix failures. If a PR changes after a successful run, monitor the PR again in a sub-agent to make sure it passes.
+>
+> Keep a log of all the prompts used in a docs/prompts.md file (appended).
+
+**Result:** center the vertical label on its measured span using the actual text width and height, with a consistent gap beside the line. Both dimension labels try the opposite side and nearby positions to avoid collisions, stay inside the display, and remain near their span when crowded instead of repeatedly drifting downward. Added regression coverage for alignment, variable text widths, collisions, crowded labels, and display edges.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the current branch's PR until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
+
 ## Debug build and launch command
 
 > Add "make dev" which builds and starts the app (in Debug)
