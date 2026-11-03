@@ -317,3 +317,19 @@ remains per browser and site; local browser automation is disabled in Work setti
 **PR monitor sub-agent prompt:**
 
 > Monitor PR #58 in gabriel/Schnaps at its latest pushed head until all checks finish. Verify the head SHA and mergeability. Investigate actual failures and fix attributable failures with minimal changes; append any additional prompts to docs/prompts.md, commit and push to codex/gabriel/app-analytics, and monitor each changed head again. Coordinate before editing or building locally because root owns local validation. Do not merge the PR or publish/deploy anything. Report the verified head SHA and final check results.
+
+## Fix compile warnings
+
+> Fix compile warnings
+
+**Workflow instructions:**
+
+> Create a branch and PR. Commit and push changes when applicable. In a sub-agent, monitor the PR and fix failures. If a PR changes after a successful run, monitor the PR again in a sub-agent to make sure it passes.
+>
+> Keep a log of all the prompts used in a docs/prompts.md file (appended).
+
+**Result:** replaced the string-based Find menu selector with a checked `#selector` and replaced Accessibility `unsafeBitCast` calls with `unsafeDowncast` after the existing Core Foundation type checks.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the PR for branch codex/gabriel/fix-compile-warnings in /Users/gabe/.codex/worktrees/7da4/Schnap until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.

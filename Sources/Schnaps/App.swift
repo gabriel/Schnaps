@@ -153,7 +153,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         editMenu.addItem(.separator())
         for (title,key,tag) in [("Find…","f",1),("Find Next","g",2),("Find Previous","G",3)] {
-            let entry=NSMenuItem(title:title,action:Selector("performFindPanelAction:"),keyEquivalent:key.lowercased())
+            let entry=NSMenuItem(title:title,action:#selector(NSTextView.performFindPanelAction(_:)),keyEquivalent:key.lowercased())
             entry.keyEquivalentModifierMask=key=="G" ? [.command,.shift]:[.command];entry.tag=tag
             editMenu.addItem(entry)
         }
