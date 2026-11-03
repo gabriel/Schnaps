@@ -24,7 +24,7 @@ final class ImagePreview: NSObject, ObservableObject, NSWindowDelegate {
       displayID = DesignTools.displayID(main)
     }
     if window == nil {
-      let window = NSWindow(
+      let window = AppWindow(
         contentRect: CGRect(x: 0, y: 0, width: 800, height: 700),
         styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered,
         defer: false)
@@ -36,7 +36,6 @@ final class ImagePreview: NSObject, ObservableObject, NSWindowDelegate {
       window.center()
       self.window = window
     }
-    NSApp.activate(ignoringOtherApps: true)
     window?.makeKeyAndOrderFront(nil)
   }
   func chooseFile() {

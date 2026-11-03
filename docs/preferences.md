@@ -5,7 +5,7 @@ Schnaps keeps its native sidebar settings. General, Screenshots, Tolerance, and 
 ## General
 
 - Language: system default, English, Simplified Chinese, Spanish, French, Italian, Japanese, or Russian. The measurement preferences, tool feedback, and menus update immediately. Pro, Sparkle, and some existing About/shortcut copy retain their own language behavior.
-- Activation: default tool, start at login through macOS Login Items, menu-bar visibility, and optional Dock icon. Reopen Schnaps from Finder or use its global shortcuts if both icons are hidden.
+- Activation: default tool, start at login through macOS Login Items, menu-bar visibility, and **Always show in dock**. The Dock icon and app menu also appear automatically while Settings, previews, or Text Inspector are open, including minimized windows. Reopen Schnaps from Finder or use its global shortcuts if both icons are hidden.
 - Retina: fractional points, rounded points, or physical display pixels. Display units, width/height indicators, and the cursor are independently configurable.
 - Clipboard: width/height or height/width; CSS or indented-syntax SASS in either property order. Shift-Return always copies width-first CSS. CSS and SASS use logical points as CSS pixels, regardless of Retina scaling.
 - Aspect ratios: automatic, integer standard ratios, decimal ratios, or common ratios only. Enable independently for Find Dimensions and Measure Area. Common ratios allow a 0.5% size mismatch for pixel rounding.
