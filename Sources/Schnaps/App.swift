@@ -114,6 +114,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private var menuLanguage: String?
+    private var menuShowsAllTools: Bool?
 
     private func buildMenus() {
         guard let statusItem else { return }
@@ -125,7 +126,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(shortcutItem(.area, action: #selector(measureArea)))
         menu.addItem(.separator())
         menu.addItem(toolOverlayMenuItem())
-        menu.addItem(designToolsMenu())
+        if UserDefaults.standard.bool(forKey: PreferenceKey.showAllMenuBarTools) {
+            let tools = designToolsMenu().submenu!
+            while let entry = tools.items.first {
+                tools.removeItem(entry)
+                menu.addItem(entry)
+            }
+        } else {
+            menu.addItem(designToolsMenu())
+        }
         menu.addItem(toleranceMenuItem())
         menu.addItem(.separator())
         menu.addItem(item("Settings…", action: #selector(showSettings), key: ","))
@@ -174,8 +183,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if statusItem.isVisible != showMenuBar { statusItem.isVisible = showMenuBar }
         NSApp.appearance = MeasurementPreferences.appearance
         let language = UserDefaults.standard.string(forKey: PreferenceKey.language) ?? "system"
-        if language != menuLanguage {
+        let showAllTools = UserDefaults.standard.bool(forKey: PreferenceKey.showAllMenuBarTools)
+        if language != menuLanguage || showAllTools != menuShowsAllTools {
             menuLanguage = language
+            menuShowsAllTools = showAllTools
             buildMenus()
             settingsWindow?.title = L("Schnaps Settings")
             updateMenuBarIcon(menuBarStatus.state)
