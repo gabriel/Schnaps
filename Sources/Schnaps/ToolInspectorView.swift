@@ -269,6 +269,8 @@ struct ToolInspectorView: View {
     Group {
       Section("Loupe") {
         Toggle("Loupe", isOn: Binding(get: { tools.loupe }, set: { _ in tools.show?(.loupe) }))
+        Text("Arrows pin and move one pixel; Shift-Arrows move ten. Space pins or resumes following the pointer. C copies; Shift-C saves a swatch.")
+          .font(.footnote).foregroundStyle(.secondary)
         LabeledContent("Magnification") { Slider(value: $tools.zoom, in: 2...32) }
         Toggle("Pixel grid", isOn: $tools.pixelGrid)
         Picker("Color format", selection: $tools.colorFormat) {

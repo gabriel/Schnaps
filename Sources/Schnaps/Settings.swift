@@ -333,10 +333,13 @@ struct SettingsView: View {
                 shortcut("Rotate ruler 1° / 5° / 0.1°", "⌥Arrows / ⇧⌥Arrows / ⌃⌥Arrows")
                 shortcut("Next horizontal guide / vertical guide / frame", "H / V / F")
                 shortcut("Set / reset crosshair origin", "O / R")
-                shortcut("Pin loupe position", "Space")
-                shortcut("Copy color / save swatch", "C / ⇧C")
                 shortcut("Delete selected marker", "Delete")
                 shortcut("Dismiss most recent tool", "Escape (repeat to clear)")
+            }
+            Section("While Using Loupe") {
+                shortcut("Pin / resume following pointer", "Space")
+                shortcut("Pin and move by one / ten pixels", "Arrows / ⇧Arrows")
+                shortcut("Copy color / save swatch", "C / ⇧C")
             }
             Section(L("Screenshots")) {
                 shortcut("Copy screenshot", "C")

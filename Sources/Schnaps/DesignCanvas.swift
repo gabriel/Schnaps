@@ -299,11 +299,10 @@ final class DesignCanvas: NSView {
     }
     let size = 180.0
     let zoom = max(2, min(32, state.zoom))
-    let pixels = size / zoom
-    let sampleRect = CGRect(
-      x: point.x * frame.scaleX - pixels / 2, y: point.y * frame.scaleY - pixels / 2, width: pixels,
-      height: pixels
-    ).integral
+    let selection = LoupeSelection(
+      point: point, scaleX: frame.scaleX, scaleY: frame.scaleY,
+      imageSize: CGSize(width: frame.image.width, height: frame.image.height))
+    let sampleRect = selection.sourceRect(size: size, zoom: zoom)
     let cropRect = sampleRect.intersection(
       CGRect(x: 0, y: 0, width: frame.image.width, height: frame.image.height))
     guard let crop = frame.image.cropping(to: cropRect) else { return }
@@ -313,8 +312,8 @@ final class DesignCanvas: NSView {
     NSColor.windowBackgroundColor.setFill()
     NSBezierPath(rect: rect.insetBy(dx: -2, dy: -2)).fill()
     let target = CGRect(
-      x: rect.minX + (cropRect.minX - sampleRect.minX) * zoom,
-      y: rect.minY + (cropRect.minY - sampleRect.minY) * zoom, width: cropRect.width * zoom,
+      x: rect.midX + (cropRect.minX - selection.pixel.x - 0.5) * zoom,
+      y: rect.midY + (cropRect.minY - selection.pixel.y - 0.5) * zoom, width: cropRect.width * zoom,
       height: cropRect.height * zoom)
     NSGraphicsContext.saveGraphicsState()
     NSBezierPath(rect: rect).addClip()
@@ -337,10 +336,16 @@ final class DesignCanvas: NSView {
       }
     }
     NSGraphicsContext.restoreGraphicsState()
-    let centerX = rect.minX + (point.x * frame.scaleX - sampleRect.minX) * zoom
-    let centerY = rect.minY + (point.y * frame.scaleY - sampleRect.minY) * zoom
-    line(CGPoint(x: centerX, y: rect.minY), CGPoint(x: centerX, y: rect.maxY), color: .white)
-    line(CGPoint(x: rect.minX, y: centerY), CGPoint(x: rect.maxX, y: centerY), color: .white)
+    // Outline the selected pixel without covering its color with centerlines.
+    let selectedPixel = CGRect(
+      x: rect.midX - zoom / 2, y: rect.midY - zoom / 2, width: zoom, height: zoom)
+    NSColor.black.setStroke()
+    let outline = NSBezierPath(rect: selectedPixel)
+    outline.lineWidth = 3
+    outline.stroke()
+    NSColor.white.setStroke()
+    outline.lineWidth = 1
+    outline.stroke()
     if let color = sample(point) {
       let value = color.formatted(state.colorFormat)
       caption(value, at: CGPoint(x: rect.minX, y: rect.maxY + 5))
@@ -436,11 +441,49 @@ final class DesignCanvas: NSView {
     original = nil
     originals = []
   }
+  private func handleLoupeKey(_ event: NSEvent) -> Bool {
+    // Leave application and system shortcuts to their usual handlers.
+    guard event.modifierFlags.intersection([.command, .control, .option]).isEmpty else { return false }
+    switch event.keyCode {
+    case 123, 124, 125, 126:
+      let global = state.frozenLoupe ?? NSEvent.mouseLocation
+      // A pinned sample stays on its display even if the pointer moves elsewhere.
+      guard display.frame.contains(global), let frame = snapshot?() else { return true }
+      let local = CGPoint(x: global.x - display.frame.minX, y: display.frame.maxY - global.y)
+      let selection = LoupeSelection(
+        point: local, scaleX: frame.scaleX, scaleY: frame.scaleY,
+        imageSize: CGSize(width: frame.image.width, height: frame.image.height))
+      let step = event.modifierFlags.contains(.shift) ? 10.0 : 1.0
+      let next = selection.moved(
+        dx: event.keyCode == 123 ? -step : event.keyCode == 124 ? step : 0,
+        dy: event.keyCode == 126 ? -step : event.keyCode == 125 ? step : 0)
+      state.frozenLoupe = CGPoint(x: next.x + display.frame.minX, y: display.frame.maxY - next.y)
+      return true
+    default:
+      switch event.charactersIgnoringModifiers?.lowercased() {
+      case " ":
+        if !event.isARepeat {
+          state.frozenLoupe = state.frozenLoupe == nil ? NSEvent.mouseLocation : nil
+        }
+        return true
+      case "c":
+        let global = state.frozenLoupe ?? NSEvent.mouseLocation
+        if let color = sample(CGPoint(x: global.x - display.frame.minX, y: display.frame.maxY - global.y)) {
+          state.colorSample = color
+          state.colorValue = color.formatted(state.colorFormat)
+          if event.modifierFlags.contains(.shift) { state.saveColor() } else { state.copyColor() }
+        }
+        return true
+      default: return false
+      }
+    }
+  }
   override func keyDown(with event: NSEvent) {
     if event.keyCode == 53 {
       if !event.isARepeat { state.dismiss?() }
       return
     }
+    if state.loupe && !state.editing && handleLoupeKey(event) { return }
     guard state.editing else {
       super.keyDown(with: event)
       return
