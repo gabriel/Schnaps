@@ -5,7 +5,7 @@ import MeasurementCore
 enum MeasurementPreferences {
     static let defaults: [String: Any] = [
         PreferenceKey.unit: "pt", PreferenceKey.roundPoints: true, PreferenceKey.tolerance: 18,
-        PreferenceKey.scrollTolerance: true, PreferenceKey.showInDock: false, PreferenceKey.showMenuBar: true,
+        PreferenceKey.scrollTolerance: true, PreferenceKey.showInDock: false, PreferenceKey.showMenuBar: true, PreferenceKey.showAllMenuBarTools: false,
         PreferenceKey.defaultTool: MeasurementMode.findDimensions.rawValue,
         PreferenceKey.language: "system", PreferenceKey.clipboardFormat: ClipboardFormat.widthHeight.rawValue,
         PreferenceKey.showUnits: true, PreferenceKey.showIndicators: false, PreferenceKey.showCursor: true,

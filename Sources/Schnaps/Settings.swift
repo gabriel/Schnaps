@@ -16,6 +16,7 @@ enum PreferenceKey {
     static let language = "appLanguage"
     static let roundPoints = "roundPoints"
     static let showMenuBar = "showMenuBar"
+    static let showAllMenuBarTools = "showAllMenuBarTools"
     static let clipboardFormat = "clipboardFormat"
     static let showUnits = "showMeasurementUnits"
     static let showIndicators = "showDimensionIndicators"
@@ -87,6 +88,7 @@ struct SettingsView: View {
     @AppStorage(PreferenceKey.language) private var language: String = "system"
     @AppStorage(PreferenceKey.roundPoints) private var roundedPoints: Bool = true
     @AppStorage(PreferenceKey.showMenuBar) private var showMenuBar: Bool = true
+    @AppStorage(PreferenceKey.showAllMenuBarTools) private var showAllMenuBarTools = false
     @AppStorage(PreferenceKey.clipboardFormat) private var clipboardFormat: String = ClipboardFormat.widthHeight.rawValue
     @AppStorage(PreferenceKey.showUnits) private var showUnits: Bool = true
     @AppStorage(PreferenceKey.showIndicators) private var showIndicators: Bool = false
@@ -178,6 +180,7 @@ struct SettingsView: View {
             Section {
                 Toggle(L("Start at login"), isOn: Binding(get: { loginItem.enabled || loginItem.needsApproval }, set: { loginItem.setEnabled($0) }))
                 Toggle(L("Show in menu bar"), isOn: $showMenuBar)
+                Toggle(L("Show all tools in menu bar menu"), isOn: $showAllMenuBarTools)
                 Toggle(L("Show in Dock"), isOn: $showInDock)
             } header: { Text(L("Activation")) } footer: {
                 if loginItem.needsApproval {

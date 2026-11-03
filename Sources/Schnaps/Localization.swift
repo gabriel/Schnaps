@@ -36,6 +36,7 @@ private enum SchnapsTranslations {
         Default tool|默认工具|Herramienta predeterminada|Outil par défaut|Strumento predefinito|既定のツール|Инструмент по умолчанию
         Start at login|登录时启动|Abrir al iniciar sesión|Ouvrir à la connexion|Apri al login|ログイン時に起動|Запускать при входе
         Show in menu bar|在菜单栏中显示|Mostrar en barra de menús|Afficher dans la barre des menus|Mostra nella barra dei menu|メニューバーに表示|Показывать в строке меню
+        Show all tools in menu bar menu|在菜单栏菜单中显示所有工具|Mostrar todas las herramientas en el menú de la barra|Afficher tous les outils dans le menu de la barre des menus|Mostra tutti gli strumenti nel menu della barra dei menu|メニューバーのメニューにすべてのツールを表示|Показывать все инструменты в меню строки меню
         Show in Dock|在程序坞中显示|Mostrar en el Dock|Afficher dans le Dock|Mostra nel Dock|Dock に表示|Показывать в Dock
         Measurement|测量|Medición|Mesure|Misurazione|測定|Измерение
         Retina measurements|Retina 测量|Medidas Retina|Mesures Retina|Misure Retina|Retina の測定|Измерения Retina
