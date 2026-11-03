@@ -284,6 +284,16 @@ remains per browser and site; local browser automation is disabled in Work setti
 
 **Validation:** all 60 Swift tests passed; `git diff --check` passed.
 
+## Restrict beta and stable publishing to current, clean main
+
+> Ensure make beta and make release can only be called on main branch with latest changes and no edits
+
+**Result:** both Make targets and direct publication require a clean `main` at the exact live `origin/main` commit. Staged edits, unstaged edits, untracked files, detached HEAD, feature branches, ahead/behind/diverged commits, and unverifiable remotes block publication. Make target checks also apply to plan/resume arguments; `make plan-beta` remains a read-only preview on any branch. Added disposable Git repository regression checks to CI.
+
+**PR monitor sub-agent prompt:**
+
+> Monitor the current branch's PR until all checks finish. Fix any failures caused by this change, run relevant checks, append any new prompts to docs/prompts.md, commit and push fixes, and monitor again after each push. Do not merge the PR. Report final check results and the PR URL.
+
 ## Promote the current beta to stable
 
 > I want the current beta to be released to stable
