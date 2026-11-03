@@ -115,7 +115,11 @@ final class DesignTools: ObservableObject {
   @Published var relativeOrigin: CGPoint? { didSet { redraw?() } }
   @Published var lineWidth = 1.0 { didSet { redraw?() } }
   @Published var loupe = false {
-    didSet { if loupe && !oldValue { recordPresentation(.loupe) }; redraw?() }
+    didSet {
+      if loupe && !oldValue { recordPresentation(.loupe) }
+      if !loupe { frozenLoupe = nil }
+      redraw?()
+    }
   }
   @Published var zoom = 8.0 { didSet { redraw?() } }
   @Published var pixelGrid = true
@@ -123,7 +127,9 @@ final class DesignTools: ObservableObject {
   @Published var colorValue = "—"
   @Published var referenceColor = "—"
   @Published var referenceFormat = "RGB"
-  @Published var frozenLoupe: CGPoint?
+  @Published var frozenLoupe: CGPoint? {
+    didSet { if frozenLoupe != oldValue { redraw?() } }
+  }
   @Published var contrast = "—"
   @Published var vision: VisionSimulation = .normal { didSet { redraw?() } }
   @Published var retinaPreview = false
@@ -560,7 +566,7 @@ final class DesignToolsController {
       window.makeKey()
       window.makeFirstResponder(window.contentView)
     }
-    if !state.editing && !dismissingTool { restorePreviousApplication() }
+    if !state.editing && !state.loupe && !state.crosshair && !dismissingTool { restorePreviousApplication() }
     if ticker == nil {
       ticker = Timer.scheduledTimer(withTimeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
         MainActor.assumeIsolated { self?.tick() }
@@ -568,6 +574,13 @@ final class DesignToolsController {
     }
   }
   private func tick() {
+    if state.loupe && !state.editing && windows.contains(where: { $0.isKeyWindow }),
+      let target = windows.first(where: { $0.frame.contains(state.frozenLoupe ?? NSEvent.mouseLocation) }),
+      !target.isKeyWindow
+    {
+      target.makeKey()
+      target.makeFirstResponder(target.contentView)
+    }
     let screenPreview =
       state.visible && state.markers.contains { $0.tool == .screens && $0.isVisible }
       && (state.vision != .normal || state.retinaPreview)
