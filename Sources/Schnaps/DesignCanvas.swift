@@ -299,22 +299,22 @@ final class DesignCanvas: NSView {
     }
     let size = 180.0
     let zoom = max(2, min(32, state.zoom))
-    let pixels = size / zoom
+    // Center the actual sampled physical pixel, including at fractional scale factors.
+    let pixelX = floor(point.x * frame.scaleX)
+    let pixelY = floor(point.y * frame.scaleY)
+    let count = Int(ceil(size / zoom)) + 2
     let sampleRect = CGRect(
-      x: point.x * frame.scaleX - pixels / 2, y: point.y * frame.scaleY - pixels / 2, width: pixels,
-      height: pixels
-    ).integral
+      x: pixelX - Double(count / 2), y: pixelY - Double(count / 2),
+      width: Double(count), height: Double(count))
     let cropRect = sampleRect.intersection(
       CGRect(x: 0, y: 0, width: frame.image.width, height: frame.image.height))
     guard let crop = frame.image.cropping(to: cropRect) else { return }
-    let rect = CGRect(
-      x: min(bounds.width - size - 8, max(8, point.x + 24)),
-      y: min(bounds.height - size - 58, max(8, point.y + 24)), width: size, height: size)
+    let rect = LoupeGeometry.panel(at: point, in: bounds, size: size)
     NSColor.windowBackgroundColor.setFill()
     NSBezierPath(rect: rect.insetBy(dx: -2, dy: -2)).fill()
     let target = CGRect(
-      x: rect.minX + (cropRect.minX - sampleRect.minX) * zoom,
-      y: rect.minY + (cropRect.minY - sampleRect.minY) * zoom, width: cropRect.width * zoom,
+      x: rect.midX + (cropRect.minX - pixelX - 0.5) * zoom,
+      y: rect.midY + (cropRect.minY - pixelY - 0.5) * zoom, width: cropRect.width * zoom,
       height: cropRect.height * zoom)
     NSGraphicsContext.saveGraphicsState()
     NSBezierPath(rect: rect).addClip()
@@ -337,10 +337,14 @@ final class DesignCanvas: NSView {
       }
     }
     NSGraphicsContext.restoreGraphicsState()
-    let centerX = rect.minX + (point.x * frame.scaleX - sampleRect.minX) * zoom
-    let centerY = rect.minY + (point.y * frame.scaleY - sampleRect.minY) * zoom
-    line(CGPoint(x: centerX, y: rect.minY), CGPoint(x: centerX, y: rect.maxY), color: .white)
-    line(CGPoint(x: rect.minX, y: centerY), CGPoint(x: rect.maxX, y: centerY), color: .white)
+    let selected = CGRect(x: rect.midX - zoom / 2, y: rect.midY - zoom / 2, width: zoom, height: zoom)
+    NSColor.black.setStroke()
+    let outline = NSBezierPath(rect: selected)
+    outline.lineWidth = 3
+    outline.stroke()
+    NSColor.white.setStroke()
+    outline.lineWidth = 1
+    outline.stroke()
     if let color = sample(point) {
       let value = color.formatted(state.colorFormat)
       caption(value, at: CGPoint(x: rect.minX, y: rect.maxY + 5))
