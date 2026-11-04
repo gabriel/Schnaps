@@ -190,7 +190,7 @@ final class TextInspectorWindow {
         // A floating design canvas must stop intercepting input before this window opens.
         DesignTools.shared.editing = false
         if window == nil {
-            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 680, height: 650),
+            let window = AppWindow(contentRect: NSRect(x: 0, y: 0, width: 680, height: 650),
                                   styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
             window.title = "Text Inspector"
             window.isReleasedWhenClosed = false
@@ -206,7 +206,6 @@ final class TextInspectorWindow {
             overlay.setFrame(placement.overlay, display: true)
             window.setFrame(placement.content, display: true)
         }
-        NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
     }
 }

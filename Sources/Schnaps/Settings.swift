@@ -181,7 +181,7 @@ struct SettingsView: View {
                 Toggle(L("Start at login"), isOn: Binding(get: { loginItem.enabled || loginItem.needsApproval }, set: { loginItem.setEnabled($0) }))
                 Toggle(L("Show in menu bar"), isOn: $showMenuBar)
                 Toggle(L("Show all tools in menu bar menu"), isOn: $showAllMenuBarTools)
-                Toggle(L("Show in Dock"), isOn: $showInDock)
+                Toggle(L("Always show in dock"), isOn: $showInDock)
             } header: { Text(L("Activation")) } footer: {
                 if loginItem.needsApproval {
                     Text(L("Approve Schnaps in System Settings → Login Items."))

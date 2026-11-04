@@ -200,13 +200,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func updateDockVisibility() {
-        let policy: NSApplication.ActivationPolicy = UserDefaults.standard.bool(forKey: PreferenceKey.showInDock) ? .regular : .accessory
-        guard NSApp.activationPolicy() != policy else { return }
-        NSApp.setActivationPolicy(policy)
-        if let settingsWindow, settingsWindow.isVisible {
-            NSApp.activate(ignoringOtherApps: true)
-            settingsWindow.makeKeyAndOrderFront(nil)
-        }
+        DockVisibility.update()
     }
 
     private func toolOverlayMenuItem() -> NSMenuItem {
@@ -349,7 +343,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         DesignTools.shared.editing=false
         overlay.stop()
         if settingsWindow == nil {
-            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 780, height: 560),
+            let window = AppWindow(contentRect: NSRect(x: 0, y: 0, width: 780, height: 560),
                                   styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
             window.identifier = ScreenSnapshot.settingsWindowIdentifier
             window.title = L("Schnaps Settings")
@@ -363,7 +357,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             window.center()
             settingsWindow = window
         }
-        NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
     }
 

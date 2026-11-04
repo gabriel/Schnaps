@@ -26,7 +26,7 @@ final class BrowserPreview: NSObject, ObservableObject, WKNavigationDelegate {
     // Keep the marks, but let clicks and keyboard focus reach this native window.
     DesignTools.shared.editing = false
     if window == nil {
-      let window = NSWindow(
+      let window = AppWindow(
         contentRect: CGRect(x: 0, y: 0, width: 1060, height: 760),
         styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered,
         defer: false)
@@ -37,7 +37,6 @@ final class BrowserPreview: NSObject, ObservableObject, WKNavigationDelegate {
       window.center()
       self.window = window
     }
-    NSApp.activate(ignoringOtherApps: true)
     window?.makeKeyAndOrderFront(nil)
   }
   func load() {
