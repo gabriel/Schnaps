@@ -1,4 +1,4 @@
-.PHONY: beta release plan-beta test dev check-release-source
+.PHONY: beta release promote plan-beta test dev check-release-source
 
 build/tools/schnaps-release: Sources/MeasurementCore/ReleaseChannel.swift Sources/MeasurementCore/ReleaseFeed.swift Scripts/Publish/main.swift
 	@mkdir -p build/tools
@@ -9,6 +9,9 @@ beta: check-release-source build/tools/schnaps-release
 
 release: check-release-source build/tools/schnaps-release
 	@build/tools/schnaps-release stable $(ARGS)
+
+promote: check-release-source build/tools/schnaps-release
+	@build/tools/schnaps-release promote $(ARGS)
 
 check-release-source:
 	@sh Scripts/check-release-source.sh

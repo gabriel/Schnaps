@@ -79,7 +79,7 @@ open build/Schnaps.app
 
 Open `Package.swift` in Xcode, or use SwiftPM. The app source is Swift using AppKit, SwiftUI, and ScreenCaptureKit. Sparkle 2 is the update framework; its binary package version and checksum are pinned in `Package.resolved`.
 
-Both `make beta` and `make release` require a clean `main` matching the latest `origin/main`. `make beta` builds, signs, notarizes, and publishes the next GitHub prerelease and signed Beta feed; `make plan-beta` previews the version. See [release documentation](docs/releases.md) for signing setup and recovery.
+`make beta`, `make release`, and `make promote` require a clean `main` matching the latest `origin/main`. `make beta` publishes the next prerelease, and `make plan-beta` previews its version. `make promote` takes the version of the latest published beta and publishes a fresh stable build from `main`. See [release documentation](docs/releases.md) for signing setup and recovery.
 
 `swift Scripts/build-app.swift --universal` builds both architectures. `--debug` selects debug configuration. For local signing, set `SCHNAPS_SIGN_IDENTITY` to an installed Apple Development identity; otherwise the build is ad-hoc signed. Distribution requires a Developer ID Application identity and notarization credentials.
 

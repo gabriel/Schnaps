@@ -42,7 +42,7 @@ class ReleaseSourceTests(unittest.TestCase):
         self.run_command("git", "push", "origin", "main")
         binary = self.repo / "build/tools/schnaps-release"
         binary.parent.mkdir(parents=True)
-        binary.write_text("#!/bin/sh\necho publisher-invoked\n")
+        binary.write_text('#!/bin/sh\necho "publisher-invoked $*"\n')
         binary.chmod(0o755)
 
     def guard(self, allowed=False):
@@ -51,13 +51,13 @@ class ReleaseSourceTests(unittest.TestCase):
 
     def test_clean_main_and_make_targets(self):
         self.guard(allowed=True)
-        for target in ("beta", "release"):
-            self.assertIn("publisher-invoked", self.run_command("make", target).stdout)
+        for target, mode in (("beta", "beta"), ("release", "stable"), ("promote", "promote")):
+            self.assertIn(f"publisher-invoked {mode} --plan", self.run_command("make", target, "ARGS=--plan").stdout)
 
     def test_feature_and_detached_heads(self):
         self.run_command("git", "switch", "-c", "feature")
         self.guard()
-        for target in ("beta", "release"):
+        for target in ("beta", "release", "promote"):
             for args in ("", "--plan", "--resume 1.0.0"):
                 result = self.run_command("make", target, "ARGS=" + args, check=False)
                 self.assertNotEqual(result.returncode, 0)
