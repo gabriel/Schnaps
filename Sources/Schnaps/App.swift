@@ -127,11 +127,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(.separator())
         menu.addItem(toolOverlayMenuItem())
         if UserDefaults.standard.bool(forKey: PreferenceKey.showAllMenuBarTools) {
-            let tools = designToolsMenu().submenu!
-            while let entry = tools.items.first {
-                tools.removeItem(entry)
-                menu.addItem(entry)
-            }
+            addDesignToolLaunchers(to: menu)
+            menu.addItem(designToolsMenu(includeLaunchers: false))
         } else {
             menu.addItem(designToolsMenu())
         }
@@ -214,14 +211,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     @objc private func toggleToolOverlay() { toolOverlay.toggle() }
 
-    private func designToolsMenu() -> NSMenuItem {
-        let parent = NSMenuItem(title: "Design Tools", action: nil, keyEquivalent: "")
-        let menu = NSMenu()
+    private func addDesignToolLaunchers(to menu: NSMenu) {
         for index in DesignTool.allCases.indices {
             let entry = shortcutItem(ShortcutAction(rawValue: UInt32(index + 3))!, action: #selector(launchDesignTool(_:)))
             entry.tag = index; menu.addItem(entry)
         }
-        menu.addItem(.separator())
+    }
+
+    private func designToolsMenu(includeLaunchers: Bool = true) -> NSMenuItem {
+        let parent = NSMenuItem(title: "Design Tools", action: nil, keyEquivalent: "")
+        let menu = NSMenu()
+        if includeLaunchers {
+            addDesignToolLaunchers(to: menu)
+            menu.addItem(.separator())
+        }
         menu.addItem(item("Image & Window Preview…", action:#selector(showImagePreview), key:""))
         menu.addItem(item("Responsive Web Preview…", action:#selector(showBrowserPreview), key:""))
         menu.addItem(item("Text Inspector…", action: #selector(showTextTools), key: ""))
