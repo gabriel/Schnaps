@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createWorker } from '../src/worker.mjs';
-const worker = createWorker(async () => new Response(null, { status: 302, headers: { location: 'https://github.com/gabriel/Schnaps/releases/download/v0.7.4/Schnaps.dmg' } }));
+const worker = createWorker(async () => new Response(null, { status: 302, headers: { location: 'https://github.com/rel-me/Schnaps/releases/download/v0.7.4/Schnaps.dmg' } }));
 
 function context({ fail = false } = {}) {
   const writes = [], pending = [];
@@ -17,6 +17,24 @@ function context({ fail = false } = {}) {
     ctx: { waitUntil: (promise) => pending.push(promise) },
   };
 }
+
+test('downloads still resolve while the destination repository is unavailable', async () => {
+  const requests = [];
+  const worker = createWorker(async (url) => {
+    requests.push(url);
+    return requests.length === 1
+      ? new Response(null, { status: 404 })
+      : new Response(null, { status: 302, headers: { location: 'https://github.com/gabriel/Schnaps/releases/download/v0.7.4/Schnaps.dmg' } });
+  });
+  const c = context();
+  const response = await worker.fetch(new Request('https://getschnaps.com/download'), c.env, c.ctx);
+  assert.deepEqual(requests, [
+    'https://github.com/rel-me/Schnaps/releases/latest/download/Schnaps.dmg',
+    'https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg',
+  ]);
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.get('Location'), '/updates/artifacts/v0.7.4/Schnaps-0.7.4.dmg?source=direct');
+});
 
 for (const [query, source] of [['?source=hero', 'hero'], ['?source=footer', 'footer'], ['?source=private-data&redirect=https://example.com', 'direct']]) {
   test(`download ${source}: fixed redirect and bounded aggregate data`, async () => {

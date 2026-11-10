@@ -24,7 +24,8 @@ public enum ReleaseFeed {
                     ?? enclosure.attribute(forName: "sparkle:shortVersionString")?.stringValue,
                 ReleaseVersion(version) != nil,
                 let url = enclosure.attribute(forName: "url")?.stringValue,
-                url.hasPrefix("https://github.com/gabriel/Schnaps/releases/download/"),
+                (url.hasPrefix("https://github.com/rel-me/Schnaps/releases/download/")
+                    || url.hasPrefix("https://github.com/gabriel/Schnaps/releases/download/")),
                 let signature = enclosure.attribute(forName: "sparkle:edSignature")?.stringValue,
                 Data(base64Encoded: signature)?.count == 64
             else { throw Failure.invalidFeed }

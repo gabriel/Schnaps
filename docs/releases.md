@@ -4,7 +4,7 @@
 
 `Config/Release.json` is the version/build and update configuration. Increase both `version` and the monotonically increasing `build` before a release. The first public release is 0.3.0 (3).
 
-Legacy clients use `https://github.com/gabriel/Schnaps/releases/latest/download/appcast.xml`. New builds use the combined Stable/Beta feed described below. Each latest stable release must include its signed feed and the stable `Schnaps.dmg` download alias. Enclosures use immutable versioned GitHub release asset URLs.
+Legacy clients use `https://github.com/gabriel/Schnaps/releases/latest/download/appcast.xml`, which redirects to the repository under `rel-me`. Keep the old repository path available for GitHub’s redirects, including those used by historical enclosure URLs. New builds use the combined Stable/Beta feed described below. Each latest stable release must include its signed feed and the stable `Schnaps.dmg` download alias. Enclosures use immutable versioned GitHub release asset URLs.
 
 The public Ed25519 key is safe to commit. The private key is stored only in the macOS login Keychain under account `com.gabrielhandford.Schnaps`. Never export it into this repository. Preserve it for future releases; Sparkle key rotation requires following Sparkle's signed-update migration procedure.
 
@@ -59,7 +59,7 @@ The website is deployed with Wrangler from `website/`. Cloudflare provisions HTT
 
 About Schnaps → Updates → Channel offers Stable and Beta. Stable is the default for normal builds; a fresh beta install defaults to Beta. An explicit choice persists across builds. Beta permits Sparkle's `beta` channel plus normal stable updates; Stable permits only normal releases. Switching to Stable does not downgrade an already installed beta: it receives the next stable build with a higher build number.
 
-New builds use `https://getschnaps.com/appcast.xml`, a byte-identical first-party proxy of the signed combined feed at `https://github.com/gabriel/Schnaps/releases/download/updates/appcast.xml`. The app routes archive requests through its first-party proxy without modifying signed feed or archive bytes. The `updates` prerelease is only a feed host. Existing clients keep using the stable latest-release feed; stable releases still publish `appcast.xml` and `Schnaps.dmg` at the legacy latest-release URLs. Beta releases are GitHub prereleases and never become Latest or replace the stable website download.
+New builds use `https://getschnaps.com/appcast.xml`, a byte-identical first-party proxy of the signed combined feed at `https://github.com/rel-me/Schnaps/releases/download/updates/appcast.xml`. The app routes archive requests through its first-party proxy without modifying signed feed or archive bytes. The `updates` prerelease is only a feed host. Existing clients keep using the stable latest-release feed; stable releases still publish `appcast.xml` and `Schnaps.dmg` at the legacy latest-release URLs. Beta releases are GitHub prereleases and never become Latest or replace the stable website download.
 
 ### One-command beta publication
 

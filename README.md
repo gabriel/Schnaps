@@ -4,7 +4,7 @@
 
 **A native screen measurement app for macOS.** Find dimensions, measure gaps, and keep the details that make a design work.
 
-[Website](https://getschnaps.com) · [Download for Mac](https://getschnaps.com/download) · [Releases](https://github.com/gabriel/Schnaps/releases) · [Documentation](docs/README.md)
+[Website](https://getschnaps.com) · [Download for Mac](https://getschnaps.com/download) · [Releases](https://github.com/rel-me/Schnaps/releases) · [Documentation](docs/README.md)
 
 ## Requirements and installation
 

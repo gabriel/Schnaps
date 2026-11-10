@@ -35,23 +35,25 @@ import Testing
     }
 }
 
-private func feed(_ build: Int, _ version: String, beta: Bool = false, file: String? = nil) -> Data {
+private func feed(_ build: Int, _ version: String, beta: Bool = false, file: String? = nil, owner: String = "rel-me") -> Data {
     Data(
         """
         <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0"><channel><title>Schnaps</title><item>
         <sparkle:version>\(build)</sparkle:version><sparkle:shortVersionString>\(version)</sparkle:shortVersionString>
         \(beta ? "<sparkle:channel>beta</sparkle:channel>" : "")
-        <enclosure url="https://github.com/gabriel/Schnaps/releases/download/v\(version)/\(file ?? "Schnaps.dmg")" sparkle:edSignature="\(Data(repeating:0,count:64).base64EncodedString())" length="100" type="application/octet-stream"/>
+        <enclosure url="https://github.com/\(owner)/Schnaps/releases/download/v\(version)/\(file ?? "Schnaps.dmg")" sparkle:edSignature="\(Data(repeating:0,count:64).base64EncodedString())" length="100" type="application/octet-stream"/>
         </item></channel></rss>
         """.utf8)
 }
 
 @Test func combinedFeedKeepsStableAndBetaAndRejectsCollidingBuilds() throws {
-    let stable = feed(8, "0.6.2")
+    let stable = feed(8, "0.6.2", owner: "gabriel")
     let beta = feed(9, "0.6.3-beta.1", beta: true)
     let merged = try ReleaseFeed.merge([stable, beta, stable])
     let entries = try ReleaseFeed.entries(merged)
     #expect(entries.map(\.build) == [9, 8])
+    #expect(entries[0].url.hasPrefix("https://github.com/rel-me/Schnaps/"))
+    #expect(entries[1].url.hasPrefix("https://github.com/gabriel/Schnaps/"))
     #expect(entries.filter { $0.channel == .stable }.map(\.version) == ["0.6.2"])
     #expect(
         entries.filter {

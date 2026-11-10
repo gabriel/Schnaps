@@ -1,11 +1,19 @@
 import { backgroundEvent, receiveLaunch, updaterMetadata, versionPattern, excludesAnalytics, browserExclusion } from './analytics.mjs';
-const feedURL = 'https://github.com/gabriel/Schnaps/releases/download/updates/appcast.xml';
-const upstreamBase = 'https://github.com/gabriel/Schnaps/releases/download/';
+const releases = 'https://github.com/rel-me/Schnaps/releases/';
+const legacyReleases = 'https://github.com/gabriel/Schnaps/releases/';
 const isPrefetch = request => /prefetch|prerender/i.test(`${request.headers.get('Sec-Purpose') ?? ''} ${request.headers.get('Purpose') ?? ''}`);
 const startsTransfer = (request, response) => request.method === 'GET' && !isPrefetch(request) &&
   (response.status === 200 || (response.status === 206 && /^bytes 0-/.test(response.headers.get('content-range') ?? '')));
 
 export function createWorker(fetcher = fetch) {
+  async function fetchRelease(path, options) {
+    const response = await fetcher(releases + path, options);
+    // Keep serving downloads while the new GitHub path is being transferred.
+    if (response.status !== 404) return response;
+    await response.body?.cancel();
+    return fetcher(legacyReleases + path, options);
+  }
+
   return { async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === '/analytics/exclude') return browserExclusion(request);
@@ -13,11 +21,11 @@ export function createWorker(fetcher = fetch) {
     if (url.pathname === '/download') {
       if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405, headers: { allow: 'GET, HEAD' } });
       try {
-        const release = await fetcher('https://github.com/gabriel/Schnaps/releases/latest/download/Schnaps.dmg', {
-          method: 'HEAD', redirect: 'manual', cf: { cacheTtl: 300, cacheEverything: true },
+        const release = await fetchRelease('latest/download/Schnaps.dmg', {
+          method: 'HEAD', redirect: 'manual', cf: { cacheTtlByStatus: { '200-399': 300, '400-599': 0 }, cacheEverything: true },
         });
         const location = release.headers.get('location') ?? '';
-        const latest = /^https:\/\/github\.com\/gabriel\/Schnaps\/releases\/download\/(v?\d+\.\d+\.\d+)\/Schnaps\.dmg$/.exec(location);
+        const latest = /^https:\/\/github\.com\/(?:rel-me|gabriel)\/Schnaps\/releases\/download\/(v?\d+\.\d+\.\d+)\/Schnaps\.dmg$/.exec(location);
         if (release.status !== 302 || !latest) throw new Error('Release unavailable');
         const tag = latest[1], version = tag.replace(/^v/, '');
         const source = ['hero', 'footer'].includes(url.searchParams.get('source')) ? url.searchParams.get('source') : 'direct';
@@ -35,7 +43,7 @@ export function createWorker(fetcher = fetch) {
     const forwarded = new Headers();
     for (const name of ['range', 'if-none-match', 'if-modified-since', 'if-range']) if (request.headers.has(name)) forwarded.set(name, request.headers.get(name));
     let upstream;
-    try { upstream = await fetcher(feed ? feedURL : upstreamBase + artifact[1] + '/' + artifact[2], { method: request.method, headers: forwarded, redirect: 'follow' }); }
+    try { upstream = await fetchRelease(feed ? 'download/updates/appcast.xml' : `download/${artifact[1]}/${artifact[2]}`, { method: request.method, headers: forwarded, redirect: 'follow' }); }
     catch { return new Response('Release service unavailable', { status: 502 }); }
     const headers = new Headers();
     for (const name of ['content-type', 'etag', 'last-modified', 'content-range', 'accept-ranges']) if (upstream.headers.has(name)) headers.set(name, upstream.headers.get(name));
