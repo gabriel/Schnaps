@@ -49,7 +49,7 @@ Crosshair follows the pointer, reports coordinates from each display's top-left,
 
 ## Loupe and palettes
 
-Loupe magnifies the pointer's physical pixels with a grid and centerlines. Color samples are converted to sRGB before formatting. Available formats: hex, short hex when exact, RGB, HSL, HSB, Lab D65, AppKit, SwiftUI, and UIColor. The reference format can differ from the primary format. Set a contrast reference to compare relative luminance; the displayed ratio follows the WCAG sRGB formula. Space pins the sample position while editing. C copies the value; Shift-C saves a swatch.
+Loupe magnifies the pointer's physical pixels with a grid and an outlined center pixel. The outlined pixel is the sampled color, including on Retina displays and near screen edges. Color samples are converted to sRGB before formatting. Available formats: hex, short hex when exact, RGB, HSL, HSB, Lab D65, AppKit, SwiftUI, and UIColor. The reference format can differ from the primary format. Set a contrast reference to compare relative luminance; the displayed ratio follows the WCAG sRGB formula. With Loupe active and marker editing off, arrows pin and nudge the sample one physical pixel; Shift-Arrows move ten pixels. Nudges stop at the display edges. Space pins the sample or resumes following the mouse. C copies the value; Shift-C saves a swatch.
 
 Saved colors persist, support JSON and named RGB Adobe ACO export, and can be imported from either format. Non-RGB ACO records are rejected with a conversion message. Palette clearing asks for confirmation.
 
