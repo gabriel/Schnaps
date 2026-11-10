@@ -47,9 +47,10 @@ struct Manifest: Codable {
     }
     static func publish() throws {
         let args = Array(CommandLine.arguments.dropFirst())
-        guard let first = args.first, let channel = UpdateChannel(rawValue: first) else {
+        let promote = args.first == "promote"
+        guard let first = args.first, let channel = promote ? .stable : UpdateChannel(rawValue: first) else {
             throw PublishError(
-                "Use make beta or make release. Optional ARGS: --plan, --version X.Y.Z, --resume VERSION.")
+                "Use make beta, make release, or make promote. Optional ARGS: --plan, --version X.Y.Z, --resume VERSION.")
         }
         var index = 1
         var seen = Set<String>()
@@ -73,6 +74,9 @@ struct Manifest: Codable {
         let planOnly = args.contains("--plan")
         let requested = try option("--version")
         let resume = try option("--resume")
+        if promote && requested != nil {
+            throw PublishError("make promote selects the latest published beta. Use make release to specify a version.")
+        }
         let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
         let manager = FileManager.default
         var runner = Runner(root: root)
@@ -122,18 +126,24 @@ struct Manifest: Codable {
             _ = try ReleaseFeed.entries(data)
             return data
         }
+        func latestRelease(_ available: [GitHubRelease], beta: Bool, includeDrafts: Bool = false)
+            -> (tag: String, version: ReleaseVersion)?
+        {
+            available.compactMap { release -> (tag: String, version: ReleaseVersion)? in
+                guard (includeDrafts || !release.isDraft), release.isPrerelease == beta,
+                    release.tagName.hasPrefix("v"), let version = ReleaseVersion(String(release.tagName.dropFirst())),
+                    (version.beta != nil) == beta
+                else { return nil }
+                return (release.tagName, version)
+            }.max { $0.version < $1.version }
+        }
         func seedFeeds(_ available: [GitHubRelease], includeDrafts: Bool = false) throws -> [Data] {
             var feeds: [Data] = []
-            let versioned = available.filter { (includeDrafts || !$0.isDraft) && $0.tagName.hasPrefix("v") }
-            func latest(_ beta: Bool) -> GitHubRelease? {
-                versioned.filter { $0.isPrerelease == beta }.max {
-                    (ReleaseVersion(String($0.tagName.dropFirst())) ?? ReleaseVersion("0.0.0")!)
-                        < (ReleaseVersion(String($1.tagName.dropFirst())) ?? ReleaseVersion("0.0.0")!)
-                }
-            }
             // Individual release feeds recover build allocation if a prior feed upload failed.
-            for release in [latest(false), latest(true)].compactMap({ $0 }) {
-                feeds.append(try downloadFeed(tag: release.tagName))
+            for beta in [false, true] {
+                if let release = latestRelease(available, beta: beta, includeDrafts: includeDrafts) {
+                    feeds.append(try downloadFeed(tag: release.tag))
+                }
             }
             if available.contains(where: { $0.tagName == "updates" && !$0.isDraft }) {
                 feeds.append(try downloadFeed(tag: "updates"))
@@ -158,10 +168,24 @@ struct Manifest: Codable {
                 version = try ReleasePlanning.nextBeta(
                     configured: configuredVersion, known: known, requested: requested)
             } else {
-                guard let stable = ReleaseVersion(requested ?? configuredVersion), stable.beta == nil,
-                    !known.compactMap(ReleaseVersion.init).filter({ $0.beta == nil }).contains(where: { $0 >= stable })
+                let target: String
+                if promote {
+                    guard let beta = latestRelease(available, beta: true) else {
+                        throw PublishError("No published beta release to promote.")
+                    }
+                    target = beta.version.base
+                } else {
+                    target = requested ?? configuredVersion
+                }
+                guard let stable = ReleaseVersion(target), stable.beta == nil
                 else {
                     throw PublishError("Increase the stable version in Config/Release.json or use --version X.Y.Z.")
+                }
+                if known.compactMap(ReleaseVersion.init).contains(where: { $0.beta == nil && $0 >= stable }) {
+                    throw PublishError(
+                        promote
+                            ? "Cannot promote \(stable.string): an equal or newer stable version already exists."
+                            : "Increase the stable version in Config/Release.json or use --version X.Y.Z.")
                 }
                 version = stable
             }
