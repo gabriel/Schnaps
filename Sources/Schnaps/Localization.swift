@@ -71,6 +71,8 @@ private enum SchnapsTranslations {
         File format|文件格式|Formato de archivo|Format de fichier|Formato file|ファイル形式|Формат файла
         Scale Retina screenshots to 1x|将 Retina 截图缩放到 1x|Reducir capturas Retina a 1x|Réduire les captures Retina à 1x|Riduci screenshot Retina a 1x|Retina 画像を 1 倍で保存|Уменьшать снимки Retina до 1x
         Play sounds|播放声音|Reproducir sonidos|Jouer des sons|Riproduci suoni|サウンドを再生|Воспроизводить звуки
+        Copy sound|复制声音|Sonido al copiar|Son de copie|Suono di copia|コピー音|Звук копирования
+        Preview copy sound|试听复制声音|Escuchar sonido al copiar|Écouter le son de copie|Ascolta il suono di copia|コピー音を試聴|Прослушать звук копирования
         Padding|留白|Margen|Marge|Margine|余白|Отступ
         Auto|自动|Auto|Auto|Auto|自動|Авто
         Hold Option to toggle padding when capturing.|截图时按住 Option 切换留白。|Mantén Opción para alternar el margen al capturar.|Maintenir Option pour changer la marge lors de la capture.|Tieni premuto Opzione per cambiare il margine durante la cattura.|撮影時に Option を押して余白を切り替えます。|Удерживайте Option при захвате, чтобы переключить отступ.
