@@ -6,7 +6,7 @@ public enum UpdateAnalyticsRouting {
         guard upstream.scheme == "https", upstream.host == "github.com",
               upstream.user == nil, upstream.password == nil, upstream.port == nil,
               upstream.query == nil, upstream.fragment == nil else { return nil }
-        let pattern = #"^/gabriel/Schnaps/releases/download/(v?[0-9]+\.[0-9]+\.[0-9]+(?:-beta\.[0-9]+)?)/(Schnaps-([0-9]+\.[0-9]+\.[0-9]+(?:-beta\.[0-9]+)?)\.(?:dmg|delta))$"#
+        let pattern = #"^/(?:rel-me|gabriel)/Schnaps/releases/download/(v?[0-9]+\.[0-9]+\.[0-9]+(?:-beta\.[0-9]+)?)/(Schnaps-([0-9]+\.[0-9]+\.[0-9]+(?:-beta\.[0-9]+)?)\.(?:dmg|delta))$"#
         guard let regex = try? NSRegularExpression(pattern: pattern),
               let match = regex.firstMatch(in: upstream.path, range: NSRange(upstream.path.startIndex..., in: upstream.path)),
               let tagRange = Range(match.range(at: 1), in: upstream.path),

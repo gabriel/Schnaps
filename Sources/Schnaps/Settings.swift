@@ -419,7 +419,7 @@ struct SettingsView: View {
             } footer: {
                 HStack(spacing: 16) {
                     Link("Website", destination: URL(string: "https://getschnaps.com")!)
-                    Link("Source Code", destination: URL(string: "https://github.com/gabriel/Schnaps")!)
+                    Link("Source Code", destination: URL(string: "https://github.com/rel-me/Schnaps")!)
                 }
                 .font(.footnote)
                 .padding(.top, -7)

@@ -78,7 +78,7 @@ struct Manifest: Codable {
         var runner = Runner(root: root)
         var config = try JSONDecoder().decode(
             [String: String].self, from: Data(contentsOf: root.appendingPathComponent("Config/Release.json")))
-        guard let repository = config["repository"], repository == "gabriel/Schnaps",
+        guard let repository = config["repository"], repository == "rel-me/Schnaps",
             let account = config["keychainAccount"],
             let configuredVersion = config["version"], let configuredBuild = Int(config["build"] ?? "")
         else { throw PublishError("Invalid release configuration.") }
