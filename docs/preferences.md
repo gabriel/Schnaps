@@ -18,6 +18,8 @@ During measurement, C copies the current area or the rectangle formed by the two
 
 Choose an export folder, PNG/JPEG, native Retina or 1x resolution, and capture sounds. Padding ranges from 0–100 logical points; Auto adds 8% of the shorter side, bounded to 8–64 points. Padding clips at the display edge. Hold Option with C/P to toggle it: configured padding becomes zero; zero becomes Auto.
 
+Copy sound offers Pop (the default), Purr, Glass, and Tink, with a speaker button to preview the selection. Play sounds controls both copying and saving screenshots; saving keeps its existing Tink sound.
+
 ## Tolerance
 
 Customize each of Zero, Low, Medium, and High from 0–100 with a slider or an editable numeric field. Typed values are clamped to that range. Choose a default preset; the menu bar, T/Shift-T, and optional scroll adjustment share this selection. Changing a preset updates active measurements immediately. Preset identity remains stable even when values overlap or are reordered.

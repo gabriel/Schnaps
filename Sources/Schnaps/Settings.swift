@@ -30,6 +30,7 @@ enum PreferenceKey {
     static let screenshotFormat = "screenshotFormat"
     static let screenshotScale = "screenshotScaleTo1x"
     static let screenshotSound = "screenshotSound"
+    static let screenshotCopySound = "screenshotCopySound"
     static let screenshotPadding = "screenshotPadding"
     static let screenshotFolder = "screenshotFolder"
     static let appearance = "appAppearance"
@@ -102,6 +103,7 @@ struct SettingsView: View {
     @AppStorage(PreferenceKey.screenshotFormat) private var screenshotFormat: String = "png"
     @AppStorage(PreferenceKey.screenshotScale) private var screenshotScale: Bool = false
     @AppStorage(PreferenceKey.screenshotSound) private var screenshotSound: Bool = true
+    @AppStorage(PreferenceKey.screenshotCopySound) private var screenshotCopySound = ScreenshotCopySound.pop.rawValue
     @AppStorage(PreferenceKey.screenshotPadding) private var screenshotPadding: Int = 0
     @AppStorage(PreferenceKey.screenshotFolder) private var screenshotFolder: String = NSHomeDirectory()+"/Desktop"
     @AppStorage(PreferenceKey.appearance) private var appearance: String = "system"
@@ -231,6 +233,21 @@ struct SettingsView: View {
                 }
                 Toggle(L("Scale Retina screenshots to 1x"), isOn: $screenshotScale)
                 Toggle(L("Play sounds"), isOn: $screenshotSound)
+                HStack {
+                    Picker(L("Copy sound"), selection: $screenshotCopySound) {
+                        ForEach(ScreenshotCopySound.allCases, id: \.rawValue) { sound in
+                            Text(sound.rawValue).tag(sound.rawValue)
+                        }
+                    }
+                    Button {
+                        ScreenshotCopySound.selected().play()
+                    } label: {
+                        Image(systemName: "speaker.wave.2")
+                    }
+                    .accessibilityLabel(L("Preview copy sound"))
+                    .help(L("Preview copy sound"))
+                }
+                .disabled(!screenshotSound)
             }
             Section {
                 LabeledContent(L("Padding")) {

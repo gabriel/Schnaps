@@ -2,6 +2,18 @@ import AppKit
 import MeasurementCore
 import UniformTypeIdentifiers
 
+enum ScreenshotCopySound: String, CaseIterable {
+    case pop = "Pop", purr = "Purr", glass = "Glass", tink = "Tink"
+
+    static func selected(in defaults: UserDefaults = .standard) -> Self {
+        Self(rawValue: defaults.string(forKey: PreferenceKey.screenshotCopySound) ?? "") ?? .pop
+    }
+
+    @MainActor func play() {
+        NSSound(named: NSSound.Name(rawValue))?.play()
+    }
+}
+
 @MainActor
 enum ScreenshotExport {
     enum ExportError: LocalizedError {
@@ -84,7 +96,10 @@ enum ScreenshotExport {
             try data.write(to: candidate, options: .atomic)
             url = candidate
         }
-        if d.bool(forKey: PreferenceKey.screenshotSound) { NSSound(named: "Tink")?.play() }
+        if d.bool(forKey: PreferenceKey.screenshotSound) {
+            if copy { ScreenshotCopySound.selected(in: d).play() }
+            else { NSSound(named: "Tink")?.play() }
+        }
         return url
     }
 }
