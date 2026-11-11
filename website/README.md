@@ -35,7 +35,7 @@ Cloudflare Web Analytics is configured for `getschnaps.com` in the account dashb
 
 The response CSP in `dist/_headers` permits scripts from `https://static.cloudflareinsights.com`, including Cloudflare's versioned beacon path. Reports use the same-origin `/cdn-cgi/rum` endpoint, so `connect-src` remains restricted to `'self'`. The normal local preview does not inject the analytics script. Test on the deployed hostname using a real browser; curl responses may omit automatic injection.
 
-View visits, page views, and referrers in Cloudflare → Observability → Analytics → Web analytics → getschnaps.com. Update requests carry app version metadata for aggregate counters as documented below. Website privacy copy distinguishes the website's cookie-free analytics from the app.
+View visits, page views, and referrers in Cloudflare → Observability → Analytics → Web analytics → getschnaps.com. Website privacy copy distinguishes the website's cookie-free analytics from the app.
 
 ## Legacy redirect history (read-only)
 
@@ -71,17 +71,12 @@ not prove completion or identify people. The older D1 redirect counters are pres
 one-time scoped historical import labels those distinctly. New redirects are
 not counted, so only subsequent actual file starts enter the new counters.
 
-The app sends no launch events and creates no analytics installation UUID. The retired
-`/api/app-starts` endpoint returns 410 without reading or forwarding payloads, including
-requests from older builds. Aggregate successful update requests and download starts
-remain available; they cannot measure unique installations, app launches, or confirmed
-upgrades. No historical launch records are deleted by this code change.
-
-Debug traffic is excluded. For your own Release install, set
+For your own Release install, set
 `defaults write com.gabrielhandford.Schnap SchnapsAnalyticsExcluded -bool true`
-and relaunch. This adds only a non-identifying `X-Analytics-Excluded: 1` boolean
-to Sparkle requests. Use `https://getschnaps.com/analytics/exclude` to exclude
-future downloads from this browser with a secure HttpOnly boolean cookie and no visitor ID.
+and relaunch. The Worker still serves
+signed feed/archive bytes but does not forward counters. Use
+`https://getschnaps.com/analytics/exclude` to exclude future downloads from this
+browser with a secure HttpOnly boolean cookie, with no visitor ID.
 
 Forwarding uses the private `ANALYTICS` service binding to `rel-site`, avoiding
 public Worker-to-Worker HTTP routing, and the Worker secret `ANALYTICS_FORWARDING_KEY`; the matching REL
