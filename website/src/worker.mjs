@@ -1,4 +1,4 @@
-import { backgroundEvent, receiveLaunch, updaterMetadata, versionPattern, excludesAnalytics, browserExclusion } from './analytics.mjs';
+import { backgroundEvent, updaterMetadata, versionPattern, excludesAnalytics, browserExclusion } from './analytics.mjs';
 const releases = 'https://github.com/rel-me/Schnaps/releases/';
 const legacyReleases = 'https://github.com/gabriel/Schnaps/releases/';
 const isPrefetch = request => /prefetch|prerender/i.test(`${request.headers.get('Sec-Purpose') ?? ''} ${request.headers.get('Purpose') ?? ''}`);
@@ -17,7 +17,7 @@ export function createWorker(fetcher = fetch) {
   return { async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === '/analytics/exclude') return browserExclusion(request);
-    if (url.pathname === '/api/app-starts') return receiveLaunch(request, env);
+    if (url.pathname === '/api/app-starts') return new Response(null, { status: 410, headers: { 'cache-control': 'no-store' } });
     if (url.pathname === '/download') {
       if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405, headers: { allow: 'GET, HEAD' } });
       try {
