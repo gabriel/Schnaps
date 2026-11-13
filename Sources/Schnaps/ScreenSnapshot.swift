@@ -12,7 +12,7 @@ enum PreviewWindowRole {
     static var sourceIDs:Set<CGWindowID> { Set(NSApp.windows.filter{$0.isVisible && $0.identifier==browser}.map{CGWindowID($0.windowNumber)}) }
 }
 
-struct ScreenSnapshot {
+struct ScreenSnapshot: Sendable {
     static let settingsWindowIdentifier = NSUserInterfaceItemIdentifier("SchnapsSettings")
 
     let image: CGImage
@@ -31,6 +31,23 @@ struct ScreenSnapshot {
         guard let result = pixels.objectBounds(in: pixelsRect, tolerance: tolerance) else { return nil }
         return CGRect(x: result.minX / scaleX, y: result.minY / scaleY,
                       width: result.width / scaleX, height: result.height / scaleY)
+    }
+
+    /// Only immutable image/geometry values cross actors. AppKit and capture objects stay on main.
+    static func converting(_ image: CGImage, logicalSize: CGSize) async throws -> ScreenSnapshot? {
+        try Task.checkCancellation()
+        let conversion = Task.detached(priority: .userInitiated) { () throws -> ScreenSnapshot? in
+            try Task.checkCancellation()
+            guard let pixels = PixelBuffer(image: image) else { return nil }
+            try Task.checkCancellation()
+            return ScreenSnapshot(image: image, pixels: pixels,
+                                  scaleX: CGFloat(image.width) / logicalSize.width,
+                                  scaleY: CGFloat(image.height) / logicalSize.height)
+        }
+        let result = try await withTaskCancellationHandler(
+            operation: { try await conversion.value }, onCancel: { conversion.cancel() })
+        try Task.checkCancellation()
+        return result
     }
 
     @MainActor
@@ -55,11 +72,11 @@ struct ScreenSnapshot {
             config.showsCursor = false
             config.captureResolution = .best
             let filter = SCContentFilter(display: display, excludingWindows: ownWindows)
+            try Task.checkCancellation()
+            let logicalSize = screen.frame.size
             let image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
-            if let pixels = PixelBuffer(image: image) {
-                snapshots[id] = ScreenSnapshot(image: image, pixels: pixels,
-                                               scaleX: CGFloat(image.width) / screen.frame.width,
-                                               scaleY: CGFloat(image.height) / screen.frame.height)
+            if let snapshot = try await converting(image, logicalSize: logicalSize) {
+                snapshots[id] = snapshot
             }
         }
         return snapshots
