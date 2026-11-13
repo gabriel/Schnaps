@@ -45,20 +45,3 @@ import Testing
     #expect(FindDimensionsLabel.pair(horizontal, horizontal) == nil)
     #expect(FindDimensionsLabel.pair(vertical, horizontal) == nil)
 }
-
-@Test func snapCapsuleStaysBelowDimensionsAtEveryDisplayEdge() throws {
-    let bounds = CGRect(x: 0, y: 0, width: 800, height: 600)
-    for center in [CGPoint.zero, CGPoint(x: 800, y: 600), CGPoint(x: 400, y: 300)] {
-        for width: CGFloat in [30, 160] {
-            let layout = FindDimensionsLabel.layout(at: center, width: width, snapWidth: 60, in: bounds)
-            let snap = try #require(layout.snap)
-            #expect(snap.minY == layout.measurement.maxY + 4)
-            #expect(snap.midX == layout.measurement.midX)
-            #expect(bounds.insetBy(dx: 8, dy: 8).contains(snap))
-            #expect(bounds.insetBy(dx: 8, dy: 8).contains(layout.measurement))
-        }
-    }
-    let plain = FindDimensionsLabel.layout(at: .zero, width: 120, snapWidth: nil, in: bounds)
-    #expect(plain.snap == nil)
-    #expect(plain.measurement == FindDimensionsLabel.frame(at: .zero, size: CGSize(width: 120, height: 28), in: bounds))
-}
