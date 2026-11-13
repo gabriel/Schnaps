@@ -14,6 +14,21 @@ enum FindDimensionsLabel {
         "\(presentation.value(rect.width, scale: scale)) × \(presentation.value(rect.height, scale: scale))"
     }
 
+    /// Clamp the whole stack so the capsule always stays below the measurement.
+    static func layout(at center: CGPoint, width: CGFloat, snapWidth: CGFloat?, in bounds: CGRect)
+        -> (measurement: CGRect, snap: CGRect?) {
+        let stack = frame(at: center, size: CGSize(width: max(width, snapWidth ?? 0),
+                                                  height: snapWidth == nil ? 28 : 56), in: bounds)
+        let measurementWidth = min(width, stack.width)
+        let measurement = CGRect(x: stack.minX + (stack.width - measurementWidth) / 2,
+                                 y: stack.minY, width: measurementWidth, height: 28)
+        let snap = snapWidth.map { width in
+            let width = min(width, stack.width)
+            return CGRect(x: stack.midX - width / 2, y: measurement.maxY + 4, width: width, height: 24)
+        }
+        return (measurement, snap)
+    }
+
     /// The center is the axes' intersection, not the midpoint of either span.
     /// Keep the label below and right of it, clamping only at the display edges.
     static func frame(at center: CGPoint, size: CGSize, in bounds: CGRect) -> CGRect {

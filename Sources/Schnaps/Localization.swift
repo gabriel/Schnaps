@@ -61,6 +61,7 @@ private enum SchnapsTranslations {
         Show in Find Dimensions|在查找尺寸中显示|Mostrar en Buscar dimensiones|Afficher dans Trouver les dimensions|Mostra in Trova dimensioni|寸法検出で表示|Показывать при поиске размеров
         Show in Measure Area|在测量区域中显示|Mostrar en Medir área|Afficher dans Mesurer une zone|Mostra in Misura area|領域測定で表示|Показывать при измерении области
         Distance tool|距离工具|Herramienta de distancia|Outil de distance|Strumento distanza|距離ツール|Инструмент расстояния
+        Snap|吸附|Ajustar|Alignement|Aggancio|スナップ|Привязка
         Snap to guides|吸附到参考线|Ajustar a guías|Aligner sur les guides|Aggancia alle guide|ガイドにスナップ|Привязывать к направляющим
         Snap to selected objects|吸附到已选对象|Ajustar a objetos seleccionados|Aligner sur les objets sélectionnés|Aggancia agli oggetti selezionati|選択したオブジェクトにスナップ|Привязывать к выбранным объектам
         Freeze screen|冻结屏幕|Congelar pantalla|Figer l’écran|Blocca schermo|画面を固定|Заморозить экран
