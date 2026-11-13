@@ -21,3 +21,21 @@ Moved captured CGImage-to-PixelBuffer conversion into a detached task with cance
 ## Delegated PR monitoring prompt
 
 Monitor the PR for branch `codex/gabriel/vision-cache-background-pixels` in `rel-me/Schnaps` until all checks finish. Use `gh` to inspect the PR and CI results. If checks fail because of these changes, fix the issue, append your follow-up work to `docs/prompts/20261113153816_vision-cache-background-pixels.md`, run appropriate local validation, commit and push the fix, and monitor the new head again. Do not merge. Report the final PR URL, head commit, and check results. Wait between polls and send meaningful progress updates so the parent can keep the user informed.
+
+## Follow-up user request
+
+Can you benchmark these changes against main to see how much they improve CPU usage and responsiveness?
+
+## Benchmark approach
+
+Compile the actual core conversion, ScreenSnapshot, VisionRenderer, and candidate cache sources from pinned main/candidate commits with Swift `-O`. Use identical synthetic scenes and a baseline adapter matching main's DesignCanvas crop/filter/resampling calls. Measure process CPU and wall time for 120 redraws with a 30:4 redraw/capture ratio, plus all-cache-miss control. Separately measure 4K/5K pixel conversion at four frames per second with a detached producer probing MainActor scheduling every 2 ms. Alternate execution order across five trials. Commit the reusable harness, raw measurements, and a report distinguishing isolated path measurements from full-app CPU/UI performance.
+
+## Benchmark results and validation
+
+Five final paired trials compare main `8cb1825` to candidate `c1107e4` on an M2 Pro. Median CPU reductions are 81.3% (grayscale screen), 87.0% (blur + Retina), and 87.6% (stationary Loupe). All-miss control changes are inconclusive. Conversion-only CPU changes are +2.1% at 4K and +0.6% at 5K, with overlapping trial ranges. Median-trial p99 MainActor service delay changes from 0.944 to 0.447 ms at 4K and 1.059 to 0.468 ms at 5K. Scheduling outliers persist; the report includes maxima, ranges, the instrumented workload's additional CPU, and limitations on extrapolating to whole-app behavior.
+
+Both optimized benchmark binaries compiled and ran for five trials; all conversion checksums agree. Verified Python runner syntax, trial counts, measured harness SHA-256, and whitespace. Runtime implementation is unchanged. Results and raw measurements are under `docs/benchmarks/20261113-preview-performance.*`.
+
+## Delegated PR monitoring prompt after benchmark additions
+
+Monitor the PR for branch `codex/gabriel/vision-cache-background-pixels` in `rel-me/Schnaps` until all checks finish. Use `gh` to inspect the PR and CI results. If checks fail because of these changes, fix the issue, append your follow-up work to `docs/prompts/20261113153816_vision-cache-background-pixels.md`, run appropriate local validation, commit and push the fix, and monitor the new head again. Do not merge. Report the final PR URL, head commit, and check results. Wait between polls and send meaningful progress updates so the parent can keep the user informed.

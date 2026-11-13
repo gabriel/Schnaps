@@ -1,0 +1,1195 @@
+{
+  "revisions": {
+    "main": "8cb182518dd10d3266090a7082ef7324545eb22f",
+    "candidate": "c1107e40ddb3623390f15dea62a19667dfbbf28e"
+  },
+  "trials": 5,
+  "machine": "Apple M2 Pro",
+  "os": "26.7.1",
+  "compiler": "Apple Swift version 6.3.3 (swiftlang-6.3.3.1.3 clang-2100.1.1.101)\nTarget: arm64-apple-macosx26.0",
+  "harness_sha256": "c75db20a9c21de704cefd4087ca6215b120bcf7fbf00a45273747fc80a994717",
+  "summary": {
+    "main": {
+      "screen-grayscale": {
+        "cpu_ms": {
+          "median": 535.2560000000001,
+          "min": 504.433,
+          "max": 550.975
+        },
+        "redraws": {
+          "median": 120,
+          "min": 120,
+          "max": 120
+        },
+        "wall_ms": {
+          "median": 618.6976250028238,
+          "min": 545.0009583728388,
+          "max": 649.5851250365376
+        }
+      },
+      "screen-blur-retina": {
+        "cpu_ms": {
+          "median": 1129.4789999999998,
+          "min": 1069.629,
+          "max": 1216.4869999999999
+        },
+        "redraws": {
+          "median": 120,
+          "min": 120,
+          "max": 120
+        },
+        "wall_ms": {
+          "median": 1253.178208367899,
+          "min": 1151.931666652672,
+          "max": 1342.0082499505952
+        }
+      },
+      "loupe-grayscale": {
+        "cpu_ms": {
+          "median": 29.130000000000322,
+          "min": 27.745000000000132,
+          "max": 30.32099999999982
+        },
+        "redraws": {
+          "median": 120,
+          "min": 120,
+          "max": 120
+        },
+        "wall_ms": {
+          "median": 42.90579166263342,
+          "min": 40.06841673981398,
+          "max": 51.03420838713646
+        }
+      },
+      "screen-cache-misses": {
+        "cpu_ms": {
+          "median": 536.6800000000001,
+          "min": 496.12499999999994,
+          "max": 671.8229999999999
+        },
+        "redraws": {
+          "median": 120,
+          "min": 120,
+          "max": 120
+        },
+        "wall_ms": {
+          "median": 609.0004165889695,
+          "min": 528.5618333145976,
+          "max": 1134.5998749602586
+        }
+      },
+      "conversion-cpu-3840x2160": {
+        "checksum": {
+          "median": 14520,
+          "min": 14520,
+          "max": 14520
+        },
+        "cpu_ms": {
+          "median": 91.6220000000001,
+          "min": 89.54099999999966,
+          "max": 93.45999999999988
+        },
+        "frames": {
+          "median": 60,
+          "min": 60,
+          "max": 60
+        },
+        "wall_ms": {
+          "median": 101.51616670191288,
+          "min": 93.95320841576904,
+          "max": 105.41070834733546
+        }
+      },
+      "conversion-3840x2160": {
+        "checksum": {
+          "median": 2904,
+          "min": 2904,
+          "max": 2904
+        },
+        "conversion_p50_ms": {
+          "median": 1.6820416785776615,
+          "min": 1.4125417219474912,
+          "max": 2.1142082987353206
+        },
+        "conversion_p95_ms": {
+          "median": 3.0337499920278788,
+          "min": 2.3864583345130086,
+          "max": 4.137958283536136
+        },
+        "cpu_ms": {
+          "median": 74.2079999999996,
+          "min": 74.02799999999976,
+          "max": 92.54000000000006
+        },
+        "frames": {
+          "median": 12,
+          "min": 12,
+          "max": 12
+        },
+        "heartbeat_count": {
+          "median": 991,
+          "min": 971,
+          "max": 996
+        },
+        "heartbeat_max_ms": {
+          "median": 3.6742916563525796,
+          "min": 2.278749947436154,
+          "max": 6.8833333207294345
+        },
+        "heartbeat_over_8ms": {
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "heartbeat_over_16ms": {
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "heartbeat_p95_ms": {
+          "median": 0.0867500202730298,
+          "min": 0.04570826422423124,
+          "max": 0.23591669742017984
+        },
+        "heartbeat_p99_ms": {
+          "median": 0.9440833237022161,
+          "min": 0.7704582531005144,
+          "max": 1.6956666950136423
+        },
+        "wall_ms": {
+          "median": 3001.335791661404,
+          "min": 3000.105833285488,
+          "max": 3002.7248749975115
+        }
+      },
+      "conversion-cpu-5120x2880": {
+        "checksum": {
+          "median": 14520,
+          "min": 14520,
+          "max": 14520
+        },
+        "cpu_ms": {
+          "median": 165.2110000000002,
+          "min": 161.08399999999978,
+          "max": 176.8130000000001
+        },
+        "frames": {
+          "median": 60,
+          "min": 60,
+          "max": 60
+        },
+        "wall_ms": {
+          "median": 185.89687498752028,
+          "min": 175.01125007402152,
+          "max": 212.52766670659184
+        }
+      },
+      "conversion-5120x2880": {
+        "checksum": {
+          "median": 2904,
+          "min": 2904,
+          "max": 2904
+        },
+        "conversion_p50_ms": {
+          "median": 2.729958272539079,
+          "min": 2.6751250261440873,
+          "max": 2.981666591949761
+        },
+        "conversion_p95_ms": {
+          "median": 6.472375011071563,
+          "min": 4.091083304956555,
+          "max": 7.283541723154485
+        },
+        "cpu_ms": {
+          "median": 98.72000000000014,
+          "min": 88.71200000000013,
+          "max": 114.1239999999999
+        },
+        "frames": {
+          "median": 12,
+          "min": 12,
+          "max": 12
+        },
+        "heartbeat_count": {
+          "median": 984,
+          "min": 918,
+          "max": 995
+        },
+        "heartbeat_max_ms": {
+          "median": 6.101958337239921,
+          "min": 5.197583348490298,
+          "max": 27.966749970801175
+        },
+        "heartbeat_over_8ms": {
+          "median": 0,
+          "min": 0,
+          "max": 3
+        },
+        "heartbeat_over_16ms": {
+          "median": 0,
+          "min": 0,
+          "max": 1
+        },
+        "heartbeat_p95_ms": {
+          "median": 0.11725001968443394,
+          "min": 0.05837506614625454,
+          "max": 0.56900002527982
+        },
+        "heartbeat_p99_ms": {
+          "median": 1.0587499709799886,
+          "min": 0.8531666826456785,
+          "max": 3.235874930396676
+        },
+        "wall_ms": {
+          "median": 3001.8240000354126,
+          "min": 3000.592708354816,
+          "max": 3002.9100415995345
+        }
+      }
+    },
+    "candidate": {
+      "screen-grayscale": {
+        "cpu_ms": {
+          "median": 99.92799999999998,
+          "min": 96.849,
+          "max": 103.283
+        },
+        "redraws": {
+          "median": 120,
+          "min": 120,
+          "max": 120
+        },
+        "wall_ms": {
+          "median": 107.81800001859665,
+          "min": 103.97383337840438,
+          "max": 120.83200004417449
+        }
+      },
+      "screen-blur-retina": {
+        "cpu_ms": {
+          "median": 146.713,
+          "min": 146.01400000000004,
+          "max": 156.472
+        },
+        "redraws": {
+          "median": 120,
+          "min": 120,
+          "max": 120
+        },
+        "wall_ms": {
+          "median": 157.47854171786457,
+          "min": 153.4097082912922,
+          "max": 180.59241666924208
+        }
+      },
+      "loupe-grayscale": {
+        "cpu_ms": {
+          "median": 3.601999999999994,
+          "min": 3.383999999999998,
+          "max": 3.83
+        },
+        "redraws": {
+          "median": 120,
+          "min": 120,
+          "max": 120
+        },
+        "wall_ms": {
+          "median": 4.853791557252407,
+          "min": 4.519541747868061,
+          "max": 5.541500053368509
+        }
+      },
+      "screen-cache-misses": {
+        "cpu_ms": {
+          "median": 507.566,
+          "min": 484.987,
+          "max": 534.322
+        },
+        "redraws": {
+          "median": 120,
+          "min": 120,
+          "max": 120
+        },
+        "wall_ms": {
+          "median": 571.8265000032261,
+          "min": 524.3355000857264,
+          "max": 670.2095416840166
+        }
+      },
+      "conversion-cpu-3840x2160": {
+        "checksum": {
+          "median": 14520,
+          "min": 14520,
+          "max": 14520
+        },
+        "cpu_ms": {
+          "median": 93.51799999999999,
+          "min": 91.34300000000006,
+          "max": 96.01099999999995
+        },
+        "frames": {
+          "median": 60,
+          "min": 60,
+          "max": 60
+        },
+        "wall_ms": {
+          "median": 94.55687494482845,
+          "min": 91.07083338312805,
+          "max": 105.54975003469735
+        }
+      },
+      "conversion-3840x2160": {
+        "checksum": {
+          "median": 2904,
+          "min": 2904,
+          "max": 2904
+        },
+        "conversion_p50_ms": {
+          "median": 1.5584583161398768,
+          "min": 1.5193333383649588,
+          "max": 3.924958291463554
+        },
+        "conversion_p95_ms": {
+          "median": 4.3394583044573665,
+          "min": 2.058250014670193,
+          "max": 5.7316666934639215
+        },
+        "cpu_ms": {
+          "median": 82.89500000000017,
+          "min": 71.22899999999998,
+          "max": 130.09500000000008
+        },
+        "frames": {
+          "median": 12,
+          "min": 12,
+          "max": 12
+        },
+        "heartbeat_count": {
+          "median": 982,
+          "min": 915,
+          "max": 1001
+        },
+        "heartbeat_max_ms": {
+          "median": 3.7995832972228527,
+          "min": 1.4171249931678176,
+          "max": 36.04341670870781
+        },
+        "heartbeat_over_8ms": {
+          "median": 0,
+          "min": 0,
+          "max": 5
+        },
+        "heartbeat_over_16ms": {
+          "median": 0,
+          "min": 0,
+          "max": 2
+        },
+        "heartbeat_p95_ms": {
+          "median": 0.03116670995950699,
+          "min": 0.026958296075463295,
+          "max": 0.10116666089743376
+        },
+        "heartbeat_p99_ms": {
+          "median": 0.4474583547562361,
+          "min": 0.09600003249943256,
+          "max": 0.8403332903981209
+        },
+        "wall_ms": {
+          "median": 3002.102250000462,
+          "min": 3000.025083310902,
+          "max": 3002.2232501069084
+        }
+      },
+      "conversion-cpu-5120x2880": {
+        "checksum": {
+          "median": 14520,
+          "min": 14520,
+          "max": 14520
+        },
+        "cpu_ms": {
+          "median": 166.15400000000014,
+          "min": 162.58100000000007,
+          "max": 232.66000000000008
+        },
+        "frames": {
+          "median": 60,
+          "min": 60,
+          "max": 60
+        },
+        "wall_ms": {
+          "median": 175.56354170665145,
+          "min": 169.96220836881548,
+          "max": 642.6387915853411
+        }
+      },
+      "conversion-5120x2880": {
+        "checksum": {
+          "median": 2904,
+          "min": 2904,
+          "max": 2904
+        },
+        "conversion_p50_ms": {
+          "median": 3.051374922506511,
+          "min": 2.739458344876766,
+          "max": 3.9024166762828827
+        },
+        "conversion_p95_ms": {
+          "median": 7.660958333872259,
+          "min": 4.121666657738388,
+          "max": 8.118208381347358
+        },
+        "cpu_ms": {
+          "median": 109.16400000000004,
+          "min": 80.31900000000003,
+          "max": 118.46699999999987
+        },
+        "frames": {
+          "median": 12,
+          "min": 12,
+          "max": 12
+        },
+        "heartbeat_count": {
+          "median": 986,
+          "min": 939,
+          "max": 1003
+        },
+        "heartbeat_max_ms": {
+          "median": 3.9045416051521897,
+          "min": 1.3839167077094316,
+          "max": 25.83554165903479
+        },
+        "heartbeat_over_8ms": {
+          "median": 0,
+          "min": 0,
+          "max": 1
+        },
+        "heartbeat_over_16ms": {
+          "median": 0,
+          "min": 0,
+          "max": 1
+        },
+        "heartbeat_p95_ms": {
+          "median": 0.031208270229399204,
+          "min": 0.026083318516612053,
+          "max": 0.0903749605640769
+        },
+        "heartbeat_p99_ms": {
+          "median": 0.4675834206864238,
+          "min": 0.06937503349035978,
+          "max": 1.4105832669883966
+        },
+        "wall_ms": {
+          "median": 3002.1072917152196,
+          "min": 3000.0329583417624,
+          "max": 3006.73587503843
+        }
+      }
+    }
+  },
+  "raw": {
+    "main": [
+      [
+        {
+          "cpu_ms": 511.8830000000001,
+          "redraws": 120,
+          "wall_ms": 545.0009583728388,
+          "workload": "screen-grayscale"
+        },
+        {
+          "cpu_ms": 1069.629,
+          "redraws": 120,
+          "wall_ms": 1151.931666652672,
+          "workload": "screen-blur-retina"
+        },
+        {
+          "cpu_ms": 27.745000000000132,
+          "redraws": 120,
+          "wall_ms": 40.06841673981398,
+          "workload": "loupe-grayscale"
+        },
+        {
+          "cpu_ms": 496.12499999999994,
+          "redraws": 120,
+          "wall_ms": 528.5618333145976,
+          "workload": "screen-cache-misses"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 91.6220000000001,
+          "frames": 60,
+          "wall_ms": 93.95320841576904,
+          "workload": "conversion-cpu-3840x2160"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 1.6820416785776615,
+          "conversion_p95_ms": 3.0337499920278788,
+          "cpu_ms": 92.3020000000001,
+          "frames": 12,
+          "heartbeat_count": 992,
+          "heartbeat_max_ms": 3.2333333510905504,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.0708333682268858,
+          "heartbeat_p99_ms": 0.8147084154188633,
+          "wall_ms": 3001.335791661404,
+          "workload": "conversion-3840x2160"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 165.2110000000002,
+          "frames": 60,
+          "wall_ms": 185.89687498752028,
+          "workload": "conversion-cpu-5120x2880"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 2.7272916631773114,
+          "conversion_p95_ms": 6.472375011071563,
+          "cpu_ms": 110.64300000000048,
+          "frames": 12,
+          "heartbeat_count": 995,
+          "heartbeat_max_ms": 6.101958337239921,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.05837506614625454,
+          "heartbeat_p99_ms": 0.999083393253386,
+          "wall_ms": 3000.592708354816,
+          "workload": "conversion-5120x2880"
+        }
+      ],
+      [
+        {
+          "cpu_ms": 550.975,
+          "redraws": 120,
+          "wall_ms": 625.4165832651779,
+          "workload": "screen-grayscale"
+        },
+        {
+          "cpu_ms": 1216.4869999999999,
+          "redraws": 120,
+          "wall_ms": 1342.0082499505952,
+          "workload": "screen-blur-retina"
+        },
+        {
+          "cpu_ms": 30.145999999999784,
+          "redraws": 120,
+          "wall_ms": 44.80462509673089,
+          "workload": "loupe-grayscale"
+        },
+        {
+          "cpu_ms": 671.8229999999999,
+          "redraws": 120,
+          "wall_ms": 1134.5998749602586,
+          "workload": "screen-cache-misses"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 93.45999999999988,
+          "frames": 60,
+          "wall_ms": 105.31895828898996,
+          "workload": "conversion-cpu-3840x2160"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 1.7434583278372884,
+          "conversion_p95_ms": 2.3864583345130086,
+          "cpu_ms": 74.02799999999976,
+          "frames": 12,
+          "heartbeat_count": 971,
+          "heartbeat_max_ms": 6.8833333207294345,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.23591669742017984,
+          "heartbeat_p99_ms": 1.6956666950136423,
+          "wall_ms": 3000.5291249835864,
+          "workload": "conversion-3840x2160"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 176.8130000000001,
+          "frames": 60,
+          "wall_ms": 212.52766670659184,
+          "workload": "conversion-cpu-5120x2880"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 2.8379999566823244,
+          "conversion_p95_ms": 5.622750031761825,
+          "cpu_ms": 88.71200000000013,
+          "frames": 12,
+          "heartbeat_count": 984,
+          "heartbeat_max_ms": 5.642125033773482,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.11725001968443394,
+          "heartbeat_p99_ms": 0.8531666826456785,
+          "wall_ms": 3001.0322083253413,
+          "workload": "conversion-5120x2880"
+        }
+      ],
+      [
+        {
+          "cpu_ms": 535.2560000000001,
+          "redraws": 120,
+          "wall_ms": 618.6976250028238,
+          "workload": "screen-grayscale"
+        },
+        {
+          "cpu_ms": 1129.4789999999998,
+          "redraws": 120,
+          "wall_ms": 1253.178208367899,
+          "workload": "screen-blur-retina"
+        },
+        {
+          "cpu_ms": 30.32099999999982,
+          "redraws": 120,
+          "wall_ms": 51.03420838713646,
+          "workload": "loupe-grayscale"
+        },
+        {
+          "cpu_ms": 557.0910000000002,
+          "redraws": 120,
+          "wall_ms": 635.0256250007078,
+          "workload": "screen-cache-misses"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 91.54499999999999,
+          "frames": 60,
+          "wall_ms": 100.6486666155979,
+          "workload": "conversion-cpu-3840x2160"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 1.4125417219474912,
+          "conversion_p95_ms": 2.899791579693556,
+          "cpu_ms": 74.2079999999996,
+          "frames": 12,
+          "heartbeat_count": 996,
+          "heartbeat_max_ms": 2.278749947436154,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.0867500202730298,
+          "heartbeat_p99_ms": 0.7704582531005144,
+          "wall_ms": 3002.307041664608,
+          "workload": "conversion-3840x2160"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 166.22499999999985,
+          "frames": 60,
+          "wall_ms": 184.0420833323151,
+          "workload": "conversion-cpu-5120x2880"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 2.729958272539079,
+          "conversion_p95_ms": 4.091083304956555,
+          "cpu_ms": 90.11699999999978,
+          "frames": 12,
+          "heartbeat_count": 918,
+          "heartbeat_max_ms": 27.966749970801175,
+          "heartbeat_over_8ms": 3,
+          "heartbeat_over_16ms": 1,
+          "heartbeat_p95_ms": 0.56900002527982,
+          "heartbeat_p99_ms": 3.235874930396676,
+          "wall_ms": 3002.4485416943207,
+          "workload": "conversion-5120x2880"
+        }
+      ],
+      [
+        {
+          "cpu_ms": 543.182,
+          "redraws": 120,
+          "wall_ms": 649.5851250365376,
+          "workload": "screen-grayscale"
+        },
+        {
+          "cpu_ms": 1150.5339999999999,
+          "redraws": 120,
+          "wall_ms": 1284.1160416137427,
+          "workload": "screen-blur-retina"
+        },
+        {
+          "cpu_ms": 29.130000000000322,
+          "redraws": 120,
+          "wall_ms": 42.90579166263342,
+          "workload": "loupe-grayscale"
+        },
+        {
+          "cpu_ms": 536.6800000000001,
+          "redraws": 120,
+          "wall_ms": 609.0004165889695,
+          "workload": "screen-cache-misses"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 91.96100000000041,
+          "frames": 60,
+          "wall_ms": 101.51616670191288,
+          "workload": "conversion-cpu-3840x2160"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 1.6130834119394422,
+          "conversion_p95_ms": 4.137958283536136,
+          "cpu_ms": 74.1919999999996,
+          "frames": 12,
+          "heartbeat_count": 985,
+          "heartbeat_max_ms": 5.458333296701312,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.13062497600913048,
+          "heartbeat_p99_ms": 0.9440833237022161,
+          "wall_ms": 3000.105833285488,
+          "workload": "conversion-3840x2160"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 163.98100000000017,
+          "frames": 60,
+          "wall_ms": 192.65929167158902,
+          "workload": "conversion-cpu-5120x2880"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 2.6751250261440873,
+          "conversion_p95_ms": 6.561500020325184,
+          "cpu_ms": 98.72000000000014,
+          "frames": 12,
+          "heartbeat_count": 989,
+          "heartbeat_max_ms": 5.197583348490298,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.06379163824021816,
+          "heartbeat_p99_ms": 1.0587499709799886,
+          "wall_ms": 3001.8240000354126,
+          "workload": "conversion-5120x2880"
+        }
+      ],
+      [
+        {
+          "cpu_ms": 504.433,
+          "redraws": 120,
+          "wall_ms": 557.8522917348891,
+          "workload": "screen-grayscale"
+        },
+        {
+          "cpu_ms": 1075.9319999999998,
+          "redraws": 120,
+          "wall_ms": 1151.9905416062102,
+          "workload": "screen-blur-retina"
+        },
+        {
+          "cpu_ms": 27.91599999999983,
+          "redraws": 120,
+          "wall_ms": 42.861208319664,
+          "workload": "loupe-grayscale"
+        },
+        {
+          "cpu_ms": 510.47900000000016,
+          "redraws": 120,
+          "wall_ms": 566.5204166434705,
+          "workload": "screen-cache-misses"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 89.54099999999966,
+          "frames": 60,
+          "wall_ms": 105.41070834733546,
+          "workload": "conversion-cpu-3840x2160"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 2.1142082987353206,
+          "conversion_p95_ms": 3.810000023804605,
+          "cpu_ms": 92.54000000000006,
+          "frames": 12,
+          "heartbeat_count": 991,
+          "heartbeat_max_ms": 3.6742916563525796,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.04570826422423124,
+          "heartbeat_p99_ms": 1.1028749868273735,
+          "wall_ms": 3002.7248749975115,
+          "workload": "conversion-3840x2160"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 161.08399999999978,
+          "frames": 60,
+          "wall_ms": 175.01125007402152,
+          "workload": "conversion-cpu-5120x2880"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 2.981666591949761,
+          "conversion_p95_ms": 7.283541723154485,
+          "cpu_ms": 114.1239999999999,
+          "frames": 12,
+          "heartbeat_count": 981,
+          "heartbeat_max_ms": 7.695583277381957,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.15804159920662642,
+          "heartbeat_p99_ms": 1.5156250447034836,
+          "wall_ms": 3002.9100415995345,
+          "workload": "conversion-5120x2880"
+        }
+      ]
+    ],
+    "candidate": [
+      [
+        {
+          "cpu_ms": 99.92799999999998,
+          "redraws": 120,
+          "wall_ms": 107.81800001859665,
+          "workload": "screen-grayscale"
+        },
+        {
+          "cpu_ms": 146.545,
+          "redraws": 120,
+          "wall_ms": 156.761416583322,
+          "workload": "screen-blur-retina"
+        },
+        {
+          "cpu_ms": 3.83,
+          "redraws": 120,
+          "wall_ms": 4.985708394087851,
+          "workload": "loupe-grayscale"
+        },
+        {
+          "cpu_ms": 487.67999999999995,
+          "redraws": 120,
+          "wall_ms": 524.4401250965893,
+          "workload": "screen-cache-misses"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 91.34300000000006,
+          "frames": 60,
+          "wall_ms": 91.07083338312805,
+          "workload": "conversion-cpu-3840x2160"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 1.5584583161398768,
+          "conversion_p95_ms": 4.576458246447146,
+          "cpu_ms": 102.60100000000017,
+          "frames": 12,
+          "heartbeat_count": 999,
+          "heartbeat_max_ms": 1.4171249931678176,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.026958296075463295,
+          "heartbeat_p99_ms": 0.32595836091786623,
+          "wall_ms": 3002.1895417012274,
+          "workload": "conversion-3840x2160"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 162.71999999999997,
+          "frames": 60,
+          "wall_ms": 169.96220836881548,
+          "workload": "conversion-cpu-5120x2880"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 3.9024166762828827,
+          "conversion_p95_ms": 7.660958333872259,
+          "cpu_ms": 118.46699999999987,
+          "frames": 12,
+          "heartbeat_count": 1003,
+          "heartbeat_max_ms": 3.9045416051521897,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.031208270229399204,
+          "heartbeat_p99_ms": 0.2700416371226311,
+          "wall_ms": 3002.1072917152196,
+          "workload": "conversion-5120x2880"
+        }
+      ],
+      [
+        {
+          "cpu_ms": 97.89,
+          "redraws": 120,
+          "wall_ms": 105.73029168881476,
+          "workload": "screen-grayscale"
+        },
+        {
+          "cpu_ms": 146.713,
+          "redraws": 120,
+          "wall_ms": 153.4097082912922,
+          "workload": "screen-blur-retina"
+        },
+        {
+          "cpu_ms": 3.798999999999997,
+          "redraws": 120,
+          "wall_ms": 5.541500053368509,
+          "workload": "loupe-grayscale"
+        },
+        {
+          "cpu_ms": 484.987,
+          "redraws": 120,
+          "wall_ms": 524.3355000857264,
+          "workload": "screen-cache-misses"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 92.82000000000012,
+          "frames": 60,
+          "wall_ms": 91.85458335559815,
+          "workload": "conversion-cpu-3840x2160"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 3.924958291463554,
+          "conversion_p95_ms": 5.7316666934639215,
+          "cpu_ms": 130.09500000000008,
+          "frames": 12,
+          "heartbeat_count": 958,
+          "heartbeat_max_ms": 3.7995832972228527,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.08975004311650991,
+          "heartbeat_p99_ms": 0.4474583547562361,
+          "wall_ms": 3000.025083310902,
+          "workload": "conversion-3840x2160"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 232.66000000000008,
+          "frames": 60,
+          "wall_ms": 642.6387915853411,
+          "workload": "conversion-cpu-5120x2880"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 3.051374922506511,
+          "conversion_p95_ms": 8.118208381347358,
+          "cpu_ms": 117.78800000000001,
+          "frames": 12,
+          "heartbeat_count": 986,
+          "heartbeat_max_ms": 1.3839167077094316,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.0903749605640769,
+          "heartbeat_p99_ms": 0.4675834206864238,
+          "wall_ms": 3000.3208750858903,
+          "workload": "conversion-5120x2880"
+        }
+      ],
+      [
+        {
+          "cpu_ms": 103.283,
+          "redraws": 120,
+          "wall_ms": 120.83200004417449,
+          "workload": "screen-grayscale"
+        },
+        {
+          "cpu_ms": 156.472,
+          "redraws": 120,
+          "wall_ms": 180.59241666924208,
+          "workload": "screen-blur-retina"
+        },
+        {
+          "cpu_ms": 3.5199999999999676,
+          "redraws": 120,
+          "wall_ms": 4.519541747868061,
+          "workload": "loupe-grayscale"
+        },
+        {
+          "cpu_ms": 534.322,
+          "redraws": 120,
+          "wall_ms": 670.2095416840166,
+          "workload": "screen-cache-misses"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 93.51799999999999,
+          "frames": 60,
+          "wall_ms": 94.55687494482845,
+          "workload": "conversion-cpu-3840x2160"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 1.8016666872426867,
+          "conversion_p95_ms": 4.3394583044573665,
+          "cpu_ms": 77.10300000000015,
+          "frames": 12,
+          "heartbeat_count": 982,
+          "heartbeat_max_ms": 4.771125037223101,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.10116666089743376,
+          "heartbeat_p99_ms": 0.8403332903981209,
+          "wall_ms": 3001.2596666347235,
+          "workload": "conversion-3840x2160"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 166.15400000000014,
+          "frames": 60,
+          "wall_ms": 175.56354170665145,
+          "workload": "conversion-cpu-5120x2880"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 3.0624166829511523,
+          "conversion_p95_ms": 7.678875001147389,
+          "cpu_ms": 109.16400000000004,
+          "frames": 12,
+          "heartbeat_count": 949,
+          "heartbeat_max_ms": 7.441874942742288,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.06500002928078175,
+          "heartbeat_p99_ms": 0.8424583356827497,
+          "wall_ms": 3006.73587503843,
+          "workload": "conversion-5120x2880"
+        }
+      ],
+      [
+        {
+          "cpu_ms": 96.849,
+          "redraws": 120,
+          "wall_ms": 103.97383337840438,
+          "workload": "screen-grayscale"
+        },
+        {
+          "cpu_ms": 146.01400000000004,
+          "redraws": 120,
+          "wall_ms": 157.47854171786457,
+          "workload": "screen-blur-retina"
+        },
+        {
+          "cpu_ms": 3.383999999999998,
+          "redraws": 120,
+          "wall_ms": 4.853791557252407,
+          "workload": "loupe-grayscale"
+        },
+        {
+          "cpu_ms": 507.566,
+          "redraws": 120,
+          "wall_ms": 571.8265000032261,
+          "workload": "screen-cache-misses"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 96.01099999999995,
+          "frames": 60,
+          "wall_ms": 102.13008325081319,
+          "workload": "conversion-cpu-3840x2160"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 1.5522500034421682,
+          "conversion_p95_ms": 2.058250014670193,
+          "cpu_ms": 71.22899999999998,
+          "frames": 12,
+          "heartbeat_count": 915,
+          "heartbeat_max_ms": 36.04341670870781,
+          "heartbeat_over_8ms": 5,
+          "heartbeat_over_16ms": 2,
+          "heartbeat_p95_ms": 0.03116670995950699,
+          "heartbeat_p99_ms": 0.6081666797399521,
+          "wall_ms": 3002.102250000462,
+          "workload": "conversion-3840x2160"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 169.39700000000002,
+          "frames": 60,
+          "wall_ms": 188.28433332964778,
+          "workload": "conversion-cpu-5120x2880"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 2.739458344876766,
+          "conversion_p95_ms": 4.121666657738388,
+          "cpu_ms": 80.31900000000003,
+          "frames": 12,
+          "heartbeat_count": 939,
+          "heartbeat_max_ms": 25.83554165903479,
+          "heartbeat_over_8ms": 1,
+          "heartbeat_over_16ms": 1,
+          "heartbeat_p95_ms": 0.030541676096618176,
+          "heartbeat_p99_ms": 1.4105832669883966,
+          "wall_ms": 3003.0558749567717,
+          "workload": "conversion-5120x2880"
+        }
+      ],
+      [
+        {
+          "cpu_ms": 100.092,
+          "redraws": 120,
+          "wall_ms": 115.84404169116169,
+          "workload": "screen-grayscale"
+        },
+        {
+          "cpu_ms": 152.48199999999994,
+          "redraws": 120,
+          "wall_ms": 162.61266660876572,
+          "workload": "screen-blur-retina"
+        },
+        {
+          "cpu_ms": 3.601999999999994,
+          "redraws": 120,
+          "wall_ms": 4.599291714839637,
+          "workload": "loupe-grayscale"
+        },
+        {
+          "cpu_ms": 516.362,
+          "redraws": 120,
+          "wall_ms": 572.4620834225789,
+          "workload": "screen-cache-misses"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 95.86899999999999,
+          "frames": 60,
+          "wall_ms": 105.54975003469735,
+          "workload": "conversion-cpu-3840x2160"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 1.5193333383649588,
+          "conversion_p95_ms": 3.0167083023115993,
+          "cpu_ms": 82.89500000000017,
+          "frames": 12,
+          "heartbeat_count": 1001,
+          "heartbeat_max_ms": 1.5667499974370003,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.028208247385919094,
+          "heartbeat_p99_ms": 0.09600003249943256,
+          "wall_ms": 3002.2232501069084,
+          "workload": "conversion-3840x2160"
+        },
+        {
+          "checksum": 14520,
+          "cpu_ms": 162.58100000000007,
+          "frames": 60,
+          "wall_ms": 172.89791663642973,
+          "workload": "conversion-cpu-5120x2880"
+        },
+        {
+          "checksum": 2904,
+          "conversion_p50_ms": 2.743499935604632,
+          "conversion_p95_ms": 4.512833431363106,
+          "cpu_ms": 92.82800000000013,
+          "frames": 12,
+          "heartbeat_count": 997,
+          "heartbeat_max_ms": 1.9264583243057132,
+          "heartbeat_over_8ms": 0,
+          "heartbeat_over_16ms": 0,
+          "heartbeat_p95_ms": 0.026083318516612053,
+          "heartbeat_p99_ms": 0.06937503349035978,
+          "wall_ms": 3000.0329583417624,
+          "workload": "conversion-5120x2880"
+        }
+      ]
+    ]
+  }
+}
