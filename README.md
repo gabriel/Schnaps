@@ -85,7 +85,7 @@ Open `Package.swift` in Xcode, or use SwiftPM. The app source is Swift using App
 
 `swift Scripts/build-app.swift --universal` builds both architectures. `--debug` builds `build/SchnapsDebug.app` with its own preferences, a D badge in the menu bar, and updates disabled, without installing it; `--install-debug` also installs it in `/Applications`. Debug builds automatically select a single available Apple Development identity; set `SCHNAPS_SIGN_IDENTITY` to choose one explicitly. Builds without an available identity are ad hoc signed and cannot use `--install-debug`. Distribution requires a Developer ID Application identity and notarization credentials.
 
-The app, About, and website use the transparent liquid-glass bottle with external blueprint measurement lines in `Assets/Artwork/Schnaps-Liquid-Glass.png`. Run `swift Scripts/export-icon.swift` to regenerate both ICNS files, PNG previews, and the favicon.
+The app, Dock, About, and website use the transparent liquid-glass bottle without a container background wherever the app controls its presentation. macOS may add its own container in system-owned surfaces. The bottle has external blueprint measurement lines in `Assets/Artwork/Schnaps-Liquid-Glass.png`. Run `swift Scripts/export-icon.swift` to regenerate both ICNS files, PNG previews, and the favicon.
 
 ## Project guide
 
