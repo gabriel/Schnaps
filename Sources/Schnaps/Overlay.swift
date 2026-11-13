@@ -3,19 +3,24 @@ import MeasurementCore
 
 @MainActor
 final class OverlayController: NSObject {
-    private var windows: [OverlayWindow] = []
+    private(set) var windows: [OverlayWindow] = []
     private var generation = UUID()
-    private var preparing = false
     private var previousApp: NSRunningApplication?
     private var liveTask: Task<Void, Never>?
+    private var captureTask: Task<Void, Never>?
+    private let captureScreens: @MainActor () async throws -> [CGDirectDisplayID: ScreenSnapshot]
+    private let canCapture: @MainActor () -> Bool
     private var saved: [CGDirectDisplayID: [CGRect]] = [:]
     private var savedDistances: [CGDirectDisplayID: [DimensionSpan]] = [:]
     private var mode: MeasurementMode = .area
     var onActivationChanged: ((Bool) -> Void)?
     var onStateChanged: ((MeasurementMode?) -> Void)?
-    var isActive: Bool { preparing || !windows.isEmpty }
+    var isActive: Bool { !windows.isEmpty }
 
-    override init() {
+    init(captureScreens: @escaping @MainActor () async throws -> [CGDirectDisplayID: ScreenSnapshot] = ScreenSnapshot.capture,
+         canCapture: @escaping @MainActor () -> Bool = { ScreenRecordingPermission.shared.granted }) {
+        self.captureScreens = captureScreens
+        self.canCapture = canCapture
         super.init()
         NotificationCenter.default.addObserver(self, selector: #selector(preferencesChanged),
                                                name: UserDefaults.didChangeNotification, object: nil)
@@ -26,68 +31,77 @@ final class OverlayController: NSObject {
     }
 
     func toggle(mode: MeasurementMode = .area) {
-        if preparing || !windows.isEmpty {
+        if isActive {
             let sameMode = self.mode == mode
             stop()
             if sameMode { return }
         }
         self.mode = mode
-        preparing = true
         onActivationChanged?(true)
         onStateChanged?(mode)
         previousApp = NSWorkspace.shared.frontmostApplication
         let token = UUID()
         generation = token
-        Task {
-            var snapshots: [CGDirectDisplayID: ScreenSnapshot] = [:]
-            var captureFailed = false
-            if ScreenRecordingPermission.shared.granted {
-                do { snapshots = try await ScreenSnapshot.capture() }
-                catch { captureFailed = true; NSLog("Schnaps capture: %@", error.localizedDescription) }
+        for screen in NSScreen.screens {
+            let id = (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
+            let window = OverlayWindow(screen: screen, freeze: UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen))
+            let view = MeasurementView(frame: CGRect(origin: .zero, size: screen.frame.size),
+                                       scale: screen.backingScaleFactor, snapshot: nil, mode: mode)
+            view.pinned = (saved[id] ?? []).map { $0.intersection(view.bounds) }.filter { !$0.isNull && !$0.isEmpty }
+            view.pinnedDistances = savedDistances[id] ?? []
+            view.onModeChanged = { [weak self] mode in
+                self?.mode = mode
+                self?.onStateChanged?(mode)
             }
-            guard generation == token else { return }
-            preparing = false
-            for screen in NSScreen.screens {
-                let id = (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
-                let window = OverlayWindow(screen: screen, freeze: UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen))
-                let view = MeasurementView(frame: CGRect(origin: .zero, size: screen.frame.size),
-                                           scale: screen.backingScaleFactor, snapshot: snapshots[id], mode: mode)
-                view.pinned = (saved[id] ?? []).map { $0.intersection(view.bounds) }.filter { !$0.isNull && !$0.isEmpty }
-                view.pinnedDistances = savedDistances[id] ?? []
-                view.onModeChanged = { [weak self] mode in
-                    self?.mode = mode
-                    self?.onStateChanged?(mode)
-                }
-                view.onClose = { [weak self] in self?.stop() }
-                view.onRefresh = { [weak self, weak view] in
-                    guard let view else { return }
-                    self?.refresh(mode: view.mode)
-                }
-                view.onCapture = { [weak self, weak view] region, copy, togglePadding in
-                    guard let self, let view else { return }
-                    self.capture(view: view, displayID: id, region: region, copy: copy, togglePadding: togglePadding)
-                }
-                window.contentView = view
-                window.makeFirstResponder(view)
-                window.orderFrontRegardless()
-                windows.append(window)
+            view.onClose = { [weak self] in self?.stop() }
+            view.onRefresh = { [weak self, weak view] in
+                guard let view else { return }
+                self?.refresh(mode: view.mode)
             }
-            if UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) { NSApp.activate(ignoringOtherApps: true) }
-            let target = windows.first { $0.frame.contains(NSEvent.mouseLocation) } ?? windows.first
-            target?.makeKeyAndOrderFront(nil)
-            for window in windows {
-                guard let view = window.contentView as? MeasurementView else { continue }
-                view.initializePointer()
-                if captureFailed && mode == .findDimensions { view.reportCaptureFailure() }
+            view.onCapture = { [weak self, weak view] region, copy, togglePadding in
+                guard let self, let view else { return }
+                self.capture(view: view, displayID: id, region: region, copy: copy, togglePadding: togglePadding)
             }
-            startLiveCapture(token: token)
+            window.contentView = view
+            window.makeFirstResponder(view)
+            window.orderFrontRegardless()
+            windows.append(window)
+        }
+        if UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) { NSApp.activate(ignoringOtherApps: true) }
+        let target = windows.first { $0.frame.contains(NSEvent.mouseLocation) } ?? windows.first
+        target?.makeKeyAndOrderFront(nil)
+        for window in windows {
+            guard let view = window.contentView as? MeasurementView else { continue }
+            view.initializePointer()
+        }
+        // Present the canvas before ScreenCaptureKit enumerates and captures displays.
+        // The capture filter excludes our overlays, so they never enter the snapshot.
+        captureTask = Task { [weak self] in
+            guard let self, self.canCapture() else { return }
+            do {
+                let snapshots = try await self.captureScreens()
+                guard self.generation == token, !Task.isCancelled else { return }
+                for window in self.windows {
+                    let id = (window.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
+                    (window.contentView as? MeasurementView)?.updateSnapshot(snapshots[id])
+                }
+            } catch {
+                guard self.generation == token, !Task.isCancelled else { return }
+                NSLog("Schnaps capture: %@", error.localizedDescription)
+                for window in self.windows {
+                    guard let view = window.contentView as? MeasurementView, view.mode == .findDimensions else { continue }
+                    view.reportCaptureFailure()
+                }
+            }
+            guard self.generation == token, !Task.isCancelled else { return }
+            self.startLiveCapture(token: token)
         }
     }
 
     func stop() {
+        captureTask?.cancel(); captureTask=nil
         liveTask?.cancel(); liveTask=nil
         generation = UUID()
-        preparing = false
         for window in windows {
             if let id = (window.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value,
                let view = window.contentView as? MeasurementView {
@@ -107,7 +121,7 @@ final class OverlayController: NSObject {
     }
 
     private func startLiveCapture(token: UUID) {
-        guard !UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen), ScreenRecordingPermission.shared.granted else { return }
+        guard !UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen), canCapture() else { return }
         liveTask = Task { [weak self] in
             while !Task.isCancelled {
                 do { try await Task.sleep(nanoseconds: 250_000_000) } catch { return }
@@ -115,7 +129,7 @@ final class OverlayController: NSObject {
                 guard !UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) else { continue }
                 guard self.mode == .findDimensions else { continue }
                 do {
-                    let frames = try await ScreenSnapshot.capture()
+                    let frames = try await self.captureScreens()
                     guard self.generation == token else { return }
                     for window in self.windows {
                         let id=(window.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
@@ -198,6 +212,7 @@ final class MeasurementView: NSView {
     private var scrollRemainder: CGFloat = 0
     private var liveDimensions: Dimensions?
     private var heldDimensions: Dimensions?
+    private var modifierFlags: NSEvent.ModifierFlags = []
     private var manualDrag = false
     private var cursor = CGPoint.zero
     private var anchor = CGPoint.zero
@@ -216,6 +231,16 @@ final class MeasurementView: NSView {
     private var presentation: MeasurementPresentation { var value=MeasurementPreferences.presentation; value.unit=unit; return value }
     private var showAlignment = false
     private var guides: [(vertical: Bool, position: CGFloat)] = []
+
+    private var automaticAreaSnapping: Bool {
+        mode == .findDimensions && !manualDrag && modifierFlags.intersection([.option, .shift]).isEmpty
+    }
+    var showsSnapIndicator: Bool {
+        guard mode == .findDimensions, selection != nil else { return false }
+        if detectionRegion != nil { return true }
+        guard dragging, case .create = dragMode else { return false }
+        return automaticAreaSnapping
+    }
 
     init(frame: CGRect, scale: CGFloat, snapshot: ScreenSnapshot?, mode: MeasurementMode) {
         self.scale = scale
@@ -244,8 +269,13 @@ final class MeasurementView: NSView {
         addCursorRect(bounds,cursor:UserDefaults.standard.bool(forKey:PreferenceKey.showCursor) ? .crosshair : hidden)
     }
     func updateSnapshot(_ value: ScreenSnapshot?) {
-        guard !dragging, heldDimensions == nil, selection == nil else { return }
-        snapshot=value; updateLiveDimensions(); needsDisplay=true
+        // Always accept the first frame, even if a drag began during capture.
+        guard snapshot == nil || (!dragging && heldDimensions == nil && selection == nil) else { return }
+        snapshot=value
+        if let detectionRegion {
+            selection = snapshot?.objectBounds(in: detectionRegion, tolerance: tolerance) ?? detectionRegion
+        }
+        updateLiveDimensions(); needsDisplay=true
     }
     func reportScreenshotError(_ text: String) { flash(text) }
     private func dimensions(at point: CGPoint) -> Dimensions? {
@@ -288,6 +318,7 @@ final class MeasurementView: NSView {
 
     override func mouseDown(with event: NSEvent) {
         window?.makeFirstResponder(self)
+        modifierFlags = event.modifierFlags
         anchor = rounded(convert(event.locationInWindow, from: nil))
         cursor = anchor
         dragging = false
@@ -320,6 +351,7 @@ final class MeasurementView: NSView {
     }
 
     override func mouseDragged(with event: NSEvent) {
+        modifierFlags = event.modifierFlags
         let point = rounded(convert(event.locationInWindow, from: nil))
         guard dragging || hypot(point.x - anchor.x, point.y - anchor.y) >= 2 else { return }
         dragging = true
@@ -340,14 +372,14 @@ final class MeasurementView: NSView {
         needsDisplay = true
     }
     override func mouseUp(with event: NSEvent) {
+        modifierFlags = event.modifierFlags
         if case .create = dragMode {
             if !dragging {
                 heldDimensions = mode == .findDimensions ? dimensions(at: anchor) : nil
                 liveDimensions = nil
-            } else if mode == .findDimensions, !manualDrag, event.modifierFlags.intersection([.option, .shift]).isEmpty,
-                      let rect = selection, let detected = snapshot?.objectBounds(in: rect, tolerance: tolerance) {
+            } else if automaticAreaSnapping, let rect = selection {
                 detectionRegion = rect
-                selection = detected
+                selection = snapshot?.objectBounds(in: rect, tolerance: tolerance) ?? rect
             }
         }
         if let rect = selection, rect.width < 1 / scale || rect.height < 1 / scale { selection = nil }
@@ -356,6 +388,7 @@ final class MeasurementView: NSView {
     }
     override func rightMouseDown(with event: NSEvent) {
         window?.makeFirstResponder(self)
+        modifierFlags = event.modifierFlags
         anchor = rounded(convert(event.locationInWindow, from: nil))
         cursor = anchor
         dragging = false
@@ -373,6 +406,7 @@ final class MeasurementView: NSView {
         else { selection = nil; heldDimensions = nil; mouseMoved(with: event) }
     }
     override func flagsChanged(with event: NSEvent) {
+        modifierFlags = event.modifierFlags
         showAlignment = event.modifierFlags.contains(.shift)
         needsDisplay = true
     }
@@ -572,7 +606,7 @@ final class MeasurementView: NSView {
             mode == .findDimensions ? FindDimensionsLabel.text(for: $0, presentation: presentation, scale: scale)
                 : presentation.label($0, scale: scale)
         }
-        setAccessibilityValue(description ?? "No active measurement")
+        setAccessibilityValue(description.map { $0 + (showsSnapIndicator ? ", " + L("Snap") : "") } ?? "No active measurement")
         if let snapshot, UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) {
             NSImage(cgImage: snapshot.image, size: bounds.size).draw(in: bounds, from: .zero,
                 operation: .sourceOver, fraction: 1, respectFlipped: true, hints: nil)
@@ -590,6 +624,11 @@ final class MeasurementView: NSView {
         if showAlignment {
             line(from: CGPoint(x: cursor.x, y: 0), to: CGPoint(x: cursor.x, y: bounds.height), color: measurementColor(at: cursor).withAlphaComponent(0.6), dashed: true)
             line(from: CGPoint(x: 0, y: cursor.y), to: CGPoint(x: bounds.width, y: cursor.y), color: measurementColor(at: cursor).withAlphaComponent(0.6), dashed: true)
+        }
+        if mode == .findDimensions, snapshot == nil, window?.frame.contains(NSEvent.mouseLocation) == true {
+            let color = measurementColor(at: cursor)
+            line(from: CGPoint(x: cursor.x - 8, y: cursor.y), to: CGPoint(x: cursor.x + 8, y: cursor.y), color: color, dashed: false)
+            line(from: CGPoint(x: cursor.x, y: cursor.y - 8), to: CGPoint(x: cursor.x, y: cursor.y + 8), color: color, dashed: false)
         }
         var labels: [CGRect] = []
         for (index, rect) in pinned.enumerated() { drawMeasurement(rect, index: index + 1, active: false, labels: &labels) }
@@ -641,7 +680,8 @@ final class MeasurementView: NSView {
             }
         }
         if mode == .findDimensions {
-            drawDimensionsLabel(rect, at: CGPoint(x: rect.midX, y: rect.midY), labels: &labels)
+            drawDimensionsLabel(rect, at: CGPoint(x: rect.midX, y: rect.midY), labels: &labels,
+                                showSnap: active && showsSnapIndicator)
             return
         }
         let text = (index.map { "\($0)  ·  " } ?? "") + presentation.label(rect, scale: scale) + (aspectRatio(rect,distance:false).map { " · " + $0 } ?? "")
@@ -659,13 +699,21 @@ final class MeasurementView: NSView {
              color: color.withAlphaComponent(0.65), dashed: true)
         labels.append(pill(text, at: position, centered: true, color: color))
     }
-    private func drawDimensionsLabel(_ measurement: CGRect, at center: CGPoint, labels: inout [CGRect]) {
+    private func drawDimensionsLabel(_ measurement: CGRect, at center: CGPoint, labels: inout [CGRect], showSnap: Bool = false) {
         let text = FindDimensionsLabel.text(for: measurement, presentation: presentation, scale: scale)
         let textSize = (text as NSString).size(withAttributes: textAttributes)
-        let rect = FindDimensionsLabel.frame(at: center,
-            size: CGSize(width: textSize.width + 22, height: 28), in: bounds)
-        drawPill(text, in: rect)
-        labels.append(rect)
+        let snapText = L("Snap")
+        let snapWidth = (snapText as NSString).size(withAttributes: textAttributes).width + 22
+        let layout = FindDimensionsLabel.layout(at: center, width: textSize.width + 22,
+                                                snapWidth: showSnap ? snapWidth : nil, in: bounds)
+        drawPill(text, in: layout.measurement)
+        labels.append(layout.measurement)
+        if let snap = layout.snap {
+            NSColor.windowBackgroundColor.setFill()
+            NSBezierPath(roundedRect: snap, xRadius: snap.height / 2, yRadius: snap.height / 2).fill()
+            (snapText as NSString).draw(in: snap.insetBy(dx: 11, dy: 4), withAttributes: textAttributes)
+            labels.append(snap)
+        }
     }
 
     private func drawDistance(_ distance: DimensionSpan, held: Bool, labels: inout [CGRect], showLabel: Bool = true) {
