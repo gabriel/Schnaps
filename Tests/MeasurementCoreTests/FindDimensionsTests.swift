@@ -71,3 +71,15 @@ private func fixture(width: Int = 80, height: Int = 60, boxes: [(CGRect, UInt8)]
     #expect(dimensions.vertical.length == 20)
     #expect(dimensions.rect == CGRect(x: 10, y: 5, width: 15, height: 20))
 }
+
+@Test func areaScanCanStopBetweenRows() throws {
+    let pixels = try #require(PixelBuffer(width: 200, height: 200,
+                                         bytes: [UInt8](repeating: 255, count: 200 * 200 * 4)))
+    var rows = 0
+    let result = pixels.objectBounds(in: CGRect(x: 0, y: 0, width: 200, height: 200), isCancelled: {
+        rows += 1
+        return rows == 3
+    })
+    #expect(result == nil)
+    #expect(rows == 3)
+}

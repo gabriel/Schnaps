@@ -12,7 +12,8 @@ enum PreviewWindowRole {
     static var sourceIDs:Set<CGWindowID> { Set(NSApp.windows.filter{$0.isVisible && $0.identifier==browser}.map{CGWindowID($0.windowNumber)}) }
 }
 
-struct ScreenSnapshot {
+// CGImage is immutable; its pixels and scale values can safely be read by workers.
+struct ScreenSnapshot: @unchecked Sendable {
     static let settingsWindowIdentifier = NSUserInterfaceItemIdentifier("SchnapsSettings")
 
     let image: CGImage
@@ -25,10 +26,10 @@ struct ScreenSnapshot {
             .scaled(x: 1 / scaleX, y: 1 / scaleY)
     }
 
-    func objectBounds(in rect: CGRect, tolerance: Int) -> CGRect? {
+    func objectBounds(in rect: CGRect, tolerance: Int, isCancelled: () -> Bool = { false }) -> CGRect? {
         let pixelsRect = CGRect(x: rect.minX * scaleX, y: rect.minY * scaleY,
                                 width: rect.width * scaleX, height: rect.height * scaleY)
-        guard let result = pixels.objectBounds(in: pixelsRect, tolerance: tolerance) else { return nil }
+        guard let result = pixels.objectBounds(in: pixelsRect, tolerance: tolerance, isCancelled: isCancelled) else { return nil }
         return CGRect(x: result.minX / scaleX, y: result.minY / scaleY,
                       width: result.width / scaleX, height: result.height / scaleY)
     }
@@ -56,12 +57,24 @@ struct ScreenSnapshot {
             config.captureResolution = .best
             let filter = SCContentFilter(display: display, excludingWindows: ownWindows)
             let image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
-            if let pixels = PixelBuffer(image: image) {
-                snapshots[id] = ScreenSnapshot(image: image, pixels: pixels,
-                                               scaleX: CGFloat(image.width) / screen.frame.width,
-                                               scaleY: CGFloat(image.height) / screen.frame.height)
+            // Image decoding and allocation can stall input on Retina displays.
+            let scaleX = CGFloat(image.width) / screen.frame.width
+            let scaleY = CGFloat(image.height) / screen.frame.height
+            let capturedImage = CapturedImage(image: image)
+            if let snapshot = await Task.detached(priority: .userInitiated, operation: {
+                guard let pixels = PixelBuffer(image: capturedImage.image) else { return nil as ScreenSnapshot? }
+                return ScreenSnapshot(image: capturedImage.image, pixels: pixels, scaleX: scaleX, scaleY: scaleY)
+            }).value {
+                snapshots[id] = snapshot
             }
+            try Task.checkCancellation()
         }
         return snapshots
     }
+}
+
+// Immutable Core Graphics images are safe to decode off the capture actor, including
+// when building with SDKs that predate CGImage's Sendable annotation.
+private struct CapturedImage: @unchecked Sendable {
+    let image: CGImage
 }
