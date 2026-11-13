@@ -61,6 +61,8 @@ About Schnaps → Updates → Channel offers Stable and Beta. Stable is the defa
 
 New builds use `https://getschnaps.com/appcast.xml`, a byte-identical first-party proxy of the signed combined feed at `https://github.com/rel-me/Schnaps/releases/download/updates/appcast.xml`. The app routes archive requests through its first-party proxy without modifying signed feed or archive bytes. The `updates` prerelease is only a feed host. Existing clients keep using the stable latest-release feed; stable releases still publish `appcast.xml` and `Schnaps.dmg` at the legacy latest-release URLs. Beta releases are GitHub prereleases and never become Latest or replace the stable website download.
 
+Development builds do not start Sparkle or offer release updates. Their app identity (for example `SchnapsDebug.app`) can differ from the published `Schnaps.app`, so Sparkle cannot install the release into them even when both signatures are valid. Rebuild development apps to update them. To test beta updates, open `/Applications/Schnaps.app` and select About Schnaps → Updates → Channel → Beta, then Check for Updates….
+
 ### One-command beta publication
 
 ```sh

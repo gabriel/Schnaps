@@ -75,7 +75,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             "X-Schnaps-App-Version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown",
             "X-Schnaps-Runtime": runtime
         ]
-        updaterController.startUpdater()
+        if ReleaseUpdates.enabled { updaterController.startUpdater() }
         installHotKey()
         ShortcutSettings.shared.onChange = { [weak self] in
             guard let self else { return }
@@ -274,7 +274,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func updateMenuItem() -> NSMenuItem {
         let item = NSMenuItem(title: L("Check for Updates…"), action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "")
-        item.target = updaterController
+        item.target = ReleaseUpdates.enabled ? updaterController : nil
+        if !ReleaseUpdates.enabled {
+            item.action = nil
+            item.isEnabled = false
+        }
         return item
     }
 

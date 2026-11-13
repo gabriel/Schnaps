@@ -433,13 +433,17 @@ struct SettingsView: View {
                 }
                 .disabled(!updates.canCheckForUpdates)
                 Toggle("Automatically check for updates", isOn: $updates.automaticallyChecksForUpdates)
+                    .disabled(!updates.supportsUpdates)
                 Toggle("Automatically download and install updates", isOn: $updates.automaticallyDownloadsUpdates)
                     .disabled(!updates.allowsAutomaticUpdates)
             } header: {
                 Text(L("Updates"))
             } footer: {
                 VStack(alignment: .leading, spacing: 8) {
-                    if updates.channel == .beta {
+                    if !updates.supportsUpdates {
+                        Text("Updates are available in the installed release app. Rebuild this development app to update it.")
+                            .font(.footnote).padding(.top, -7)
+                    } else if updates.channel == .beta {
                         Text("Early builds. Stable resumes with the next newer stable release.")
                             .font(.footnote).padding(.top, -7)
                     }
