@@ -67,7 +67,9 @@ Screen images stay in memory on your Mac unless you explicitly copy or save a sc
 
 ## Build from source
 
-Run `make dev` to build the app in Debug configuration and launch a new instance of `build/Schnaps.app`.
+Run `make dev` to build, install, and launch `/Applications/SchnapsDebug.app`. Repeating the command quits the previous debug instance and replaces it at the same path. Debug uses its own bundle identifier (`com.gabrielhandford.Schnap.debug`), settings, and privacy permissions, separate from the release app.
+
+The installer automatically signs with your Apple Development certificate when exactly one is available. Otherwise, set `SCHNAPS_SIGN_IDENTITY` to the development identity you want to keep using. Enable Screen Recording and any needed Accessibility access for **SchnapsDebug** once in System Settings → Privacy & Security. Keeping the same signing identity and bundle identifier lets macOS retain those grants across rebuilds. A signing identity change may require granting access again; ad hoc signing cannot preserve permissions reliably, so the installer requires certificate signing.
 
 Codex local environment actions in `.codex/environments/environment.toml` run the Makefile tasks: Debug launch, tests, beta planning, release-tool build, and beta/stable publishing.
 
@@ -81,7 +83,7 @@ Open `Package.swift` in Xcode, or use SwiftPM. The app source is Swift using App
 
 `make beta`, `make release`, and `make promote` require a clean `main` matching the latest `origin/main`. `make beta` publishes the next prerelease, and `make plan-beta` previews its version. `make promote` takes the version of the latest published beta and publishes a fresh stable build from `main`. See [release documentation](docs/releases.md) for signing setup and recovery.
 
-`swift Scripts/build-app.swift --universal` builds both architectures. `--debug` builds `build/SchnapsDebug.app` with its own preferences, a D badge in the menu bar, and updates disabled. `make dev` builds and opens it. For local signing, set `SCHNAPS_SIGN_IDENTITY` to an installed Apple Development identity; otherwise the build is ad-hoc signed. Distribution requires a Developer ID Application identity and notarization credentials.
+`swift Scripts/build-app.swift --universal` builds both architectures. `--debug` builds `build/SchnapsDebug.app` with its own preferences, a D badge in the menu bar, and updates disabled, without installing it; `--install-debug` also installs it in `/Applications`. Debug builds automatically select a single available Apple Development identity; set `SCHNAPS_SIGN_IDENTITY` to choose one explicitly. Builds without an available identity are ad hoc signed and cannot use `--install-debug`. Distribution requires a Developer ID Application identity and notarization credentials.
 
 The app, About, and website use the transparent liquid-glass bottle with external blueprint measurement lines in `Assets/Artwork/Schnaps-Liquid-Glass.png`. Run `swift Scripts/export-icon.swift` to regenerate both ICNS files, PNG previews, and the favicon.
 

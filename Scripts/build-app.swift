@@ -1,10 +1,19 @@
 #!/usr/bin/env swift
+import AppKit
 import Foundation
 
 // Swift-only app packaging with transparent liquid-glass branding.
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-let configuration = CommandLine.arguments.contains("--debug") ? "debug" : "release"
+let installDebug = CommandLine.arguments.contains("--install-debug")
+let configuration = CommandLine.arguments.contains("--debug") || installDebug ? "debug" : "release"
+let isDebug = configuration == "debug"
+let appName = isDebug ? "SchnapsDebug" : "Schnaps"
+let bundleIdentifier = "com.gabrielhandford.Schnap" + (isDebug ? ".debug" : "")
 let manager = FileManager.default
+func fail(_ message: String) -> Never {
+    FileHandle.standardError.write(Data("error: \(message)\n".utf8))
+    exit(1)
+}
 func run(_ executable: String, _ arguments: [String], capture: Bool = false) throws -> String {
     let process = Process()
     process.executableURL = URL(fileURLWithPath: executable)
@@ -17,12 +26,25 @@ func run(_ executable: String, _ arguments: [String], capture: Bool = false) thr
     guard process.terminationStatus == 0 else { throw NSError(domain: executable, code: Int(process.terminationStatus)) }
     return String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
 }
+// Privacy grants follow the signing identity, not just the installation path.
+// Select an unambiguous development certificate for debug builds, including worktrees.
+let configuredIdentity = ProcessInfo.processInfo.environment["SCHNAPS_SIGN_IDENTITY"]
+    ?? ProcessInfo.processInfo.environment["SCHNAP_SIGN_IDENTITY"]
+var identity = configuredIdentity ?? "-"
+if isDebug && configuredIdentity == nil {
+    let identities = try run("/usr/bin/security", ["find-identity", "-v", "-p", "codesigning"], capture: true)
+    let developmentIdentities = identities.split(separator: "\n").filter { $0.contains("\"Apple Development:") }
+    if developmentIdentities.count == 1 {
+        identity = String(developmentIdentities[0].split(whereSeparator: \.isWhitespace)[1])
+    }
+}
+if installDebug && identity == "-" {
+    fail("Installing SchnapsDebug requires stable signing. Set SCHNAPS_SIGN_IDENTITY to an installed Apple Development identity (automatically selected when exactly one is available).")
+}
 let architectureFlags = CommandLine.arguments.contains("--universal") ? ["--arch", "arm64", "--arch", "x86_64"] : []
 _ = try run("/usr/bin/xcrun", ["swift", "build", "-c", configuration] + architectureFlags)
 let binPath = try run("/usr/bin/xcrun", ["swift", "build", "-c", configuration] + architectureFlags + ["--show-bin-path"], capture: true)
 let release = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: ProcessInfo.processInfo.environment["SCHNAPS_RELEASE_CONFIG"] ?? root.appendingPathComponent("Config/Release.json").path))) as! [String: String]
-let isDebug = configuration == "debug"
-let appName = isDebug ? "SchnapsDebug" : "Schnaps"
 let app = root.appendingPathComponent("build/\(appName).app")
 let contents = app.appendingPathComponent("Contents")
 let resources = contents.appendingPathComponent("Resources")
@@ -45,8 +67,8 @@ for name in ["Schnaps", "Schnaps-Dark", "Schnaps-Mark", "Schnaps-Mark-Dark"] {
     try manager.copyItem(at: root.appendingPathComponent("Assets/Compiled/\(name).icns"), to: icon)
 }
 var info: [String: Any] = [
-    // Preserve the original identity so settings and capture authorization survive the rename.
-    "CFBundleIdentifier": isDebug ? "com.gabrielhandford.Schnap.debug" : "com.gabrielhandford.Schnap",
+    // Release keeps its original identity; debug has separate settings and privacy grants.
+    "CFBundleIdentifier": bundleIdentifier,
     "CFBundleName": appName, "CFBundleDisplayName": appName,
     "CFBundleExecutable": "Schnaps", "CFBundlePackageType": "APPL",
     "CFBundleShortVersionString": release["version"]!, "CFBundleVersion": release["build"]!,
@@ -81,8 +103,6 @@ for source in try manager.contentsOfDirectory(at:root.appendingPathComponent("As
     if manager.fileExists(atPath:target.path) { try manager.removeItem(at:target) }
     try manager.copyItem(at:source,to:target)
 }
-let identity = ProcessInfo.processInfo.environment["SCHNAPS_SIGN_IDENTITY"]
-    ?? ProcessInfo.processInfo.environment["SCHNAP_SIGN_IDENTITY"] ?? "-"
 let distribution = identity.hasPrefix("Developer ID Application:")
 let signingOptions = distribution ? ["--timestamp", "--options", "runtime"] : ["--timestamp=none"]
 func sign(_ path: URL) throws {
@@ -100,3 +120,34 @@ try sign(framework)
 try sign(app)
 _ = try run("/usr/bin/codesign", ["--verify", "--deep", "--strict", app.path])
 print("Built \(app.path) (transparent liquid-glass icon and brand mark)")
+
+if installDebug {
+    let destination = URL(fileURLWithPath: "/Applications/SchnapsDebug.app", isDirectory: true)
+    // Refuse to replace an unrelated app at this path.
+    if manager.fileExists(atPath: destination.path) {
+        guard Bundle(url: destination)?.bundleIdentifier == bundleIdentifier else {
+            fail("Refusing to replace an unrelated app at \(destination.path)")
+        }
+    }
+    let running = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier)
+    for application in running where !application.terminate() {
+        fail("Quit SchnapsDebug before installing the new build.")
+    }
+    let deadline = Date().addingTimeInterval(5)
+    while running.contains(where: { !$0.isTerminated }), Date() < deadline {
+        RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+    }
+    guard running.allSatisfy({ $0.isTerminated }) else {
+        fail("SchnapsDebug is still running. Quit it before installing the new build.")
+    }
+    let staged = destination.deletingLastPathComponent().appendingPathComponent(".SchnapsDebug-\(UUID().uuidString).app")
+    defer { try? manager.removeItem(at: staged) }
+    try manager.copyItem(at: app, to: staged)
+    if manager.fileExists(atPath: destination.path) {
+        _ = try manager.replaceItemAt(destination, withItemAt: staged)
+    } else {
+        try manager.moveItem(at: staged, to: destination)
+    }
+    _ = try run("/usr/bin/codesign", ["--verify", "--deep", "--strict", destination.path])
+    print("Installed \(destination.path). Enable its permissions once in System Settings.")
+}
