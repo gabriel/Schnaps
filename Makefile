@@ -23,5 +23,5 @@ test:
 	swift test
 
 dev:
-	swift Scripts/build-app.swift --debug
-	open -n build/Schnaps.app
+	swift Scripts/build-app.swift --install-debug
+	open /Applications/SchnapsDebug.app
