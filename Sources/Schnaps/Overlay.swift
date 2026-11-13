@@ -602,9 +602,8 @@ final class MeasurementView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        let description = (selection ?? (heldDimensions ?? liveDimensions)?.rect).map {
-            mode == .findDimensions ? FindDimensionsLabel.text(for: $0, presentation: presentation, scale: scale)
-                : presentation.label($0, scale: scale)
+        let description = selection.map { areaLabelText($0) } ?? (heldDimensions ?? liveDimensions).map {
+            FindDimensionsLabel.text(for: $0.rect, presentation: presentation, scale: scale)
         }
         setAccessibilityValue(description.map { $0 + (showsSnapIndicator ? ", " + L("Snap") : "") } ?? "No active measurement")
         if let snapshot, UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) {
@@ -679,41 +678,52 @@ final class MeasurementView: NSView {
                 handle.fill(); color.setStroke(); handle.stroke()
             }
         }
-        if mode == .findDimensions {
-            drawDimensionsLabel(rect, at: CGPoint(x: rect.midX, y: rect.midY), labels: &labels,
-                                showSnap: active && showsSnapIndicator)
-            return
-        }
-        let text = (index.map { "\($0)  ·  " } ?? "") + presentation.label(rect, scale: scale) + (aspectRatio(rect,distance:false).map { " · " + $0 } ?? "")
-        var position = CGPoint(x: rect.midX, y: rect.maxY + 10)
-        if position.y > bounds.height - 40 { position.y = max(8, rect.minY - 34) }
-        var label = labelRect(text, at: position, centered: true)
-        for _ in 0..<20 {
-            if labels.contains(where: { $0.insetBy(dx: -3, dy: -3).intersects(label) }) {
-                position.y += 30
-                if position.y > bounds.height - 36 { position.y = 8; position.x += 40 }
-                label = labelRect(text, at: position, centered: true)
-            } else { break }
-        }
+        let text = (index.map { "\($0)  ·  " } ?? "") + areaLabelText(rect)
+        let showSnap = active && showsSnapIndicator
+        let textSize = (text as NSString).size(withAttributes: textAttributes)
+        let group = AreaMeasurementLabel.frame(for: rect,
+            size: CGSize(width: textSize.width + 22, height: showSnap ? 48 : 28),
+            in: bounds, avoiding: labels)
+        let label = CGRect(x: group.minX, y: group.minY, width: group.width, height: 28)
         line(from: CGPoint(x: rect.midX, y: rect.maxY), to: CGPoint(x: label.midX, y: label.minY),
              color: color.withAlphaComponent(0.65), dashed: true)
-        labels.append(pill(text, at: position, centered: true, color: color))
+        drawPill(text, in: label)
+        if showSnap { drawSnapIcon(in: CGRect(x: label.midX - 8, y: label.maxY + 4, width: 16, height: 16)) }
+        labels.append(group)
     }
-    private func drawDimensionsLabel(_ measurement: CGRect, at center: CGPoint, labels: inout [CGRect], showSnap: Bool = false) {
+
+    private func areaLabelText(_ rect: CGRect) -> String {
+        presentation.label(rect, scale: scale) + (aspectRatio(rect, distance: false).map { " · " + $0 } ?? "")
+    }
+
+    /// A small horseshoe magnet denotes automatic edge snapping, without a text capsule.
+    private func drawSnapIcon(in rect: CGRect) {
+        let path = NSBezierPath()
+        path.move(to: CGPoint(x: rect.minX + 3, y: rect.minY + 2))
+        path.line(to: CGPoint(x: rect.minX + 3, y: rect.minY + 8))
+        path.curve(to: CGPoint(x: rect.minX + 13, y: rect.minY + 8),
+                   controlPoint1: CGPoint(x: rect.minX + 3, y: rect.minY + 15),
+                   controlPoint2: CGPoint(x: rect.minX + 13, y: rect.minY + 15))
+        path.line(to: CGPoint(x: rect.minX + 13, y: rect.minY + 2))
+        path.lineWidth = 3
+        NSColor.windowBackgroundColor.withAlphaComponent(0.85).setStroke()
+        path.lineWidth = 5
+        path.stroke()
+        NSColor.labelColor.setStroke()
+        path.lineWidth = 3
+        path.stroke()
+        NSColor.windowBackgroundColor.setFill()
+        CGRect(x: rect.minX + 1, y: rect.minY + 5, width: 4, height: 1).fill()
+        CGRect(x: rect.minX + 11, y: rect.minY + 5, width: 4, height: 1).fill()
+    }
+
+    private func drawDimensionsLabel(_ measurement: CGRect, at center: CGPoint, labels: inout [CGRect]) {
         let text = FindDimensionsLabel.text(for: measurement, presentation: presentation, scale: scale)
         let textSize = (text as NSString).size(withAttributes: textAttributes)
-        let snapText = L("Snap")
-        let snapWidth = (snapText as NSString).size(withAttributes: textAttributes).width + 22
-        let layout = FindDimensionsLabel.layout(at: center, width: textSize.width + 22,
-                                                snapWidth: showSnap ? snapWidth : nil, in: bounds)
-        drawPill(text, in: layout.measurement)
-        labels.append(layout.measurement)
-        if let snap = layout.snap {
-            NSColor.windowBackgroundColor.setFill()
-            NSBezierPath(roundedRect: snap, xRadius: snap.height / 2, yRadius: snap.height / 2).fill()
-            (snapText as NSString).draw(in: snap.insetBy(dx: 11, dy: 4), withAttributes: textAttributes)
-            labels.append(snap)
-        }
+        let rect = FindDimensionsLabel.frame(at: center,
+            size: CGSize(width: textSize.width + 22, height: 28), in: bounds)
+        drawPill(text, in: rect)
+        labels.append(rect)
     }
 
     private func drawDistance(_ distance: DimensionSpan, held: Bool, labels: inout [CGRect], showLabel: Bool = true) {
