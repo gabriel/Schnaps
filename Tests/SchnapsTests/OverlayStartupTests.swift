@@ -89,7 +89,7 @@ struct OverlayStartupTests {
         }
     }
 
-    @Test func automaticAreaSnapTracksModifiersAndAcceptsFirstFrameDuringDrag() throws {
+    @Test func automaticAreaSnapTracksModifiersAndAcceptsFirstFrameDuringDrag() async throws {
         _ = NSApplication.shared
         let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 200, height: 200),
                               styleMask: [.borderless], backing: .buffered, defer: false)
@@ -104,8 +104,12 @@ struct OverlayStartupTests {
                                            context: nil, eventNumber: 0, clickCount: 1, pressure: 1))
         }
         let start = CGPoint(x: 20, y: 20), end = CGPoint(x: 180, y: 180)
+        #expect(!view.wantsLiveSnapshot)
+        view.mouseMoved(with: try event(.mouseMoved, start))
+        #expect(view.wantsLiveSnapshot)
         view.mouseDown(with: try event(.leftMouseDown, start))
         view.mouseDragged(with: try event(.leftMouseDragged, end))
+        #expect(!view.wantsLiveSnapshot)
         #expect(view.showsSnapIndicator)
         view.mouseDragged(with: try event(.leftMouseDragged, end, flags: .option))
         #expect(!view.showsSnapIndicator)
@@ -122,6 +126,11 @@ struct OverlayStartupTests {
         #expect(!view.showsSnapIndicator)
         view.rightMouseUp(with: try event(.rightMouseUp, end))
         #expect(!view.showsSnapIndicator)
+        view.rightMouseDown(with: try event(.rightMouseDown, end))
+        view.rightMouseUp(with: try event(.rightMouseUp, end))
+        #expect(view.wantsLiveSnapshot)
+        view.mouseExited(with: try event(.mouseMoved, end))
+        #expect(!view.wantsLiveSnapshot)
 
         // Completing an area before the first capture must still snap once it arrives.
         let pending = MeasurementView(frame: view.frame, scale: 1, snapshot: nil, mode: .findDimensions)
@@ -131,13 +140,14 @@ struct OverlayStartupTests {
         pending.mouseUp(with: try event(.leftMouseUp, end))
         #expect(pending.showsSnapIndicator)
         pending.updateSnapshot(try testSnapshot())
-        var capturedRegion: CGRect?
-        pending.onCapture = { region, _, _ in capturedRegion = region }
+        let captured = AsyncStream<CGRect>.makeStream()
+        var capturedRegions = captured.stream.makeAsyncIterator()
+        pending.onCapture = { region, _, _ in captured.continuation.yield(region) }
         let capture = try #require(NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [],
                                                    timestamp: 0, windowNumber: window.windowNumber, context: nil,
                                                    characters: "c", charactersIgnoringModifiers: "c", isARepeat: false, keyCode: 8))
         pending.keyDown(with: capture)
-        #expect(capturedRegion == CGRect(x: 50, y: 50, width: 100, height: 100))
+        #expect(await capturedRegions.next() == CGRect(x: 50, y: 50, width: 100, height: 100))
 
         let area = MeasurementView(frame: view.frame, scale: 1, snapshot: try testSnapshot(), mode: .area)
         window.contentView = area
