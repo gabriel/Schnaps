@@ -91,7 +91,7 @@ public struct PixelBuffer: Sendable {
     /// Trims a loose selection to foreground pixels against its dominant perimeter color.
     /// This measures a whole object (including disconnected text or icon details), rather
     /// than just the color run beneath the pointer. Uniform selections return nil.
-    public func objectBounds(in region: CGRect, tolerance: Int = 18) -> CGRect? {
+    public func objectBounds(in region: CGRect, tolerance: Int = 18, isCancelled: () -> Bool = { false }) -> CGRect? {
         guard !region.isNull, !region.isInfinite,
               region.minX.isFinite, region.minY.isFinite, region.maxX.isFinite, region.maxY.isFinite else { return nil }
         let clipped = region.intersection(CGRect(x: 0, y: 0, width: width, height: height))
@@ -118,6 +118,7 @@ public struct PixelBuffer: Sendable {
         let threshold = max(0, min(255, tolerance))
         var left = x1 + 1, right = x0 - 1, top = y1 + 1, bottom = y0 - 1
         for y in y0...y1 {
+            guard !isCancelled() else { return nil }
             for x in x0...x1 where colorDifference((y * width + x) * 4, background.offset) > threshold {
                 left = min(left, x); right = max(right, x)
                 top = min(top, y); bottom = max(bottom, y)

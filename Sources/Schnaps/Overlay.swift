@@ -105,6 +105,7 @@ final class OverlayController: NSObject {
         for window in windows {
             if let id = (window.screen?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value,
                let view = window.contentView as? MeasurementView {
+                view.areaDetection.cancel()
                 saved[id] = view.pinned
                 savedDistances[id] = view.pinnedDistances
             }
@@ -127,7 +128,8 @@ final class OverlayController: NSObject {
                 do { try await Task.sleep(nanoseconds: 250_000_000) } catch { return }
                 guard let self, self.generation == token else { return }
                 guard !UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) else { continue }
-                guard self.mode == .findDimensions else { continue }
+                guard self.mode == .findDimensions,
+                      self.windows.contains(where: { ($0.contentView as? MeasurementView)?.wantsLiveSnapshot == true }) else { continue }
                 do {
                     let frames = try await self.captureScreens()
                     guard self.generation == token else { return }
@@ -206,6 +208,12 @@ final class MeasurementView: NSView {
     var onCapture: ((CGRect, Bool, Bool) -> Void)?
     private let scale: CGFloat
     private var snapshot: ScreenSnapshot?
+    private var frozenImage: NSImage?
+    private var pointerIsInside = false
+    let areaDetection: AreaDetection
+    var wantsLiveSnapshot: Bool {
+        pointerIsInside && mode == .findDimensions && !dragging && selection == nil && heldDimensions == nil
+    }
     var captureSnapshot: ScreenSnapshot? { snapshot }
     private var selection: CGRect?
     private var detectionRegion: CGRect?
@@ -242,9 +250,12 @@ final class MeasurementView: NSView {
         return automaticAreaSnapping
     }
 
-    init(frame: CGRect, scale: CGFloat, snapshot: ScreenSnapshot?, mode: MeasurementMode) {
+    init(frame: CGRect, scale: CGFloat, snapshot: ScreenSnapshot?, mode: MeasurementMode,
+         areaDetection: AreaDetection = AreaDetection()) {
         self.scale = scale
         self.snapshot = snapshot
+        self.frozenImage = snapshot.map { NSImage(cgImage: $0.image, size: frame.size) }
+        self.areaDetection = areaDetection
         self.mode = mode
         self.unit = MeasurementUnit(rawValue: UserDefaults.standard.string(forKey: PreferenceKey.unit) ?? "pt") ?? .points
         self.tolerance = MeasurementPreferences.tolerance
@@ -272,11 +283,19 @@ final class MeasurementView: NSView {
         // Always accept the first frame, even if a drag began during capture.
         guard snapshot == nil || (!dragging && heldDimensions == nil && selection == nil) else { return }
         snapshot=value
-        if let detectionRegion {
-            selection = snapshot?.objectBounds(in: detectionRegion, tolerance: tolerance) ?? detectionRegion
-        }
+        frozenImage = value.map { NSImage(cgImage: $0.image, size: bounds.size) }
+        if detectionRegion != nil { detectSelectedArea() }
         updateLiveDimensions(); needsDisplay=true
     }
+    private func detectSelectedArea() {
+        guard let snapshot, let region = detectionRegion else { return }
+        areaDetection.request(snapshot: snapshot, region: region, tolerance: tolerance) { [weak self] detected in
+            guard let self else { return }
+            self.selection = detected ?? region
+            self.needsDisplay = true
+        }
+    }
+
     func reportScreenshotError(_ text: String) { flash(text) }
     private func dimensions(at point: CGPoint) -> Dimensions? {
         guard let found=snapshot?.dimensions(at:point,tolerance:tolerance) else { return nil }
@@ -291,22 +310,34 @@ final class MeasurementView: NSView {
         window?.makeFirstResponder(self)
         mouseMoved(with: event)
     }
-    override func mouseExited(with event: NSEvent) { liveDimensions = nil; needsDisplay = true }
+    override func mouseExited(with event: NSEvent) {
+        pointerIsInside = false
+        liveDimensions = nil
+        needsDisplay = true
+    }
     override func mouseMoved(with event: NSEvent) {
+        pointerIsInside = true
         cursor = convert(event.locationInWindow, from: nil)
+        // A held measurement does not change when the pointer moves. Redraw only
+        // if its alignment guides follow the pointer.
+        if selection != nil || heldDimensions != nil {
+            if showAlignment { needsDisplay = true }
+            return
+        }
         updateLiveDimensions()
         needsDisplay = true
     }
 
     func initializePointer() {
         guard let window, window.frame.contains(NSEvent.mouseLocation) else { return }
+        pointerIsInside = true
         cursor = convert(window.convertPoint(fromScreen: NSEvent.mouseLocation), from: nil)
         updateLiveDimensions()
         needsDisplay = true
     }
 
     private func updateLiveDimensions() {
-        if selection == nil, heldDimensions == nil, mode == .findDimensions {
+        if pointerIsInside, selection == nil, heldDimensions == nil, mode == .findDimensions {
             liveDimensions = dimensions(at: cursor)
         } else { liveDimensions = nil }
     }
@@ -317,6 +348,8 @@ final class MeasurementView: NSView {
     }
 
     override func mouseDown(with event: NSEvent) {
+        areaDetection.cancel()
+        pointerIsInside = true
         window?.makeFirstResponder(self)
         modifierFlags = event.modifierFlags
         anchor = rounded(convert(event.locationInWindow, from: nil))
@@ -379,7 +412,7 @@ final class MeasurementView: NSView {
                 liveDimensions = nil
             } else if automaticAreaSnapping, let rect = selection {
                 detectionRegion = rect
-                selection = snapshot?.objectBounds(in: rect, tolerance: tolerance) ?? rect
+                detectSelectedArea()
             }
         }
         if let rect = selection, rect.width < 1 / scale || rect.height < 1 / scale { selection = nil }
@@ -387,6 +420,8 @@ final class MeasurementView: NSView {
         needsDisplay = true
     }
     override func rightMouseDown(with event: NSEvent) {
+        areaDetection.cancel()
+        pointerIsInside = true
         window?.makeFirstResponder(self)
         modifierFlags = event.modifierFlags
         anchor = rounded(convert(event.locationInWindow, from: nil))
@@ -412,19 +447,31 @@ final class MeasurementView: NSView {
     }
 
     override func keyDown(with event: NSEvent) {
+        let character = event.charactersIgnoringModifiers?.lowercased()
+        let usesMeasuredArea = [UInt16(36), 76, 49].contains(event.keyCode) || ["c", "p"].contains(character ?? "")
+        if areaDetection.isPending && usesMeasuredArea {
+            let completion = areaDetection.completionForCurrent()
+            Task { [weak self] in
+                guard await completion.value else { return }
+                self?.keyDown(with: event)
+            }
+            return
+        }
         let shift = event.modifierFlags.contains(.shift)
         let command = event.modifierFlags.contains(.command)
         switch event.keyCode {
-        case 53: onClose?()
+        case 53: areaDetection.cancel(); onClose?()
         case 36, 76: copyDimensions(css: shift)
         case 49: pin()
         case 51, 117:
+            areaDetection.cancel()
             if selection != nil { selection = nil; detectionRegion = nil }
             else if heldDimensions != nil { heldDimensions = nil }
             else if !pinnedDistances.isEmpty { pinnedDistances.removeLast() }
             else if !pinned.isEmpty { pinned.removeLast() }
             updateLiveDimensions()
         case 123, 124, 125, 126:
+            areaDetection.cancel()
             guard let rect = selection else { return }
             detectionRegion = nil
             let step: CGFloat = (shift ? 10 : 1) / (unit == .pixels ? scale : 1)
@@ -447,7 +494,10 @@ final class MeasurementView: NSView {
             case "x": colorOverride = !(colorOverride ?? false)
             case "k" where command: clear()
             case "z" where command:
-                if !pinned.isEmpty { selection = pinned.removeLast(); detectionRegion = nil }
+                if !pinned.isEmpty {
+                    areaDetection.cancel()
+                    selection = pinned.removeLast(); detectionRegion = nil
+                }
             case "h":
                 if shift { guides.append((false, cursor.y)) }
                 else { pinDistance(horizontal: true) }
@@ -467,6 +517,7 @@ final class MeasurementView: NSView {
         flash(unit == .points ? "Screen points" : "Display pixels")
     }
     private func toggleMode() {
+        areaDetection.cancel()
         detectionRegion = nil
         scrollRemainder = 0
         mode = mode == .area ? .findDimensions : .area
@@ -491,13 +542,14 @@ final class MeasurementView: NSView {
 
     func synchronizeTolerance() { synchronizePreferences() }
     func synchronizePreferences() {
+        let previousTolerance = tolerance
         tolerance=MeasurementPreferences.tolerance
         unit=MeasurementPreferences.presentation.unit
         appearance=MeasurementPreferences.appearance
         window?.invalidateCursorRects(for:self)
         if mode == .findDimensions {
             if heldDimensions != nil { heldDimensions=dimensions(at:anchor) }
-            if let detectionRegion { selection=snapshot?.objectBounds(in:detectionRegion,tolerance:tolerance) ?? detectionRegion }
+            if previousTolerance != tolerance, detectionRegion != nil { detectSelectedArea() }
         }
         updateLiveDimensions(); needsDisplay=true
     }
@@ -538,6 +590,7 @@ final class MeasurementView: NSView {
         flash(horizontal ? "Horizontal distance pinned" : "Vertical distance pinned")
     }
     private func clear() {
+        areaDetection.cancel()
         pinned.removeAll(); pinnedDistances.removeAll(); guides.removeAll()
         detectionRegion = nil
         selection = nil; heldDimensions = nil
@@ -611,8 +664,8 @@ final class MeasurementView: NSView {
             FindDimensionsLabel.text(for: $0.rect, presentation: presentation, scale: scale)
         }
         setAccessibilityValue(description.map { $0 + (showsSnapIndicator ? ", " + L("Snap") : "") } ?? "No active measurement")
-        if let snapshot, UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) {
-            NSImage(cgImage: snapshot.image, size: bounds.size).draw(in: bounds, from: .zero,
+        if let frozenImage, UserDefaults.standard.bool(forKey: PreferenceKey.freezeScreen) {
+            frozenImage.draw(in: bounds, from: .zero,
                 operation: .sourceOver, fraction: 1, respectFlipped: true, hints: nil)
         } else {
             // AppKit can pass mouse events through fully transparent window pixels.
