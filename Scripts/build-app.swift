@@ -21,7 +21,9 @@ let architectureFlags = CommandLine.arguments.contains("--universal") ? ["--arch
 _ = try run("/usr/bin/xcrun", ["swift", "build", "-c", configuration] + architectureFlags)
 let binPath = try run("/usr/bin/xcrun", ["swift", "build", "-c", configuration] + architectureFlags + ["--show-bin-path"], capture: true)
 let release = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: ProcessInfo.processInfo.environment["SCHNAPS_RELEASE_CONFIG"] ?? root.appendingPathComponent("Config/Release.json").path))) as! [String: String]
-let app = root.appendingPathComponent("build/Schnaps.app")
+let isDebug = configuration == "debug"
+let appName = isDebug ? "SchnapsDebug" : "Schnaps"
+let app = root.appendingPathComponent("build/\(appName).app")
 let contents = app.appendingPathComponent("Contents")
 let resources = contents.appendingPathComponent("Resources")
 try manager.createDirectory(at: contents.appendingPathComponent("MacOS"), withIntermediateDirectories: true)
@@ -44,18 +46,22 @@ for name in ["Schnaps", "Schnaps-Dark", "Schnaps-Mark", "Schnaps-Mark-Dark"] {
 }
 var info: [String: Any] = [
     // Preserve the original identity so settings and capture authorization survive the rename.
-    "CFBundleIdentifier": "com.gabrielhandford.Schnap",
-    "CFBundleName": "Schnaps", "CFBundleDisplayName": "Schnaps",
+    "CFBundleIdentifier": isDebug ? "com.gabrielhandford.Schnap.debug" : "com.gabrielhandford.Schnap",
+    "CFBundleName": appName, "CFBundleDisplayName": appName,
     "CFBundleExecutable": "Schnaps", "CFBundlePackageType": "APPL",
     "CFBundleShortVersionString": release["version"]!, "CFBundleVersion": release["build"]!,
     "SchnapsBuildConfiguration": configuration,
     "SchnapsUpdateChannel": release["defaultChannel"] ?? "stable",
-    "SUFeedURL": release["feedURL"]!, "SUPublicEDKey": release["publicEDKey"]!,
-    "SUVerifyUpdateBeforeExtraction": true, "SURequireSignedFeed": true,
     "CFBundleIconFile": "Schnaps", "CFBundleIconName": "Schnaps", "LSMinimumSystemVersion": "14.0",
     "LSUIElement": true, "NSHighResolutionCapable": true,
     "NSScreenCaptureUsageDescription": "Schnaps captures your displays to detect edges and measure screen elements. Images stay on your Mac unless you explicitly export or share them."
 ]
+if !isDebug {
+    info["SUFeedURL"] = release["feedURL"]!
+    info["SUPublicEDKey"] = release["publicEDKey"]!
+    info["SUVerifyUpdateBeforeExtraction"] = true
+    info["SURequireSignedFeed"] = true
+}
 try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
     .write(to: contents.appendingPathComponent("Info.plist"))
 let framework = contents.appendingPathComponent("Frameworks/Sparkle.framework")

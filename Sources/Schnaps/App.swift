@@ -43,7 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         UserDefaults.standard.register(defaults: MeasurementPreferences.defaults)
         MeasurementPreferences.selectTolerance(MeasurementPreferences.selectedTolerance)
         updateDockVisibility()
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusIconSubscription = menuBarStatus.$state.removeDuplicates().sink { [weak self] state in
             self?.updateMenuBarIcon(state)
         }
@@ -104,7 +104,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func updateMenuBarIcon(_ state: MenuBarIconState) {
         guard let button = statusItem?.button else { return }
         button.image = MenuBarIcon.image(for: state)
-        let description = "Schnaps — \(L(state.title))"
+        let name = ReleaseUpdates.enabled ? "Schnaps" : "SchnapsDebug"
+        let description = "\(name) — \(L(state.title))"
         button.toolTip = description
         button.setAccessibilityLabel(description)
     }

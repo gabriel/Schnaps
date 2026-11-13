@@ -24,4 +24,4 @@ test:
 
 dev:
 	swift Scripts/build-app.swift --debug
-	open -n build/Schnaps.app
+	open -n build/SchnapsDebug.app
