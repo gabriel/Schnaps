@@ -56,6 +56,39 @@ struct OverlayStartupTests {
         #expect(view.captureSnapshot != nil)
     }
 
+    @Test func areaBorderKeepsOverlayColorAcrossBackgroundsAndHonorsExplicitColorSwitch() throws {
+        let defaults = UserDefaults.standard
+        let previousContrast = defaults.object(forKey: PreferenceKey.autoContrast)
+        defaults.set(true, forKey: PreferenceKey.autoContrast)
+        defer {
+            if let previousContrast { defaults.set(previousContrast, forKey: PreferenceKey.autoContrast) }
+            else { defaults.removeObject(forKey: PreferenceKey.autoContrast) }
+        }
+        let primary = MeasurementPreferences.color(PreferenceKey.overlayColor)
+        let alternative = MeasurementPreferences.color(PreferenceKey.alternativeColor)
+        for mode in [MeasurementMode.findDimensions, .area] {
+            for background in [primary, NSColor.white, NSColor.black] {
+                let context = try #require(CGContext(data: nil, width: 200, height: 200, bitsPerComponent: 8,
+                                                    bytesPerRow: 800, space: CGColorSpaceCreateDeviceRGB(),
+                                                    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+                context.setFillColor(background.cgColor)
+                context.fill(CGRect(x: 0, y: 0, width: 200, height: 200))
+                let image = try #require(context.makeImage())
+                let snapshot = ScreenSnapshot(image: image, pixels: try #require(PixelBuffer(image: image)), scaleX: 1, scaleY: 1)
+                let view = MeasurementView(frame: CGRect(x: 0, y: 0, width: 200, height: 200), scale: 1,
+                                           snapshot: snapshot, mode: mode)
+                #expect(view.areaMeasurementColor.schnapsHex == primary.schnapsHex)
+                let toggle = try #require(NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [],
+                                                          timestamp: 0, windowNumber: 0, context: nil,
+                                                          characters: "x", charactersIgnoringModifiers: "x", isARepeat: false, keyCode: 7))
+                view.keyDown(with: toggle)
+                #expect(view.areaMeasurementColor.schnapsHex == alternative.schnapsHex)
+                view.keyDown(with: toggle)
+                #expect(view.areaMeasurementColor.schnapsHex == primary.schnapsHex)
+            }
+        }
+    }
+
     @Test func automaticAreaSnapTracksModifiersAndAcceptsFirstFrameDuringDrag() throws {
         _ = NSApplication.shared
         let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 200, height: 200),

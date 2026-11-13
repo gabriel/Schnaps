@@ -582,6 +582,11 @@ final class MeasurementView: NSView {
             }
         }
     }
+    // Area borders retain the chosen color; contrast is provided by an outline.
+    var areaMeasurementColor: NSColor {
+        MeasurementPreferences.color(colorOverride == true ? PreferenceKey.alternativeColor : PreferenceKey.overlayColor)
+    }
+
     private func measurementColor(at point: CGPoint) -> NSColor {
         let primary=MeasurementPreferences.color(PreferenceKey.overlayColor)
         let alternative=MeasurementPreferences.color(PreferenceKey.alternativeColor)
@@ -662,12 +667,19 @@ final class MeasurementView: NSView {
     }
 
     private func drawMeasurement(_ rect: CGRect, index: Int?, active: Bool, labels: inout [CGRect]) {
-        let color = index == nil ? measurementColor(at: CGPoint(x:rect.midX,y:rect.midY)) : MeasurementPreferences.color(PreferenceKey.guideColor)
+        let color = index == nil ? areaMeasurementColor : MeasurementPreferences.color(PreferenceKey.guideColor)
         color.withAlphaComponent(active ? 0.09 : 0.045).setFill()
         rect.fill()
         let path = NSBezierPath(rect: rect)
         path.lineWidth = 1 / scale
         if index != nil { path.setLineDash([4, 3], count: 2, phase: 0) }
+        if active && UserDefaults.standard.bool(forKey: PreferenceKey.autoContrast) {
+            let halo = color.relativeLuminance > 0.45 ? NSColor.black : NSColor.white
+            halo.withAlphaComponent(0.65).setStroke()
+            path.lineWidth = 3 / scale
+            path.stroke()
+            path.lineWidth = 1 / scale
+        }
         color.setStroke()
         path.stroke()
         if active {
