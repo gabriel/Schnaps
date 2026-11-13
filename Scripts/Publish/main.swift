@@ -1,31 +1,6 @@
 import Darwin
 import Foundation
 
-struct PublishError: LocalizedError {
-    let message: String
-    var errorDescription: String? { message }
-    init(_ message: String) { self.message = message }
-}
-struct Runner {
-    let root: URL
-    var environment = ProcessInfo.processInfo.environment
-    @discardableResult func run(_ args: [String], capture: Bool = false) throws -> String {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-        process.arguments = args
-        process.currentDirectoryURL = root
-        process.environment = environment
-        let pipe = Pipe()
-        if capture { process.standardOutput = pipe }
-        try process.run()
-        let data = capture ? pipe.fileHandleForReading.readDataToEndOfFile() : Data()
-        process.waitUntilExit()
-        guard process.terminationStatus == 0 else {
-            throw PublishError("\(args.first ?? "Command") failed (\(process.terminationStatus)).")
-        }
-        return String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-}
 struct GitHubRelease: Decodable {
     let tagName: String
     let isDraft: Bool
@@ -236,15 +211,7 @@ struct Manifest: Codable {
         }
         if !manager.fileExists(atPath: ready.path) {
             let profile = runner.environment["SCHNAPS_NOTARY_PROFILE"] ?? "Schnaps"
-            do {
-                _ = try runner.run(
-                    ["xcrun", "notarytool", "history", "--keychain-profile", profile, "--output-format", "json"],
-                    capture: true)
-            } catch {
-                throw PublishError(
-                    "Notarization profile '\(profile)' is unavailable. Set SCHNAPS_NOTARY_PROFILE to an existing notarytool Keychain profile before publishing."
-                )
-            }
+            try NotarizationPreflight.validate(runner: runner, profile: profile)
             try runner.run(["swift", "Scripts/release.swift"])
         }
         let dmg = output.appendingPathComponent("Schnaps-\(manifest.version).dmg")
