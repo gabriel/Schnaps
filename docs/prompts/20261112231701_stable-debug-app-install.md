@@ -25,3 +25,13 @@ Icon validation: macOS's icon service adds its own container even to an ICNS-onl
 # Delegated follow-up
 
 Monitor PR #78 again at the latest head, including transparent Dock branding and the shared selected-area UI with a magnet snap indicator beneath the dimensions. The earlier head passed, so validate this new head through all checks. Fix any failures caused by this change, validate and push fixes, and monitor again. Do not merge. Report final checks and any changes.
+
+# Follow-up user request
+
+“when find dimensions capturing area, sometimes the border is not red something, like maybe if the thing is top layer?”
+
+Clarification: the border “Changes to dark/gray.” Auto contrast was selecting the alternative color based on the captured background. Keep the chosen overlay color for area borders and use a contrast outline instead; retain the explicit X color switch.
+
+# Delegated follow-up
+
+Monitor PR #78 again after the area border color fix. The prior head passed; check the new head through all CI jobs. Fix failures caused by this change, run relevant validation, commit and push any fixes, and monitor again. Do not merge. Report final checks and any changes.
