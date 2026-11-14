@@ -429,7 +429,30 @@ final class DesignTools: ObservableObject {
       }
     } catch { self.error = error.localizedDescription }
   }
+  private var dragging = false
+  func beginDragging() { dragging = true }
+  func endDragging() {
+    guard dragging else { return }
+    dragging = false
+    persist()
+  }
+  func reanchorRulers() {
+    let screens = NSScreen.screens
+    let result = markers.map { marker in
+      guard marker.tool == .ruler,
+        let source = screens.first(where: { Self.displayID($0) == marker.display })
+      else { return marker }
+      let origin = CGPoint(x: source.frame.minX + marker.x, y: source.frame.maxY - marker.y)
+      guard let target = screens.first(where: { $0.frame.contains(origin) }), target != source
+      else { return marker }
+      var moved = marker.projected(from: source.frame, to: target.frame)
+      moved.display = Self.displayID(target)
+      return moved
+    }
+    if result != markers { markers = result }
+  }
   private func persist() {
+    guard !dragging else { return }
     if let data = try? JSONEncoder().encode(markers) { defaults.set(data, forKey: key) }
   }
 }
@@ -446,7 +469,18 @@ final class DesignToolsController {
   private var lastWindowUpdate = Date.distantPast
   private var previousApp: NSRunningApplication?
   private var dismissingTool = false
+  private var wasEditing = false
+  private var localMouseMonitor: Any?
+  private var globalMouseMonitor: Any?
   init() {
+    let events: NSEvent.EventTypeMask = [.mouseMoved, .leftMouseDragged, .leftMouseUp]
+    localMouseMonitor = NSEvent.addLocalMonitorForEvents(matching: events) { [weak self] event in
+      self?.updateMouseInput()
+      return event
+    }
+    globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: events) { [weak self] _ in
+      self?.updateMouseInput()
+    }
     state.redraw = { [weak self] in self?.synchronize() }
     state.show = { [weak self] tool in self?.activate(tool) }
     state.capture = { [weak self] copy in self?.captureSelected(copy: copy) }
@@ -511,7 +545,13 @@ final class DesignToolsController {
       }
     }
   }
+  private func updateMouseInput() {
+    for window in windows {
+      window.ignoresMouseEvents = !((window.contentView as? DesignCanvas)?.wantsMouseInput ?? false)
+    }
+  }
   private func rebuild() {
+    state.endDragging()
     for window in windows {
       window.orderOut(nil)
       window.close()
@@ -521,7 +561,10 @@ final class DesignToolsController {
     synchronize()
   }
   private func synchronize() {
+    let beganEditing = state.editing && !wasEditing
+    wasEditing = state.editing
     guard state.isActive else {
+      state.endDragging()
       for window in windows {
         window.orderOut(nil)
         (window.contentView as? DesignCanvas)?.clearVisionCache()
@@ -549,19 +592,22 @@ final class DesignToolsController {
         window.isReleasedWhenClosed = false
         window.hidesOnDeactivate = false
         window.animationBehavior = .none
+        window.acceptsMouseMovedEvents = true
         let canvas = DesignCanvas(
           frame: CGRect(origin: .zero, size: screen.frame.size), screen: screen, state: state)
         canvas.snapshot = { [weak self] in self?.snapshots[DesignTools.displayID(screen)] }
+        canvas.inputChanged = { [weak self] in self?.updateMouseInput() }
         window.contentView = canvas
         windows.append(window)
       }
     }
     for window in windows {
-      window.ignoresMouseEvents = !state.editing
-      window.orderFrontRegardless()
+      if !state.editing { (window.contentView as? DesignCanvas)?.cancelDragging() }
+      if !window.isVisible { window.orderFrontRegardless() }
       window.contentView?.needsDisplay = true
     }
-    if state.editing,
+    updateMouseInput()
+    if beganEditing,
       let window = windows.first(where: { $0.frame.contains(NSEvent.mouseLocation) }),
       !window.isKeyWindow
     {
@@ -571,9 +617,11 @@ final class DesignToolsController {
     }
     if !state.editing && !state.loupe && !state.crosshair && !dismissingTool { restorePreviousApplication() }
     if ticker == nil {
-      ticker = Timer.scheduledTimer(withTimeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
+      let timer = Timer(timeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
         MainActor.assumeIsolated { self?.tick() }
       }
+      RunLoop.main.add(timer, forMode: .common)
+      ticker = timer
     }
   }
   private func tick() {
