@@ -61,6 +61,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 .brand { display: inline-flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 600; letter-spacing: -.6px; }
 .brand img { width: 40px; height: 40px; filter: var(--logo-filter); }
 .nav nav { display: flex; align-items: center; gap: 24px; color: var(--secondary); font-size: 13px; }
+.rel-link { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.rel-link img { display: block; width: 20px; height: 20px; }
 .theme-control { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 8px; border: 0; border-radius: 50%; color: var(--secondary); background: transparent; cursor: pointer; }
 .theme-control[hidden] { display: none; }
 .theme-control:hover { color: var(--text); background: var(--surface); }
@@ -127,8 +129,9 @@ details p { font-size: 13px; color: var(--secondary); margin-bottom: 0; }
 @media (max-width: 640px) {
   body { padding-bottom: 88px; }
   .wrap { width: calc(100% - 36px); }
-  .nav { padding-block: 18px; }
-  .nav nav { gap: 16px; font-size: 12px; }
+  .nav { flex-wrap: wrap; gap: 8px; padding-block: 18px; }
+  .nav nav { gap: 12px; font-size: 12px; }
+  .theme-control { width: 32px; height: 32px; padding: 6px; }
   .intro { display: flex; flex-direction: column; gap: 0; text-align: center; padding-block: 30px; }
   .intro > h1, .intro > p { align-self: auto; }
   h1 { letter-spacing: -1.9px; }

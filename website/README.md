@@ -24,6 +24,12 @@ The logo is the approved transparent liquid-glass bottle in `Assets/Artwork/Schn
 
 The site follows the system color scheme by default. The sun/moon icon button switches between light and dark, with an accessible action label and tooltip. Explicit choices persist locally. Before an override is chosen, the icon follows system appearance changes. The page still follows the system theme without JavaScript or local storage.
 
+## Header
+
+The homepage navigation includes a `REL.me` link to `https://rel.me/` beside GitHub,
+with REL's logo and the same external-link arrow. The logo is copied from
+`https://rel.me/rel-logo.png` and served locally.
+
 ## Footer
 
 The footer groups download, project, feedback, and rel.me links beneath a short app description. A fixed bottom credit bar names Gabriel Handford and links to his GitHub profile. The expanded navigation stays in normal page flow; reserved bottom space keeps the fixed credit bar clear of the final links. Columns collapse on smaller screens and share the site's light/dark colors.
