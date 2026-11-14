@@ -26,6 +26,7 @@ jobs:
           swiftc -typecheck Scripts/release.swift
           make build/tools/schnaps-release
           python3 Scripts/test-release-source.py
+          python3 Scripts/test-notarization-preflight.py
           swiftc -swift-version 6 -typecheck Scripts/export-demo.swift
           node --check website/dist/site.js
           node --test website/tests/*.test.mjs
