@@ -7,14 +7,30 @@ final class ImagePreview: NSObject, ObservableObject, NSWindowDelegate {
   static let shared = ImagePreview()
   @Published var image: NSImage?
   @Published var error: String?
-  @Published var source = "Clipboard"
-  @Published var windowID: UInt32?
+  enum Source { case clipboard, file, window }
+  @Published private(set) var source = Source.clipboard {
+    didSet { if source != oldValue { setLive(live) } }
+  }
+  @Published var windowID: UInt32? {
+    didSet { if windowID != oldValue, source == .window { setLive(live) } }
+  }
   @Published var displayID: UInt32 = 0
-  @Published var live = false
+  @Published private(set) var live = false
   private var file: URL?
   private var window: NSWindow?
   private var task: Task<Void, Never>?
   private var fileDate: Date?
+  private var generation = UUID()
+  private var clipboardChangeCount: Int?
+  private let pasteboard: NSPasteboard
+  private let captureWindow: @MainActor (UInt32) async throws -> NSImage
+
+  init(pasteboard: NSPasteboard = .general,
+       captureWindow: @escaping @MainActor (UInt32) async throws -> NSImage = ImagePreview.captureWindow) {
+    self.pasteboard = pasteboard
+    self.captureWindow = captureWindow
+    super.init()
+  }
   func show() {
     // Keep the marks, but let clicks and keyboard focus reach this native window.
     DesignTools.shared.editing = false
@@ -45,7 +61,7 @@ final class ImagePreview: NSObject, ObservableObject, NSWindowDelegate {
     if panel.runModal() == .OK, let url = panel.url {
       file = url
       fileDate = nil
-      source = "File"
+      source = .file
       readFile()
       setLive(true)
     }
@@ -67,11 +83,21 @@ final class ImagePreview: NSObject, ObservableObject, NSWindowDelegate {
     if image == nil { error = "The image could not be opened." } else { error = nil }
   }
   func paste() {
-    source = "Clipboard"
-    image = NSImage(pasteboard: .general)
+    source = .clipboard
+    refreshClipboard(force: true)
+  }
+  func refreshClipboard(force: Bool = false) {
+    guard force || clipboardChangeCount != pasteboard.changeCount else { return }
+    clipboardChangeCount = pasteboard.changeCount
+    image = NSImage(pasteboard: pasteboard)
     if image == nil { error = "The clipboard does not contain an image." } else { error = nil }
   }
+  func previewWindow() {
+    source = .window
+    setLive(true)
+  }
   func setLive(_ enabled: Bool) {
+    generation = UUID()
     live = enabled
     task?.cancel()
     task = nil
@@ -81,54 +107,64 @@ final class ImagePreview: NSObject, ObservableObject, NSWindowDelegate {
         guard let self else { return }
         // Hidden preview windows must not keep recording the screen.
         if self.window?.isVisible == true {
-          if self.source == "Window" {
-            await self.readWindow()
-          } else if self.source == "File" {
-            self.readFile()
-          } else if self.source == "Clipboard",
-            NSPasteboard.general.canReadObject(forClasses: [NSImage.self])
-          {
-            self.image = NSImage(pasteboard: .general)
+          switch self.source {
+          case .window: await self.readWindow()
+          case .file: self.readFile()
+          case .clipboard: self.refreshClipboard()
           }
         }
         do { try await Task.sleep(for: .milliseconds(500)) } catch { return }
       }
     }
   }
-  private func readWindow() async {
-    ScreenRecordingPermission.shared.refresh()
-    guard ScreenRecordingPermission.shared.granted else {
-      error = "Allow Screen Recording in Settings → Permissions to preview a window."
-      setLive(false)
-      return
-    }
-    guard let windowID else { return }
+  func readWindow() async {
+    guard let windowID, source == .window else { return }
+    let token = generation
     do {
-      let content = try await SCShareableContent.excludingDesktopWindows(
-        true, onScreenWindowsOnly: false)
-      guard let source = content.windows.first(where: { $0.windowID == windowID }) else {
-        error = "The selected window has closed."
-        setLive(false)
-        return
-      }
-      let config = SCStreamConfiguration()
-      let scale = min(2, sqrt(16_000_000 / max(1, source.frame.width * source.frame.height)))
-      config.width = max(1, Int(source.frame.width * scale))
-      config.height = max(1, Int(source.frame.height * scale))
-      config.showsCursor = false
-      let captured = try await SCScreenshotManager.captureImage(
-        contentFilter: SCContentFilter(desktopIndependentWindow: source), configuration: config)
-      guard !Task.isCancelled else { return }
-      image = NSImage(cgImage: captured, size: source.frame.size)
+      let captured = try await captureWindow(windowID)
+      guard !Task.isCancelled, generation == token else { return }
+      image = captured
       error = nil
     } catch {
+      guard !Task.isCancelled, generation == token else { return }
       self.error = error.localizedDescription
       setLive(false)
     }
   }
+  private static func captureWindow(_ windowID: UInt32) async throws -> NSImage {
+    ScreenRecordingPermission.shared.refresh()
+    guard ScreenRecordingPermission.shared.granted else {
+      throw PreviewError.permissionDenied
+    }
+    let content = try await SCShareableContent.excludingDesktopWindows(
+      true, onScreenWindowsOnly: false)
+    try Task.checkCancellation()
+    guard let source = content.windows.first(where: { $0.windowID == windowID }) else {
+      throw PreviewError.windowClosed
+    }
+    let config = SCStreamConfiguration()
+    let scale = min(2, sqrt(16_000_000 / max(1, source.frame.width * source.frame.height)))
+    config.width = max(1, Int(source.frame.width * scale))
+    config.height = max(1, Int(source.frame.height * scale))
+    config.showsCursor = false
+    let captured = try await SCScreenshotManager.captureImage(
+      contentFilter: SCContentFilter(desktopIndependentWindow: source), configuration: config)
+    return NSImage(cgImage: captured, size: source.frame.size)
+  }
+  private enum PreviewError: LocalizedError {
+    case permissionDenied, windowClosed
+    var errorDescription: String? {
+      switch self {
+      case .permissionDenied:
+        "Allow Screen Recording in Settings → Permissions to preview a window."
+      case .windowClosed:
+        "The selected window has closed."
+      }
+    }
+  }
   func windowWillClose(_ notification: Notification) {
     setLive(false)
-    if source == "Window" { image = nil }
+    if source == .window { image = nil }
   }
   func moveToDisplay() {
     guard let screen = NSScreen.screens.first(where: { DesignTools.displayID($0) == displayID })
@@ -160,8 +196,7 @@ private struct ImagePreviewView: View {
           ForEach(tools.availableWindows) { Text($0.title).tag(Optional($0.id)) }
         }
         Button("Preview Window") {
-          model.source = "Window"
-          model.setLive(true)
+          model.previewWindow()
         }.disabled(model.windowID == nil)
       }
       Divider()
