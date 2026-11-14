@@ -36,3 +36,11 @@ Proceed to squash merge #80 now using --match-head-commit a19e80b27f14305b2361bf
 Monitor recovery PR #84 on codex/gabriel/recover-area-measurement against main until all checks finish. Review the recovered changes and conflict resolutions, preserving #81 debug isolation and update safeguards. Fix failures caused by this change, run relevant validation, commit and push fixes, and monitor the new head again until it passes. Append follow-up delegated prompts to this log. Do not merge recovery PR. Report final check evidence and any fixes. Root is currently using this same worktree and has a local swift test running; coordinate before editing. Root will integrate latest main after #82/#83 merge; #83 overlaps ScreenSnapshot. For now monitor CI and review read-only; notify root before mutations.
 
 Local Swift tests and 14 website tests passed; packaging script typecheck passed. Recovery will remain open for review against main after all other approved PRs merge.
+
+# Final integration
+
+Merged reviewed PRs #80 (9e96b7b), #82 (f12c5e0), and #83 (47d84bc) into main, then integrated main into the recovery branch. Combined #83's compiler-checked Sendable snapshot and cancellation-aware background conversion helper with #79's cancellable objectBounds scan. Removed the redundant older conversion wrapper. The restored debug installer preserves #81's isolated identity and disabled updates.
+
+## Final monitoring follow-up
+
+The recovery PR changed after its successful initial run. Re-monitor the final pushed head of PR #84 after integration with main containing #80, #82, and #83. Review the ScreenSnapshot conflict resolution, run appropriate validation if needed, fix caused failures, commit/push fixes, and monitor every new head until both matrix jobs pass. Do not merge #84. Root will run local full Swift tests and update the PR description. Report the verified head and check results.

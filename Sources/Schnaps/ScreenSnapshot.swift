@@ -12,8 +12,7 @@ enum PreviewWindowRole {
     static var sourceIDs:Set<CGWindowID> { Set(NSApp.windows.filter{$0.isVisible && $0.identifier==browser}.map{CGWindowID($0.windowNumber)}) }
 }
 
-// CGImage is immutable; its pixels and scale values can safely be read by workers.
-struct ScreenSnapshot: @unchecked Sendable {
+struct ScreenSnapshot: Sendable {
     static let settingsWindowIdentifier = NSUserInterfaceItemIdentifier("SchnapsSettings")
 
     let image: CGImage
@@ -32,6 +31,23 @@ struct ScreenSnapshot: @unchecked Sendable {
         guard let result = pixels.objectBounds(in: pixelsRect, tolerance: tolerance, isCancelled: isCancelled) else { return nil }
         return CGRect(x: result.minX / scaleX, y: result.minY / scaleY,
                       width: result.width / scaleX, height: result.height / scaleY)
+    }
+
+    /// Only immutable image/geometry values cross actors. AppKit and capture objects stay on main.
+    static func converting(_ image: CGImage, logicalSize: CGSize) async throws -> ScreenSnapshot? {
+        try Task.checkCancellation()
+        let conversion = Task.detached(priority: .userInitiated) { () throws -> ScreenSnapshot? in
+            try Task.checkCancellation()
+            guard let pixels = PixelBuffer(image: image) else { return nil }
+            try Task.checkCancellation()
+            return ScreenSnapshot(image: image, pixels: pixels,
+                                  scaleX: CGFloat(image.width) / logicalSize.width,
+                                  scaleY: CGFloat(image.height) / logicalSize.height)
+        }
+        let result = try await withTaskCancellationHandler(
+            operation: { try await conversion.value }, onCancel: { conversion.cancel() })
+        try Task.checkCancellation()
+        return result
     }
 
     @MainActor
@@ -56,25 +72,13 @@ struct ScreenSnapshot: @unchecked Sendable {
             config.showsCursor = false
             config.captureResolution = .best
             let filter = SCContentFilter(display: display, excludingWindows: ownWindows)
+            try Task.checkCancellation()
+            let logicalSize = screen.frame.size
             let image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
-            // Image decoding and allocation can stall input on Retina displays.
-            let scaleX = CGFloat(image.width) / screen.frame.width
-            let scaleY = CGFloat(image.height) / screen.frame.height
-            let capturedImage = CapturedImage(image: image)
-            if let snapshot = await Task.detached(priority: .userInitiated, operation: {
-                guard let pixels = PixelBuffer(image: capturedImage.image) else { return nil as ScreenSnapshot? }
-                return ScreenSnapshot(image: capturedImage.image, pixels: pixels, scaleX: scaleX, scaleY: scaleY)
-            }).value {
+            if let snapshot = try await converting(image, logicalSize: logicalSize) {
                 snapshots[id] = snapshot
             }
-            try Task.checkCancellation()
         }
         return snapshots
     }
-}
-
-// Immutable Core Graphics images are safe to decode off the capture actor, including
-// when building with SDKs that predate CGImage's Sendable annotation.
-private struct CapturedImage: @unchecked Sendable {
-    let image: CGImage
 }

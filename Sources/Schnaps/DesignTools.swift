@@ -522,7 +522,10 @@ final class DesignToolsController {
   }
   private func synchronize() {
     guard state.isActive else {
-      for window in windows { window.orderOut(nil) }
+      for window in windows {
+        window.orderOut(nil)
+        (window.contentView as? DesignCanvas)?.clearVisionCache()
+      }
       ticker?.invalidate()
       ticker = nil
       captureTask?.cancel()

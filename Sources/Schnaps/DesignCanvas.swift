@@ -1,5 +1,4 @@
 import AppKit
-import CoreImage
 import MeasurementCore
 
 @MainActor
@@ -11,6 +10,7 @@ final class DesignCanvas: NSView {
   private var original: DesignMarker?
   private var originals: [DesignMarker] = []
   private var draggingEnd = false, resizing = false
+  private let visionCache = VisionPreviewCache()
   private var imageCache: [String: NSImage] = [:]
   init(frame: CGRect, screen: NSScreen, state: DesignTools) {
     display = screen
@@ -53,13 +53,20 @@ final class DesignCanvas: NSView {
       in: rect, from: .zero, operation: .sourceOver, fraction: opacity, respectFlipped: true,
       hints: [.interpolation: NSImageInterpolation.none])
   }
+  func clearVisionCache() { visionCache.removeAll() }
+
   override func draw(_ dirtyRect: NSRect) {
     NSColor.clear.setFill()
     dirtyRect.fill(using: .copy)
-    guard state.isActive else { return }
+    let frame = snapshot?()
+    visionCache.prepare(for: frame?.image)
+    guard state.isActive else { clearVisionCache(); return }
+    if !state.loupe && (!state.visible || (state.vision == .normal && !state.retinaPreview)) {
+      clearVisionCache()
+    }
     let active =
       state.visible ? state.markers.filter { $0.display == displayID && $0.isVisible } : []
-    for marker in active { draw(marker) }
+    for marker in active { draw(marker, frame: frame) }
     let point = pointer
     if state.crosshair, bounds.contains(point) {
       var color = MeasurementPreferences.color(PreferenceKey.guideColor)
@@ -85,10 +92,10 @@ final class DesignCanvas: NSView {
         state.frozenLoupe.map {
           CGPoint(x: $0.x - display.frame.minX, y: display.frame.maxY - $0.y)
         } ?? point
-      if bounds.contains(frozen) { drawLoupe(at: frozen) }
+      if bounds.contains(frozen) { drawLoupe(at: frozen, frame: frame) }
     }
   }
-  private func draw(_ marker: DesignMarker) {
+  private func draw(_ marker: DesignMarker, frame: ScreenSnapshot?) {
     let selected = state.editing && marker.id == state.selectedID
     let color = (NSColor(schnapsHex: marker.color) ?? .systemBlue).withAlphaComponent(
       marker.opacity)
@@ -128,29 +135,19 @@ final class DesignCanvas: NSView {
       if let image = imageCache[name] { drawImage(image, in: marker.rect, opacity: marker.opacity) }
     }
     if marker.tool == .screens, state.vision != .normal || state.retinaPreview,
-      let frame = snapshot?()
+      let frame
     {
       let region = marker.rect.intersection(
         CGRect(
           x: 0, y: 0, width: Double(frame.image.width) / frame.scaleX,
           height: Double(frame.image.height) / frame.scaleY))
       if !region.isEmpty, !region.isNull,
-        let crop = frame.image.cropping(
-          to: CGRect(
-            x: region.minX * frame.scaleX, y: region.minY * frame.scaleY,
-            width: region.width * frame.scaleX, height: region.height * frame.scaleY))
+        let filtered = visionCache.image(
+          source: frame.image,
+          crop: CGRect(x: region.minX * frame.scaleX, y: region.minY * frame.scaleY,
+                       width: region.width * frame.scaleX, height: region.height * frame.scaleY),
+          mode: state.vision, outputSize: state.retinaPreview ? region.size : nil)
       {
-        var filtered = VisionRenderer.apply(crop, mode: state.vision)
-        if state.retinaPreview, region.width * region.height <= 32_000_000,
-          let context = CGContext(
-            data: nil, width: max(1, Int(region.width)), height: max(1, Int(region.height)),
-            bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
-        {
-          context.interpolationQuality = .high
-          context.draw(filtered, in: CGRect(origin: .zero, size: region.size))
-          filtered = context.makeImage() ?? filtered
-        }
         drawImage(NSImage(cgImage: filtered, size: region.size), in: region)
       }
     }
@@ -292,8 +289,8 @@ final class DesignCanvas: NSView {
     return InspectorColor(
       red: Double(bytes[0]) / 255, green: Double(bytes[1]) / 255, blue: Double(bytes[2]) / 255)
   }
-  private func drawLoupe(at point: CGPoint) {
-    guard let frame = snapshot?() else {
+  private func drawLoupe(at point: CGPoint, frame: ScreenSnapshot?) {
+    guard let frame else {
       caption("Waiting for screen pixels…", at: point)
       return
     }
@@ -305,7 +302,8 @@ final class DesignCanvas: NSView {
     let sampleRect = selection.sourceRect(size: size, zoom: zoom)
     let cropRect = sampleRect.intersection(
       CGRect(x: 0, y: 0, width: frame.image.width, height: frame.image.height))
-    guard let crop = frame.image.cropping(to: cropRect) else { return }
+    guard let filtered = visionCache.image(source: frame.image, crop: cropRect, mode: state.vision)
+    else { return }
     let rect = CGRect(
       x: min(bounds.width - size - 8, max(8, point.x + 24)),
       y: min(bounds.height - size - 58, max(8, point.y + 24)), width: size, height: size)
@@ -318,17 +316,17 @@ final class DesignCanvas: NSView {
     NSGraphicsContext.saveGraphicsState()
     NSBezierPath(rect: rect).addClip()
     drawImage(
-      NSImage(cgImage: VisionRenderer.apply(crop, mode: state.vision), size: target.size),
+      NSImage(cgImage: filtered, size: target.size),
       in: target)
     if state.pixelGrid && zoom >= 6 {
       let step = zoom
-      for index in 0...crop.width {
+      for index in 0...filtered.width {
         let x = target.minX + Double(index) * step
         line(
           CGPoint(x: x, y: target.minY), CGPoint(x: x, y: target.maxY),
           color: .black.withAlphaComponent(0.2))
       }
-      for index in 0...crop.height {
+      for index in 0...filtered.height {
         let y = target.minY + Double(index) * zoom
         line(
           CGPoint(x: target.minX, y: y), CGPoint(x: target.maxX, y: y),
