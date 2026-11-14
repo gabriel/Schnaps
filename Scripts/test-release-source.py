@@ -33,7 +33,8 @@ class ReleaseSourceTests(unittest.TestCase):
         self.run_command("git", "push", "origin", "main")
         # Pretend the publisher is built, without compiling or running release code.
         for source in ("Sources/MeasurementCore/ReleaseChannel.swift",
-                       "Sources/MeasurementCore/ReleaseFeed.swift", "Scripts/Publish/main.swift"):
+                       "Sources/MeasurementCore/ReleaseFeed.swift", "Scripts/Publish/Preflight.swift",
+                       "Scripts/Publish/main.swift"):
             path = self.repo / source
             path.parent.mkdir(parents=True, exist_ok=True)
             path.touch()
