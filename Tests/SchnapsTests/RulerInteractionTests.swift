@@ -122,7 +122,7 @@ import Testing
   if resizingEnd {
     #expect(abs(dragged.end.x - outside.x) < 0.000001)
   } else {
-    #expect(dragged.x == marker.x + outside.x - start.x)
+    #expect(abs(dragged.x - (marker.x + outside.x - start.x)) < 0.000001)
   }
   try send(.leftMouseUp, at: outside)
   #expect(!canvas.isDragging)
