@@ -6,6 +6,8 @@ final class DesignCanvas: NSView {
   let display: NSScreen
   let state: DesignTools
   var snapshot: (() -> ScreenSnapshot?)?
+  var inputChanged: (() -> Void)?
+  var isDragging: Bool { dragStart != nil }
   private var dragStart: CGPoint?
   private var original: DesignMarker?
   private var originals: [DesignMarker] = []
@@ -21,6 +23,25 @@ final class DesignCanvas: NSView {
   override var isFlipped: Bool { true }
   override var acceptsFirstResponder: Bool { true }
   private var displayID: UInt32 { DesignTools.displayID(display) }
+  var displayedMarkers: [DesignMarker] {
+    guard state.visible else { return [] }
+    return state.markers.compactMap { marker in
+      guard marker.isVisible else { return nil }
+      if marker.display == displayID { return marker }
+      guard marker.tool == .ruler,
+        let source = NSScreen.screens.first(where: { DesignTools.displayID($0) == marker.display })
+      else { return nil }
+      return marker.projected(from: source.frame, to: display.frame)
+    }
+  }
+  func editableMarker(at point: CGPoint) -> DesignMarker? {
+    guard state.editing else { return nil }
+    return displayedMarkers.reversed().first { !$0.locked && $0.containsEditingPoint(point) }
+  }
+  var wantsMouseInput: Bool {
+    state.editing && (isDragging || (bounds.contains(pointer)
+      && (state.crosshair || editableMarker(at: pointer) != nil)))
+  }
   private var pointer: CGPoint {
     let p = NSEvent.mouseLocation
     return CGPoint(x: p.x - display.frame.minX, y: display.frame.maxY - p.y)
@@ -64,9 +85,7 @@ final class DesignCanvas: NSView {
     if !state.loupe && (!state.visible || (state.vision == .normal && !state.retinaPreview)) {
       clearVisionCache()
     }
-    let active =
-      state.visible ? state.markers.filter { $0.display == displayID && $0.isVisible } : []
-    for marker in active { draw(marker, frame: frame) }
+    for marker in displayedMarkers { draw(marker, frame: frame) }
     let point = pointer
     if state.crosshair, bounds.contains(point) {
       var color = MeasurementPreferences.color(PreferenceKey.guideColor)
@@ -238,7 +257,8 @@ final class DesignCanvas: NSView {
     NSBezierPath(rect: CGRect(x: 0, y: -18, width: marker.width, height: 36)).fill()
     line(.zero, CGPoint(x: marker.width, y: 0), color: color)
     let pixels = UserDefaults.standard.string(forKey: PreferenceKey.unit) == "px"
-    let unit = pixels ? display.backingScaleFactor : 1
+    let sourceDisplay = NSScreen.screens.first { DesignTools.displayID($0) == marker.display } ?? display
+    let unit = pixels ? sourceDisplay.backingScaleFactor : 1
     let units = marker.width * unit / marker.scale
     let interval = max(1, pow(10, floor(log10(max(1, units / 30)))))
     for value in stride(from: 0.0, through: units, by: interval) {
@@ -263,6 +283,7 @@ final class DesignCanvas: NSView {
         CGPoint(x: 0, y: marker.height), CGPoint(x: marker.width, y: marker.height), color: color)
     }
     NSGraphicsContext.restoreGraphicsState()
+    if !bounds.contains(CGPoint(x: marker.x, y: marker.y)) { return }
     caption(
       "\(number(units)) \(pixels ? "px" : "pt") · \(number(marker.angle))° · Δ \(number(marker.end.x-marker.x)), \(number(marker.end.y-marker.y))",
       at: CGPoint(x: marker.x, y: marker.y + 22))
@@ -360,16 +381,7 @@ final class DesignCanvas: NSView {
   }
   override func mouseDown(with event: NSEvent) {
     let point = convert(event.locationInWindow, from: nil)
-    let candidates = state.markers.filter { $0.display == displayID && $0.isVisible && !$0.locked }
-    guard
-      let selected = candidates.reversed().first(where: { m in
-        if m.tool == .ruler {
-          return DesignGeometry.distance(point, toSegmentFrom: CGPoint(x: m.x, y: m.y), to: m.end)
-            < 20
-        }
-        if m.tool == .guides { return abs(m.vertical ? point.x - m.x : point.y - m.y) < 10 }
-        return m.rect.insetBy(dx: -8, dy: -8).contains(point)
-      })
+    guard let selected = editableMarker(at: point)
     else {
       if state.crosshair {
         state.relativeOrigin = CGPoint(
@@ -377,9 +389,13 @@ final class DesignCanvas: NSView {
       }
       return
     }
+    window?.makeKey()
+    window?.makeFirstResponder(self)
+    state.beginDragging()
     state.selectedID = selected.id
     if event.modifierFlags.contains(.option) { state.duplicate() }
-    guard let marker = state.selected else { return }
+    guard let saved = state.selected else { state.endDragging(); return }
+    let marker = saved.display == displayID ? saved : displayedMarkers.first { $0.id == saved.id } ?? saved
     original = marker
     originals = state.markers
     dragStart = point
@@ -434,10 +450,21 @@ final class DesignCanvas: NSView {
       }
     }
   }
-  override func mouseUp(with event: NSEvent) {
+  func cancelDragging() {
+    guard isDragging else { return }
     dragStart = nil
     original = nil
     originals = []
+    state.endDragging()
+  }
+  override func mouseUp(with event: NSEvent) {
+    guard isDragging else { return }
+    dragStart = nil
+    original = nil
+    originals = []
+    state.reanchorRulers()
+    state.endDragging()
+    inputChanged?()
   }
   private func handleLoupeKey(_ event: NSEvent) -> Bool {
     // Leave application and system shortcuts to their usual handlers.
