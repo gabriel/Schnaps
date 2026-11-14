@@ -31,6 +31,7 @@ enum PreferenceKey {
     static let screenshotScale = "screenshotScaleTo1x"
     static let screenshotSound = "screenshotSound"
     static let screenshotCopySound = "screenshotCopySound"
+    static let screenshotSaveSound = "screenshotSaveSound"
     static let screenshotPadding = "screenshotPadding"
     static let screenshotFolder = "screenshotFolder"
     static let appearance = "appAppearance"
@@ -103,7 +104,8 @@ struct SettingsView: View {
     @AppStorage(PreferenceKey.screenshotFormat) private var screenshotFormat: String = "png"
     @AppStorage(PreferenceKey.screenshotScale) private var screenshotScale: Bool = false
     @AppStorage(PreferenceKey.screenshotSound) private var screenshotSound: Bool = true
-    @AppStorage(PreferenceKey.screenshotCopySound) private var screenshotCopySound = ScreenshotCopySound.pop.rawValue
+    @AppStorage(PreferenceKey.screenshotCopySound) private var screenshotCopySound = ScreenshotSound.pop.rawValue
+    @AppStorage(PreferenceKey.screenshotSaveSound) private var screenshotSaveSound = ScreenshotSound.tink.rawValue
     @AppStorage(PreferenceKey.screenshotPadding) private var screenshotPadding: Int = 0
     @AppStorage(PreferenceKey.screenshotFolder) private var screenshotFolder: String = NSHomeDirectory()+"/Desktop"
     @AppStorage(PreferenceKey.appearance) private var appearance: String = "system"
@@ -235,17 +237,32 @@ struct SettingsView: View {
                 Toggle(L("Play sounds"), isOn: $screenshotSound)
                 HStack {
                     Picker(L("Copy sound"), selection: $screenshotCopySound) {
-                        ForEach(ScreenshotCopySound.allCases, id: \.rawValue) { sound in
+                        ForEach(ScreenshotSound.allCases, id: \.rawValue) { sound in
                             Text(sound.rawValue).tag(sound.rawValue)
                         }
                     }
                     Button {
-                        ScreenshotCopySound.selected().play()
+                        ScreenshotSound.selected().play()
                     } label: {
                         Image(systemName: "speaker.wave.2")
                     }
                     .accessibilityLabel(L("Preview copy sound"))
                     .help(L("Preview copy sound"))
+                }
+                .disabled(!screenshotSound)
+                HStack {
+                    Picker(L("Save sound"), selection: $screenshotSaveSound) {
+                        ForEach(ScreenshotSound.allCases, id: \.rawValue) { sound in
+                            Text(sound.rawValue).tag(sound.rawValue)
+                        }
+                    }
+                    Button {
+                        ScreenshotSound.selected(forCopy: false).play()
+                    } label: {
+                        Image(systemName: "speaker.wave.2")
+                    }
+                    .accessibilityLabel(L("Preview save sound"))
+                    .help(L("Preview save sound"))
                 }
                 .disabled(!screenshotSound)
             }
