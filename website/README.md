@@ -26,8 +26,9 @@ The site follows the system color scheme by default. The sun/moon icon button sw
 
 ## Header
 
-The homepage header includes a clearly labeled REL ad linking to `https://rel.me/`.
-It uses the site's theme colors and moves beneath the navigation on small screens.
+The homepage navigation includes a `REL.me` link to `https://rel.me/` beside GitHub,
+with REL's logo and the same external-link arrow. The logo is copied from
+`https://rel.me/rel-logo.png` and served locally.
 
 ## Footer
 
