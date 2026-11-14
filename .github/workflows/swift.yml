@@ -26,6 +26,7 @@ jobs:
           swiftc -typecheck Scripts/release.swift
           make build/tools/schnaps-release
           python3 Scripts/test-release-source.py
+          python3 Scripts/test-notarization-preflight.py
           swiftc -swift-version 6 -typecheck Scripts/export-demo.swift
           node --check website/dist/site.js
           node --test website/tests/*.test.mjs
@@ -57,6 +58,20 @@ jobs:
         if: matrix.xcode == '26.3'
         run: |
           xcrun assetutil --info build/Schnaps.app/Contents/Resources/Assets.car | python3 -c 'import json,sys; icons=[x for x in json.load(sys.stdin) if x.get("AssetType")=="IconImageStack" and x.get("Name")=="Schnaps"]; assert {"NSAppearanceNameAqua", "NSAppearanceNameDarkAqua", "ISAppearanceTintable"} <= {x.get("Appearance") for x in icons}'
+      - name: Verify isolated development app packaging
+        run: |
+          swift Scripts/build-app.swift --debug
+          python3 - <<'PYTHON'
+          import plistlib
+          with open('build/SchnapsDebug.app/Contents/Info.plist', 'rb') as file:
+              info = plistlib.load(file)
+          assert info['CFBundleIdentifier'] == 'com.gabrielhandford.Schnap.debug'
+          assert info['CFBundleName'] == 'SchnapsDebug'
+          assert info['SchnapsBuildConfiguration'] == 'debug'
+          assert 'SUFeedURL' not in info
+          assert 'SUPublicEDKey' not in info
+          PYTHON
+          codesign --verify --deep --strict build/SchnapsDebug.app
       - uses: actions/upload-artifact@v4
         with:
           name: Schnaps-macOS-Xcode-${{ matrix.xcode }}

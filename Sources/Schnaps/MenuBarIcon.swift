@@ -57,10 +57,13 @@ final class MenuBarStatus: ObservableObject {
 @MainActor
 enum MenuBarIcon {
     private static let images = Dictionary(uniqueKeysWithValues: MenuBarIconState.allCases.map { ($0, draw($0)) })
-    static func image(for state: MenuBarIconState) -> NSImage { images[state]! }
+    private static let debugImages = Dictionary(uniqueKeysWithValues: MenuBarIconState.allCases.map { ($0, draw($0, development: true)) })
+    static func image(for state: MenuBarIconState, development: Bool = !ReleaseUpdates.enabled) -> NSImage {
+        development ? debugImages[state]! : images[state]!
+    }
 
-    private static func draw(_ state: MenuBarIconState) -> NSImage {
-        let image = NSImage(size: NSSize(width: 22, height: 22), flipped: false) { _ in
+    private static func draw(_ state: MenuBarIconState, development: Bool = false) -> NSImage {
+        let image = NSImage(size: NSSize(width: development ? 32 : 22, height: 22), flipped: false) { _ in
             NSColor.black.setStroke()
             func stroke(_ points: [NSPoint], width: CGFloat = 1.6) {
                 let path = NSBezierPath()
@@ -86,10 +89,16 @@ enum MenuBarIcon {
                 stroke([NSPoint(x: 8, y: 8), NSPoint(x: 14, y: 8)], width: 1.25)
                 stroke([NSPoint(x: 14, y: 8), NSPoint(x: 14, y: 14)], width: 1.25)
             }
+            if development {
+                ("D" as NSString).draw(at: NSPoint(x: 23, y: 5), withAttributes: [
+                    .font: NSFont.monospacedSystemFont(ofSize: 10, weight: .bold),
+                    .foregroundColor: NSColor.black
+                ])
+            }
             return true
         }
         image.isTemplate = true
-        image.accessibilityDescription = "Schnaps — \(state.title)"
+        image.accessibilityDescription = "\(development ? "SchnapsDebug" : "Schnaps") — \(state.title)"
         return image
     }
 }

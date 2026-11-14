@@ -61,6 +61,8 @@ About Schnaps → Updates → Channel offers Stable and Beta. Stable is the defa
 
 New builds use `https://getschnaps.com/appcast.xml`, a byte-identical first-party proxy of the signed combined feed at `https://github.com/rel-me/Schnaps/releases/download/updates/appcast.xml`. The app routes archive requests through its first-party proxy without modifying signed feed or archive bytes. The `updates` prerelease is only a feed host. Existing clients keep using the stable latest-release feed; stable releases still publish `appcast.xml` and `Schnaps.dmg` at the legacy latest-release URLs. Beta releases are GitHub prereleases and never become Latest or replace the stable website download.
 
+Development builds are packaged as `build/SchnapsDebug.app` with a separate bundle identifier, a D badge beside the menu bar icon, and no Sparkle feed URL or update public key. They do not start Sparkle or offer release updates. Their app identity (for example `SchnapsDebug.app`) can differ from the published `Schnaps.app`, so Sparkle cannot install the release into them even when both signatures are valid. Rebuild development apps to update them. To test beta updates, open `/Applications/Schnaps.app` and select About Schnaps → Updates → Channel → Beta, then Check for Updates….
+
 ### One-command beta publication
 
 ```sh
@@ -70,6 +72,8 @@ make beta ARGS='--version 0.7.0' # Start a new beta series explicitly
 ```
 
 The publisher uses the Keychain notary profile `Schnaps` by default and automatically selects a Developer ID Application identity only when exactly one is installed. Override `SCHNAPS_SIGN_IDENTITY` and `SCHNAPS_NOTARY_PROFILE` when needed. macOS may request access to signing keys; approve those prompts in macOS. Private keys never leave Keychain.
+
+If the notarization preflight reports HTTP 403 with a missing or expired agreement, the team's Account Holder must sign in to [Apple Developer](https://developer.apple.com/account/) and accept the required agreements, then retry `make beta` (or the original publish target). This is an Apple account requirement; changing the Keychain profile does not resolve it. See [Apple's access guidance](https://developer.apple.com/help/account/access/resolving-access-issues). A failure at this preflight happens before packaging or uploading, so rerun the original command after resolving it. Other preflight failures preserve the `notarytool` diagnostic; only an explicit missing Keychain profile error recommends changing `SCHNAPS_NOTARY_PROFILE`.
 
 `make beta`, `make release`, and `make promote` require `main` with no staged, unstaged, or untracked changes. The current commit must exactly match the live `origin/main`; publishing fails if the remote cannot be verified, or local `main` is behind, ahead, or diverged. These checks also apply with `ARGS='--plan'` and `--resume`. Use `make plan-beta` to preview a version from any branch without publishing. Version planning considers existing release tags, signed feeds, and reserved draft builds. It increments the beta suffix and chooses a globally increasing internal build number. The checked-in stable version/build is not changed. A generated `Release.json` supplies overrides to both the app builder and packager; beta bundles contain `SchnapsUpdateChannel=beta` and beta appcast items contain `sparkle:channel=beta`.
 
