@@ -129,3 +129,78 @@ import Testing
   let persisted = try JSONDecoder().decode([DesignMarker].self, from: #require(defaults.data(forKey: "designMarkers.v1")))
   #expect(persisted == tools.markers)
 }
+
+@Test(arguments: [DesignTool.ruler, .guides]) @MainActor
+func markerLabelsDragAndCloseWithoutAffectingOtherMarkers(tool: DesignTool) throws {
+  let screen = try #require(NSScreen.main)
+  let name = "Schnaps.MarkerControls.Tests." + UUID().uuidString
+  let defaults = try #require(UserDefaults(suiteName: name))
+  defer { defaults.removePersistentDomain(forName: name) }
+  let tools = DesignTools(defaults: defaults)
+  let marker = DesignMarker(tool: tool, display: DesignTools.displayID(screen))
+  let other = DesignMarker(tool: .frames, display: marker.display)
+  tools.markers = [other, marker]
+  tools.selectedID = other.id
+  tools.visible = true
+  tools.editing = true
+  let canvas = DesignCanvas(frame: CGRect(origin: .zero, size: screen.frame.size), screen: screen, state: tools)
+  let panel = DesignPanel(contentRect: screen.frame, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+  panel.isReleasedWhenClosed = false
+  panel.contentView = canvas
+  defer { panel.close() }
+  func event(_ type: NSEvent.EventType, at point: CGPoint) throws -> NSEvent {
+    try #require(NSEvent.mouseEvent(with: type, location: canvas.convert(point, to: nil),
+      modifierFlags: [], timestamp: 0, windowNumber: panel.windowNumber, context: nil,
+      eventNumber: 0, clickCount: 1, pressure: 1))
+  }
+  let label = try #require(canvas.markerLabelRect(for: marker))
+  let start = CGPoint(x: label.midX, y: label.midY)
+  #expect(canvas.editableMarker(at: start)?.id == marker.id)
+  let target = CGPoint(x: start.x + 60, y: start.y + 40)
+  canvas.mouseDown(with: try event(.leftMouseDown, at: start))
+  #expect(canvas.cursor(at: start) === NSCursor.closedHand)
+  canvas.mouseDragged(with: try event(.leftMouseDragged, at: target))
+  canvas.mouseUp(with: try event(.leftMouseUp, at: target))
+  let moved = try #require(tools.selected)
+  #expect(abs(moved.x - marker.x - 60) < 0.000001)
+  #expect(abs(moved.y - marker.y - 40) < 0.000001)
+  #expect(moved.width == marker.width && moved.angle == marker.angle)
+  let close = try #require(canvas.removeButtonRect(for: moved))
+  let closePoint = CGPoint(x: close.midX, y: close.midY)
+  #expect(canvas.cursor(at: closePoint) === NSCursor.pointingHand)
+  canvas.mouseDown(with: try event(.leftMouseDown, at: closePoint))
+  #expect(!canvas.isDragging)
+  #expect(tools.markers == [other])
+  let restored = DesignTools(defaults: defaults)
+  #expect(restored.markers == [other])
+}
+
+@Test @MainActor func guideHitTargetsAndCursorsRespectEditingAndVisibility() throws {
+  let screen = try #require(NSScreen.main)
+  let name = "Schnaps.GuideHit.Tests." + UUID().uuidString
+  let defaults = try #require(UserDefaults(suiteName: name))
+  defer { defaults.removePersistentDomain(forName: name) }
+  let tools = DesignTools(defaults: defaults)
+  var marker = DesignMarker(tool: .guides, display: DesignTools.displayID(screen))
+  tools.visible = true
+  tools.editing = true
+  let canvas = DesignCanvas(frame: CGRect(origin: .zero, size: screen.frame.size), screen: screen, state: tools)
+  for vertical in [false, true] {
+    marker.vertical = vertical
+    tools.markers = [marker]
+    let point = vertical ? CGPoint(x: marker.x + 13, y: 300) : CGPoint(x: 600, y: marker.y + 13)
+    #expect(canvas.editableMarker(at: point)?.id == marker.id)
+    #expect(canvas.cursor(at: point) === (vertical ? NSCursor.resizeLeftRight : NSCursor.resizeUpDown))
+    tools.markers[0].locked = true
+    #expect(canvas.cursor(at: point) == nil)
+    #expect(canvas.removeButtonRect(for: tools.markers[0]) == nil)
+    tools.markers[0].locked = false
+    tools.editing = false
+    #expect(canvas.cursor(at: point) == nil)
+    #expect(canvas.removeButtonRect(for: marker) == nil)
+    tools.editing = true
+    tools.visible = false
+    #expect(canvas.cursor(at: point) == nil)
+    tools.visible = true
+  }
+}

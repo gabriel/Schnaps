@@ -85,3 +85,30 @@ import Testing
   tools.hide()
   #expect(!tools.isActive && !tools.visible)
 }
+
+@Test @MainActor func bulkRemovalClearsHiddenAndLockedMarkersAndPersists() throws {
+  let name = "Schnaps.RemoveAll.Tests." + UUID().uuidString
+  let defaults = try #require(UserDefaults(suiteName: name))
+  defer { defaults.removePersistentDomain(forName: name) }
+  let tools = DesignTools(defaults: defaults)
+  let display = NSScreen.main.map { DesignTools.displayID($0) } ?? 0
+  var ruler = DesignMarker(tool: .ruler, display: display)
+  ruler.locked = true
+  var guide = DesignMarker(tool: .guides, display: display)
+  guide.isVisible = false
+  let frame = DesignMarker(tool: .frames, display: display)
+  tools.markers = [ruler, guide, frame]
+  tools.selectedID = ruler.id
+  tools.visible = true
+  tools.editing = true
+  tools.removeAllMarkers(rulersAndGuidesOnly: true)
+  #expect(tools.markers == [frame])
+  #expect(tools.selectedID == frame.id)
+  #expect(tools.visible && tools.editing)
+  #expect(DesignTools(defaults: defaults).markers == [frame])
+  tools.removeAllMarkers()
+  #expect(tools.markers.isEmpty && tools.selectedID == nil)
+  #expect(!tools.visible && !tools.editing)
+  #expect(!tools.dismissLastTool())
+  #expect(DesignTools(defaults: defaults).markers.isEmpty)
+}
