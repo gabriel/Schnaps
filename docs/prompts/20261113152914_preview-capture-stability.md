@@ -19,3 +19,15 @@ Monitor the PR for branch `codex/gabriel/preview-capture-stability` in `rel-me/S
 ## Validation
 
 `swift test`: all 74 tests passed, including delayed success/failure cases for source changes, window changes, and stopping live preview, plus clipboard refresh and current capture failure coverage.
+
+## Follow-up user request
+
+Get the stranded changes from PRs #78 and #79 into a new PR against main, including the magnet icon, and make sure the checks pass. Merge the other PRs too if they are good.
+
+## Delegated integration and monitoring prompt
+
+Review PRs #82 and #83 for correctness. Update each branch with latest origin/main in isolated worktrees, log follow-up prompts, push commits, and monitor both CI jobs until success. Fix integration issues and recheck before squash merging with expected head SHAs. Review merged results and monitor final main CI. Do not merge the recovery PR.
+
+## Integration review
+
+Reviewed stale success/error rejection, source/window generation invalidation, clipboard change-count handling, and regression coverage. No blockers found. Merged current main (including PRs #80 and #81) before rerunning CI.
