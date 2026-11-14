@@ -39,3 +39,15 @@ Both optimized benchmark binaries compiled and ran for five trials; all conversi
 ## Delegated PR monitoring prompt after benchmark additions
 
 Monitor the PR for branch `codex/gabriel/vision-cache-background-pixels` in `rel-me/Schnaps` until all checks finish. Use `gh` to inspect the PR and CI results. If checks fail because of these changes, fix the issue, append your follow-up work to `docs/prompts/20261113153816_vision-cache-background-pixels.md`, run appropriate local validation, commit and push the fix, and monitor the new head again. Do not merge. Report the final PR URL, head commit, and check results. Wait between polls and send meaningful progress updates so the parent can keep the user informed.
+
+## Follow-up user request
+
+Get the stranded changes from PRs #78 and #79 into a new PR against main, including the magnet icon, and make sure the checks pass. Merge the other PRs too if they are good.
+
+## Delegated integration and monitoring prompt
+
+Review PRs #82 and #83 for correctness. Update each branch with latest origin/main in isolated worktrees, log follow-up prompts, push commits, and monitor both CI jobs until success. Fix integration issues and recheck before squash merging with expected head SHAs. Review merged results and monitor final main CI. Do not merge the recovery PR.
+
+## Integration review
+
+Reviewed cache identity, invalidation, storage accounting, rendering pixel equivalence, conversion cancellation, and benchmark limitations. No blockers found. Confirmed the existing worktree was clean, then merged latest main including PRs #80, #81, and #82. Architecture documentation merged without conflict and retains both preview generation handling and vision cache behavior.
