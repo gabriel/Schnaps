@@ -1,8 +1,8 @@
 .PHONY: beta release promote plan-beta test dev check-release-source
 
-build/tools/schnaps-release: Sources/MeasurementCore/ReleaseChannel.swift Sources/MeasurementCore/ReleaseFeed.swift Scripts/Publish/main.swift
+build/tools/schnaps-release: Sources/MeasurementCore/ReleaseChannel.swift Sources/MeasurementCore/ReleaseFeed.swift Scripts/Publish/Preflight.swift Scripts/Publish/main.swift
 	@mkdir -p build/tools
-	swiftc -swift-version 6 -parse-as-library Sources/MeasurementCore/ReleaseChannel.swift Sources/MeasurementCore/ReleaseFeed.swift Scripts/Publish/main.swift -o $@
+	swiftc -swift-version 6 -parse-as-library Sources/MeasurementCore/ReleaseChannel.swift Sources/MeasurementCore/ReleaseFeed.swift Scripts/Publish/Preflight.swift Scripts/Publish/main.swift -o $@
 
 beta: check-release-source build/tools/schnaps-release
 	@build/tools/schnaps-release beta $(ARGS)
@@ -24,4 +24,4 @@ test:
 
 dev:
 	swift Scripts/build-app.swift --debug
-	open -n build/Schnaps.app
+	open -n build/SchnapsDebug.app

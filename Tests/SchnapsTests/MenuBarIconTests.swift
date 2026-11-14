@@ -41,7 +41,7 @@ import Testing
         let size = 22 * scale
         var masks = Set<Data>()
         for state in MenuBarIconState.allCases {
-            let image = MenuBarIcon.image(for: state)
+            let image = MenuBarIcon.image(for: state, development: false)
             #expect(image.isTemplate && image.size == NSSize(width: 22, height: 22))
             let context = try #require(CGContext(data: nil, width: size, height: size, bitsPerComponent: 8,
                 bytesPerRow: size * 4, space: CGColorSpaceCreateDeviceRGB(),
@@ -58,5 +58,19 @@ import Testing
             masks.insert(alpha)
         }
         #expect(masks.count == 4)
+    }
+}
+
+@MainActor @Test func developmentStatusIconsHaveVisibleDebugBadges() throws {
+    for state in MenuBarIconState.allCases {
+        let image = MenuBarIcon.image(for: state, development: true)
+        #expect(image.isTemplate && image.size == NSSize(width: 32, height: 22))
+        #expect(image.accessibilityDescription == "SchnapsDebug — \(state.title)")
+        let tiff = try #require(image.tiffRepresentation)
+        let bitmap = try #require(NSBitmapImageRep(data: tiff))
+        let badge = (23..<31).contains { x in
+            (0..<22).contains { y in (bitmap.colorAt(x: x, y: y)?.alphaComponent ?? 0) > 0 }
+        }
+        #expect(badge)
     }
 }
