@@ -296,8 +296,23 @@ final class DesignTools: ObservableObject {
     selectedID = marker.id
   }
   func remove() {
-    markers.removeAll { $0.id == selectedID }
-    selectedID = markers.last?.id
+    guard let selectedID else { return }
+    removeMarker(id: selectedID)
+  }
+  func removeMarker(id: UUID) {
+    markers.removeAll { $0.id == id }
+    finishRemoval()
+  }
+  func removeAllMarkers(rulersAndGuidesOnly: Bool = false) {
+    markers.removeAll { !rulersAndGuidesOnly || $0.tool == .ruler || $0.tool == .guides }
+    finishRemoval()
+  }
+  private func finishRemoval() {
+    if !markers.contains(where: { $0.id == selectedID }) {
+      selectedID = markers.last(where: \.isVisible)?.id ?? markers.last?.id
+    }
+    if !markers.contains(where: \.isVisible) { visible = false }
+    if !isActive { editing = false }
   }
   func hide() {
     visible = false
@@ -545,9 +560,21 @@ final class DesignToolsController {
       }
     }
   }
+  private var ownsCursor = false
   private func updateMouseInput() {
+    var cursor: NSCursor?
     for window in windows {
-      window.ignoresMouseEvents = !((window.contentView as? DesignCanvas)?.wantsMouseInput ?? false)
+      guard let canvas = window.contentView as? DesignCanvas else { continue }
+      window.ignoresMouseEvents = !canvas.wantsMouseInput
+      canvas.updateHover()
+      if window.isVisible, let candidate = canvas.editingCursor { cursor = candidate }
+    }
+    if let cursor {
+      cursor.set()
+      ownsCursor = true
+    } else if ownsCursor {
+      NSCursor.arrow.set()
+      ownsCursor = false
     }
   }
   private func rebuild() {
@@ -569,6 +596,7 @@ final class DesignToolsController {
         window.orderOut(nil)
         (window.contentView as? DesignCanvas)?.clearVisionCache()
       }
+      updateMouseInput()
       ticker?.invalidate()
       ticker = nil
       captureTask?.cancel()

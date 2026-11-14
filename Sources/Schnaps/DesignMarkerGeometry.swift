@@ -13,9 +13,9 @@ extension DesignMarker {
   func containsEditingPoint(_ point: CGPoint) -> Bool {
     switch tool {
     case .ruler:
-      return DesignGeometry.distance(point, toSegmentFrom: CGPoint(x: x, y: y), to: end) < 20
+      return DesignGeometry.distance(point, toSegmentFrom: CGPoint(x: x, y: y), to: end) < 24
     case .guides:
-      return abs(vertical ? point.x - x : point.y - y) < 10
+      return abs(vertical ? point.x - x : point.y - y) < 14
     default:
       return rect.insetBy(dx: -8, dy: -8).contains(point)
     }

@@ -35,13 +35,16 @@ struct ToolInspectorView: View {
       Toggle("Show design markers", isOn: $tools.visible)
       Toggle("Edit on screen", isOn: $tools.editing).disabled(!tools.isActive)
       Button("Hide All", action: tools.hide)
+      Button("Remove All Rulers & Guides") { tools.removeAllMarkers(rulersAndGuidesOnly: true) }
+      Button("Remove All Markers") { tools.removeAllMarkers() }
+        .disabled(tools.markers.isEmpty)
       Button("Image & Window Preview…") { ImagePreview.shared.show() }
       Button("Responsive Web Preview…") { BrowserPreview.shared.show() }
     } header: {
       Text("Design tools")
     } footer: {
       Text(
-        "Drag to move. Drag a ruler’s end to rotate; hold Shift for 45°. Control snaps to detected edges. Escape dismisses the last shown tool. Clicks away from editable marks pass through. Turn off editing to let all clicks pass through."
+        "Drag a line or its label to move. Click × to remove a ruler or guide, or select a marker and press Delete. Drag a ruler’s round end handle to rotate; hold Shift for 45°. Control snaps to detected edges. Escape dismisses the last shown tool. Clicks away from editable marks pass through. Turn off editing to let all clicks pass through."
       ).font(.footnote).padding(.top, -7)
     }
     if tools.tool == .loupe {

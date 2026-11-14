@@ -129,6 +129,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } else {
             menu.addItem(designToolsMenu())
         }
+        menu.addItem(item("Remove All Rulers & Guides", action: #selector(removeRulersAndGuides), key: ""))
         menu.addItem(toleranceMenuItem())
         menu.addItem(.separator())
         menu.addItem(item("Settings…", action: #selector(showSettings), key: ","))
@@ -229,6 +230,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(shortcutItem(.edit, action: #selector(editOnScreen)))
         menu.addItem(shortcutItem(.hide, action: #selector(hideDesignTools)))
         menu.addItem(shortcutItem(.copyColor, action: #selector(copySampledColor)))
+        menu.addItem(.separator())
+        menu.addItem(item("Remove All Rulers & Guides", action: #selector(removeRulersAndGuides), key: ""))
+        menu.addItem(item("Remove All Markers", action: #selector(removeAllMarkers), key: ""))
         parent.submenu = menu; return parent
     }
     @objc private func launchDesignTool(_ sender: NSMenuItem) {
@@ -248,6 +252,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if !DesignTools.shared.isActive { DesignTools.shared.visible=true };DesignTools.shared.editing.toggle()
     }
     @objc private func copySampledColor() { DesignTools.shared.copyColor() }
+    @objc private func removeRulersAndGuides() { DesignTools.shared.removeAllMarkers(rulersAndGuidesOnly: true) }
+    @objc private func removeAllMarkers() { DesignTools.shared.removeAllMarkers() }
     @objc private func hideDesignTools() { DesignTools.shared.hide() }
 
     private func toleranceMenuItem() -> NSMenuItem {
