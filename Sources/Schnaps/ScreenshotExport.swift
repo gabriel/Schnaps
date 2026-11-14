@@ -2,11 +2,12 @@ import AppKit
 import MeasurementCore
 import UniformTypeIdentifiers
 
-enum ScreenshotCopySound: String, CaseIterable {
+enum ScreenshotSound: String, CaseIterable {
     case pop = "Pop", purr = "Purr", glass = "Glass", tink = "Tink"
 
-    static func selected(in defaults: UserDefaults = .standard) -> Self {
-        Self(rawValue: defaults.string(forKey: PreferenceKey.screenshotCopySound) ?? "") ?? .pop
+    static func selected(forCopy copy: Bool = true, in defaults: UserDefaults = .standard) -> Self {
+        let key = copy ? PreferenceKey.screenshotCopySound : PreferenceKey.screenshotSaveSound
+        return Self(rawValue: defaults.string(forKey: key) ?? "") ?? (copy ? .pop : .tink)
     }
 
     @MainActor func play() {
@@ -97,8 +98,7 @@ enum ScreenshotExport {
             url = candidate
         }
         if d.bool(forKey: PreferenceKey.screenshotSound) {
-            if copy { ScreenshotCopySound.selected(in: d).play() }
-            else { NSSound(named: "Tink")?.play() }
+            ScreenshotSound.selected(forCopy: copy, in: d).play()
         }
         return url
     }

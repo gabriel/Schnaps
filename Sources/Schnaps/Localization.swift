@@ -74,6 +74,8 @@ private enum SchnapsTranslations {
         Play sounds|播放声音|Reproducir sonidos|Jouer des sons|Riproduci suoni|サウンドを再生|Воспроизводить звуки
         Copy sound|复制声音|Sonido al copiar|Son de copie|Suono di copia|コピー音|Звук копирования
         Preview copy sound|试听复制声音|Escuchar sonido al copiar|Écouter le son de copie|Ascolta il suono di copia|コピー音を試聴|Прослушать звук копирования
+        Save sound|保存声音|Sonido al guardar|Son de sauvegarde|Suono di salvataggio|保存音|Звук сохранения
+        Preview save sound|试听保存声音|Escuchar sonido al guardar|Écouter le son de sauvegarde|Ascolta il suono di salvataggio|保存音を試聴|Прослушать звук сохранения
         Padding|留白|Margen|Marge|Margine|余白|Отступ
         Auto|自动|Auto|Auto|Auto|自動|Авто
         Hold Option to toggle padding when capturing.|截图时按住 Option 切换留白。|Mantén Opción para alternar el margen al capturar.|Maintenir Option pour changer la marge lors de la capture.|Tieni premuto Opzione per cambiare il margine durante la cattura.|撮影時に Option を押して余白を切り替えます。|Удерживайте Option при захвате, чтобы переключить отступ.
