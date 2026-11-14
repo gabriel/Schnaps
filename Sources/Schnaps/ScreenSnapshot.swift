@@ -25,10 +25,10 @@ struct ScreenSnapshot: Sendable {
             .scaled(x: 1 / scaleX, y: 1 / scaleY)
     }
 
-    func objectBounds(in rect: CGRect, tolerance: Int) -> CGRect? {
+    func objectBounds(in rect: CGRect, tolerance: Int, isCancelled: () -> Bool = { false }) -> CGRect? {
         let pixelsRect = CGRect(x: rect.minX * scaleX, y: rect.minY * scaleY,
                                 width: rect.width * scaleX, height: rect.height * scaleY)
-        guard let result = pixels.objectBounds(in: pixelsRect, tolerance: tolerance) else { return nil }
+        guard let result = pixels.objectBounds(in: pixelsRect, tolerance: tolerance, isCancelled: isCancelled) else { return nil }
         return CGRect(x: result.minX / scaleX, y: result.minY / scaleY,
                       width: result.width / scaleX, height: result.height / scaleY)
     }

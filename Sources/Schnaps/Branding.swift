@@ -11,20 +11,17 @@ enum AppBranding {
     private static var appearanceObservation: NSKeyValueObservation?
 
     static func installIcon() {
-        // Let the system resolve the compiled Default, Dark and Mono icon renditions.
-        if #available(macOS 26, *) { return }
-        // ICNS has no automatic appearance selection on older macOS.
-        updateLegacyDockIcon()
+        // Use the transparent brand mark wherever we control the icon, including
+        // the running Dock icon on macOS 26. System-owned surfaces may add chrome.
+        updateDockIcon()
         appearanceObservation = NSApp.observe(\.effectiveAppearance, options: [.new]) { _, _ in
-            Task { @MainActor in updateLegacyDockIcon() }
+            Task { @MainActor in updateDockIcon() }
         }
     }
 
-    private static func updateLegacyDockIcon() {
+    private static func updateDockIcon() {
         let dark = NSApp.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-        let name = dark ? "Schnaps-Dark" : "Schnaps"
-        guard let url = Bundle.main.url(forResource: name, withExtension: "icns"),
-              let dockIcon = NSImage(contentsOf: url) else { return }
+        guard let dockIcon = icon(dark: dark) else { return }
         NSApp.applicationIconImage = dockIcon
     }
 }

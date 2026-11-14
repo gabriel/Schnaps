@@ -32,6 +32,17 @@ jobs:
           node --test website/tests/*.test.mjs
       - name: Build native application
         run: swift Scripts/build-app.swift
+      - name: Verify separate debug app packaging
+        run: |
+          SCHNAPS_SIGN_IDENTITY=- swift Scripts/build-app.swift --debug
+          codesign --verify --deep --strict build/SchnapsDebug.app
+          test "$(plutil -extract CFBundleIdentifier raw build/SchnapsDebug.app/Contents/Info.plist)" = com.gabrielhandford.Schnap.debug
+          test "$(plutil -extract CFBundleDisplayName raw build/SchnapsDebug.app/Contents/Info.plist)" = SchnapsDebug
+          test "$(plutil -extract SchnapsBuildConfiguration raw build/SchnapsDebug.app/Contents/Info.plist)" = debug
+          if SCHNAPS_SIGN_IDENTITY=- swift Scripts/build-app.swift --install-debug; then
+            echo "Debug installation must reject ad hoc signing"
+            exit 1
+          fi
       - name: Verify bundle signature
         run: codesign --verify --deep --strict build/Schnaps.app
       - name: Verify Sparkle embedding and release configuration
